@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:20.04 AS azuredcap
+FROM docker.io/ubuntu:24.04 AS azuredcap
 WORKDIR /build
 ADD https://github.com/microsoft/Azure-DCAP-Client/archive/refs/tags/1.12.0.tar.gz ./Azure-DCAP-Client.tar.gz
 RUN tar -xvf Azure-DCAP-Client.tar.gz
