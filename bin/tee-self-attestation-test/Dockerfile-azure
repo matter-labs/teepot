@@ -1,0 +1,85 @@
+FROM docker.io/ubuntu:20.04 AS azuredcap
+WORKDIR /build
+ADD https://github.com/microsoft/Azure-DCAP-Client/archive/refs/tags/1.12.0.tar.gz ./Azure-DCAP-Client.tar.gz
+RUN tar -xvf Azure-DCAP-Client.tar.gz
+COPY assets/Azure-DCAP-Client.patch ./Azure-DCAP-Client.patch
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y software-properties-common; \
+    add-apt-repository ppa:team-xbmc/ppa -y; \
+    apt-get update; \
+    apt-get install -y \
+        build-essential \
+        cmake \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        pkg-config \
+        nlohmann-json3-dev \
+        wget \
+        dos2unix \
+        ;
+
+WORKDIR /build/Azure-DCAP-Client-1.12.0
+RUN dos2unix src/dcap_provider.cpp && patch -p1 < ../Azure-DCAP-Client.patch
+WORKDIR /build/Azure-DCAP-Client-1.12.0/src/Linux
+RUN ./configure && make && make install
+
+FROM docker.io/rust:1-bullseye AS buildtee
+RUN curl -fsSLo /usr/share/keyrings/intel.asc https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel.asc] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main" > /etc/apt/sources.list.d/intel-sgx.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        rsync \
+        pkg-config \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        libprotobuf-dev \
+        protobuf-compiler \
+        clang \
+        libsgx-headers \
+        libsgx-dcap-quote-verify-dev
+
+WORKDIR /opt/vault/plugins
+
+WORKDIR /build
+RUN --mount=type=bind,target=/data rsync --exclude='/.git' --filter="dir-merge,- .gitignore" --exclude "Dockerfile-*" --exclude 'tee-self-attestation-test.manifest.template.toml' -av /data/ ./
+RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=target \
+    RUSTFLAGS="-C target-cpu=icelake-server --cfg mio_unsupported_force_waker_pipe" \
+    cargo build --locked --target x86_64-unknown-linux-gnu --release -p tee-self-attestation-test --bin tee-self-attestation-test \
+    && mv ./target/x86_64-unknown-linux-gnu/release/tee-self-attestation-test ./
+
+FROM docker.io/gramineproject/gramine:v1.5
+
+RUN curl -fsSLo /usr/share/keyrings/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/20.04/prod focal main" > /etc/apt/sources.list.d/msprod.list \
+    && apt-get update \
+    && apt purge -y libsgx-dcap-default-qpl \
+    && apt-get install -y az-dcap-client
+
+RUN apt purge -y libsgx-ae-qve
+#    libsgx-urts
+
+RUN rm -rf /var/lib/apt/lists/*
+
+# So we only have to use one gramine template
+RUN touch /etc/sgx_default_qcnl.conf
+
+WORKDIR /app
+
+COPY --from=buildtee /build/tee-self-attestation-test .
+COPY ./bin/tee-self-attestation-test/tee-self-attestation-test.manifest.template.toml .
+COPY vault/enclave-key.pem .
+
+# The original Azure library is still delivering expired collateral, so we have to use a patched version
+COPY --from=azuredcap /usr/local/lib/libdcap_quoteprov.so /usr/lib/
+
+RUN gramine-manifest -Darch_libdir=/lib/x86_64-linux-gnu -Dexecdir=/usr/bin -Dlog_level=warning tee-self-attestation-test.manifest.template.toml tee-self-attestation-test.manifest \
+    && gramine-sgx-sign --manifest tee-self-attestation-test.manifest --output tee-self-attestation-test.manifest.sgx --key enclave-key.pem \
+    && rm enclave-key.pem
+
+EXPOSE 8443
+
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD [ "/restart_aesm.sh ; exec gramine-sgx tee-self-attestation-test" ]

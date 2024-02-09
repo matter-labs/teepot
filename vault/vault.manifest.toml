@@ -1,0 +1,69 @@
+libos.entrypoint = "/bin/bash"
+
+[loader]
+entrypoint = "file:{{ gramine.libos }}"
+argv = ["bash", "/opt/vault/start.sh"]
+# set a log level for gramine
+log_level = "{{ log_level }}"
+
+[loader.env]
+LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}"
+PATH = "{{ execdir }}"
+
+VAULT_CLUSTER_ADDR.passthrough = true
+VAULT_API_ADDR.passthrough = true
+VAULT_RAFT_NODE_ID.passthrough = true
+
+# otherwise vault will lock a lot of unused EPC memory
+VAULT_RAFT_INITIAL_MMAP_SIZE = "0"
+
+# possible tweak option, if problems with raft
+# VAULT_RAFT_DISABLE_MAP_POPULATE = "true"
+
+[fs]
+root.uri = "file:/"
+start_dir = "/root"
+mounts = [
+  { path = "{{ execdir }}", uri = "file:{{ execdir }}" },
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
+  { type = "tmpfs", path = "/var/tmp" },
+  { type = "tmpfs", path = "/tmp" },
+  { type = "tmpfs", path = "/app/.dcap-qcnl" },
+  { type = "tmpfs", path = "/app/.az-dcap-client" },
+  { path = "/lib/libdcap_quoteprov.so", uri = "file:/lib/libdcap_quoteprov.so" },
+  { type = "encrypted", path = "/opt/vault/.cache", uri = "file:/opt/vault/.cache", key_name = "_sgx_mrsigner" },
+  { type = "encrypted", path = "/opt/vault/tls", uri = "file:/opt/vault/tls", key_name = "_sgx_mrsigner" },
+  { type = "encrypted", path = "/opt/vault/data", uri = "file:/opt/vault/data", key_name = "_sgx_mrsigner" },
+]
+
+[sgx]
+debug = false
+edmm_enable = false
+enclave_size = "8G"
+max_threads = 64
+nonpie_binary = true
+remote_attestation = "dcap"
+
+trusted_files = [
+  "file:/bin/bash",
+  "file:{{ gramine.libos }}",
+  "file:{{ execdir }}/",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ arch_libdir }}/",
+  "file:/usr/{{ arch_libdir }}/",
+  "file:/usr/lib/ssl/openssl.cnf",
+  "file:/etc/ssl/",
+  "file:/lib/libdcap_quoteprov.so",
+  "file:/opt/vault/",
+]
+
+#file_check_policy = "allow_all_but_log"
+
+[sys]
+stack.size = "1M"
+enable_extra_runtime_domain_names_conf = true
+enable_sigterm_injection = true
+
+# vault needs flock
+experimental__enable_flock = true

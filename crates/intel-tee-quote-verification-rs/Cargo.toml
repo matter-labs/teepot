@@ -1,0 +1,11 @@
+# Fork of the original crate: https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+[package]
+name = "intel-tee-quote-verification-rs"
+version = "0.2.1"
+edition = "2021"
+license = "BSD-3-Clause"
+
+[dependencies]
+intel-tee-quote-verification-sys.workspace = true
+serde.workspace = true

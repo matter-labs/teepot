@@ -1,0 +1,47 @@
+name: lint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt:
+    name: cargo fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: Setup Rust toolchain
+        run: rustup show
+      - run: cargo fmt --all -- --check
+
+  deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          arguments: --workspace
+
+  check-spdx-headers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: enarx/spdx@master
+        with:
+          licenses: Apache-2.0 BSD-3-Clause MIT
+
+  taplo:
+    name: taplo
+    runs-on: ubuntu-latest
+    container: tamasfe/taplo:latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - run: taplo fmt --check
