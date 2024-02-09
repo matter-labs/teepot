@@ -44,7 +44,6 @@ jobs:
         with:
           file: ${{ matrix.config.dockerfile }}
           tags: |
-            ghcr.io/${{env.repository_owner}}/${{ github.event.repository.name }}-${{ matrix.config.tag }}
             matterlabsrobot/${{ matrix.config.repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
