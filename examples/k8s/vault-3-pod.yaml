@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+  labels:
+    io.kompose.network/teepot-default: "true"
+    io.kompose.service: vault-3
+    app: vault
+  name: vault-3
+  namespace: default
+spec:
+  tolerations:
+    - key: sgx.intel.com/provision
+      operator: Exists
+      effect: NoSchedule
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - vault
+  imagePullSecrets:
+    - name: docker-regcred
+  containers:
+    - image: matterlabsrobot/teepot-vault:latest
+      name: vault
+      imagePullPolicy: Always
+      env:
+        - name: VAULT_API_ADDR
+          value: "https://vault-3:8210"
+        - name: VAULT_CLUSTER_ADDR
+          value: "https://vault-3:8211"
+        - name: VAULT_RAFT_NODE_ID
+          value: "vault-3"
+      readinessProbe:
+        exec:
+          command:
+          - curl
+          - -k
+          - https://localhost:8210/v1/sys/health
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      ports:
+        - containerPort: 8210
+          hostPort: 8210
+          protocol: TCP
+        - containerPort: 8211
+          hostPort: 8211
+          protocol: TCP
+      resources:
+        limits:
+          sgx.intel.com/epc: "10Mi"
+        requests:
+          sgx.intel.com/epc: "10Mi"
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /opt/vault/tls
+          name: shared-3
+        - mountPath: /opt/vault/data
+          name: data-3
+    - image: matterlabsrobot/teepot-tvu:latest
+      name: vault-unseal
+      imagePullPolicy: Always
+      env:
+        - name: VAULT_ADDR
+          value: "https://vault-3:8210"
+        - name: ALLOWED_TCB_LEVELS
+          value: "SwHardeningNeeded"
+      ports:
+        - containerPort: 8443
+          hostPort: 8443
+          protocol: TCP
+      resources:
+        limits:
+          sgx.intel.com/epc: "10Mi"
+        requests:
+          sgx.intel.com/epc: "10Mi"
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /opt/vault/tls
+          name: shared-3
+  restartPolicy: Never
+  volumes:
+    - name: shared-3
+      persistentVolumeClaim:
+        claimName: shared-3
+    - name: data-3
+      persistentVolumeClaim:
+        claimName: data-3
+status: {}

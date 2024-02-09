@@ -1,0 +1,146 @@
+# From the main directory run:
+# ❯ docker compose -f examples/docker-compose.yml --project-directory $PWD up
+services:
+  tvu-1:
+    build:
+      context: .
+      dockerfile: bin/tee-vault-unseal/Dockerfile-azure
+    image: tee-vault-unseal
+    restart: "no"
+    ports:
+      - 8413:8443
+    environment:
+      VAULT_ADDR: "https://vault-1:8210"
+      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-1:/opt/vault/tls
+  vault-1:
+    build:
+      context: .
+      dockerfile: vault/Dockerfile
+    image: vault
+    restart: "no"
+    ports:
+      - 8210:8210
+#      - 8211:8211
+    environment:
+      VAULT_API_ADDR: "https://vault-1:8210"
+      VAULT_CLUSTER_ADDR: "https://vault-1:8211"
+      VAULT_RAFT_NODE_ID: "vault-1"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-1:/opt/vault/tls
+      - data-1:/opt/vault/data
+
+  tvu-2:
+    image: tee-vault-unseal
+    restart: "no"
+    ports:
+      - 8423:8443
+    environment:
+      VAULT_ADDR: "https://vault-2:8210"
+      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-2:/opt/vault/tls
+  vault-2:
+    image: vault
+    restart: "no"
+    ports:
+      - 8220:8210
+#      - 8221:8211
+    environment:
+      VAULT_API_ADDR: "https://vault-2:8210"
+      VAULT_CLUSTER_ADDR: "https://vault-2:8211"
+      VAULT_RAFT_NODE_ID: "vault-2"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-2:/opt/vault/tls
+      - data-2:/opt/vault/data
+
+  tvu-3:
+    image: tee-vault-unseal
+    restart: "no"
+    ports:
+      - 8433:8443
+    environment:
+      VAULT_ADDR: "https://vault-3:8210"
+      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-3:/opt/vault/tls
+  vault-3:
+    image: vault
+    restart: "no"
+    ports:
+      - 8230:8210
+#      - 8231:8211
+    environment:
+      VAULT_API_ADDR: "https://vault-3:8210"
+      VAULT_CLUSTER_ADDR: "https://vault-3:8211"
+      VAULT_RAFT_NODE_ID: "vault-3"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - shared-3:/opt/vault/tls
+      - data-3:/opt/vault/data
+
+  admin:
+    build:
+      context: .
+      dockerfile: bin/tee-vault-admin/Dockerfile-azure
+    restart: "no"
+    ports:
+      - 8444:8444
+    environment:
+      VAULT_ADDR: "https://vault-1:8210"
+      VAULT_SGX_MRSIGNER: "c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d"
+      VAULT_SGX_ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+
+  stress:
+    build:
+      context: .
+      dockerfile: bin/tee-stress-client/Dockerfile-azure
+    restart: "no"
+    environment:
+      VAULT_ADDR: "https://vault-1:8210"
+      VAULT_SGX_MRSIGNER: "c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d"
+      VAULT_SGX_ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
+    privileged: true
+    init: true
+    volumes:
+      - /run/aesmd:/run/aesmd
+      - /dev/sgx_enclave:/dev/sgx_enclave
+
+volumes:
+  shared-1:
+  data-1:
+  shared-2:
+  data-2:
+  shared-3:
+  data-3:

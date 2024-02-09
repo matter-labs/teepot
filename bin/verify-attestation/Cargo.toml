@@ -1,0 +1,13 @@
+[package]
+name = "verify-attestation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+hex.workspace = true
+intel-tee-quote-verification-rs.workspace = true
+teepot.workspace = true

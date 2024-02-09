@@ -1,0 +1,16 @@
+{
+  "last_digest": "564623a3afcedc19737f7002885bb62529bd8125f4dd6b0d6efd57ab768fb773",
+  "commands": [
+    {
+      "url": "/v1/auth/tee/tees/test",
+      "data": {
+        "lease": "1000",
+        "name": "test",
+        "sgx_allowed_tcb_levels": "Ok,SwHardeningNeeded",
+        "sgx_mrsigner": "c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d",
+        "token_policies": "test",
+        "types": "sgx"
+      }
+    }
+  ]
+}

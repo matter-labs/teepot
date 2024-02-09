@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+
+  labels:
+    io.kompose.service: vault-1
+  name: vault-1
+  namespace: default
+spec:
+  ports:
+    - name: "8210"
+      port: 8210
+      targetPort: 8210
+    - name: "8211"
+      port: 8211
+      targetPort: 8211
+  selector:
+    io.kompose.service: vault-1

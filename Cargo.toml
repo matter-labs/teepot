@@ -1,0 +1,111 @@
+[package]
+name = "teepot"
+description = "TEE secret manager"
+# no MIT license, because of copied code from:
+# * https://github.com/enarx/enarx
+# * https://github.com/enarx/sgx
+license = "Apache-2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+actix-http.workspace = true
+actix-web.workspace = true
+anyhow.workspace = true
+awc.workspace = true
+bitflags.workspace = true
+bytemuck.workspace = true
+bytes.workspace = true
+clap.workspace = true
+const-oid.workspace = true
+enumset.workspace = true
+futures-core.workspace = true
+getrandom.workspace = true
+hex.workspace = true
+intel-tee-quote-verification-rs.workspace = true
+num-integer.workspace = true
+num-traits.workspace = true
+pgp.workspace = true
+pkcs8.workspace = true
+rand.workspace = true
+ring.workspace = true
+rsa.workspace = true
+rustls.workspace = true
+sec1.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+x509-cert.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+anyhow.workspace = true
+base64.workspace = true
+hex.workspace = true
+testaso.workspace = true
+
+[workspace]
+members = ["crates/*", "bin/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Harald Hoyer <hh@matterlabs.dev>"]
+# rest of the workspace, if not specified in the package section
+# has the standard Apache-2.0 OR MIT license
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/matter-labs/teepot"
+
+[workspace.dependencies]
+actix-http = "3"
+actix-tls = "3"
+actix-web = { version = "4.5", features = ["rustls-0_22"] }
+anyhow = "1.0.79"
+awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
+base64 = "0.21.7"
+bindgen = "0.69.4"
+bitflags = "2.4"
+bytemuck = { version = "1.14.2", features = ["derive", "min_const_generics", "extern_crate_std"] }
+bytes = "1"
+clap = { version = "4.4", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
+const-oid = { version = "0.9", default-features = false }
+der = "0.7.8"
+enumset = { version = "1.1", features = ["serde", "std"] }
+futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
+getrandom = "0.2.12"
+hex = { version = "0.4.3", features = ["std"], default-features = false }
+intel-tee-quote-verification-rs = { path = "crates/intel-tee-quote-verification-rs", version = "0.2.1" }
+intel-tee-quote-verification-sys = { path = "crates/intel-tee-quote-verification-sys", version = "0.2.0" }
+k256 = "0.13"
+log = "0.4"
+mio = "0.8.10"
+num-integer = "0.1.46"
+num-traits = "0.2.18"
+pgp = "0.10"
+pkcs8 = { version = "0.10" }
+rand = "0.8"
+ring = { version = "0.17.7", features = ["std"], default-features = false }
+rsa = { version = "0.9.6", features = ["sha2"] }
+rustls = { version = "0.22" }
+rustls-pemfile = "1"
+sec1 = { version = "0.7.3", features = ["der"], default-features = false }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+serde_with = { version = "3.6", features = ["base64", "hex"] }
+sha2 = "0.10.8"
+teepot = { path = "." }
+testaso = "0.1.0"
+thiserror = "1.0.56"
+tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
+tracing = "0.1"
+tracing-actix-web = "0.7"
+tracing-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+x509 = { version = "0.2", package = "x509-cert", default-features = false }
+x509-cert = "0.2.5"
+zeroize = { version = "1.7.0", features = ["serde"] }
