@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,targe
     cargo build --locked --target x86_64-unknown-linux-gnu --release -p verify-attestation --bin verify-attestation \
     && mv ./target/x86_64-unknown-linux-gnu/release/verify-attestation ./
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:20.10
 
 RUN apt-get update \
     && apt-get install -y curl
