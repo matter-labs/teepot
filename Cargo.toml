@@ -100,7 +100,7 @@ serde_with = { version = "3.6", features = ["base64", "hex"] }
 sha2 = "0.10.8"
 teepot = { path = "." }
 testaso = "0.1.0"
-thiserror = "1.0.56"
+thiserror = "1.0.57"
 tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
 tracing = "0.1"
 tracing-actix-web = "0.7"
