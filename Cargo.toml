@@ -68,7 +68,6 @@ actix-web = { version = "4.5", features = ["rustls-0_22"] }
 anyhow = "1.0.79"
 awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
 base64 = "0.21.7"
-bindgen = "0.69.4"
 bitflags = "2.4"
 bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
@@ -80,7 +79,7 @@ futures-core = { version = "0.3.30", features = ["alloc"], default-features = fa
 getrandom = "0.2.12"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
 intel-tee-quote-verification-rs = { path = "crates/intel-tee-quote-verification-rs", version = "0.2.1" }
-intel-tee-quote-verification-sys = { path = "crates/intel-tee-quote-verification-sys", version = "0.2.0" }
+intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
 log = "0.4"
 mio = "0.8.10"
