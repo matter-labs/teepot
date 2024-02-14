@@ -14,7 +14,7 @@ use actix_web::http::header;
 use actix_web::rt::time::sleep;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use attestation::get_attestation;
 use awc::{Client, Connector};
 use clap::Parser;
@@ -310,23 +310,20 @@ pub fn load_rustls_config() -> Result<(ServerConfig, Arc<ClientConfig>, [u8; 64]
     );
 
     // convert files to key/cert objects
-    let cert_chain: Vec<_> = certs(cert_file)
-        .unwrap()
-        .into_iter()
-        .map(rustls::pki_types::CertificateDer::from)
-        .collect();
-    let priv_key: rustls::pki_types::PrivateKeyDer = match read_one(key_file).unwrap() {
-        Some(rustls_pemfile::Item::RSAKey(key)) => {
-            rustls::pki_types::PrivatePkcs1KeyDer::from(key).into()
-        }
-        Some(rustls_pemfile::Item::PKCS8Key(key)) => {
-            rustls::pki_types::PrivatePkcs8KeyDer::from(key).into()
-        }
-        _ => panic!("no keys found"),
-    };
+    let cert_chain = certs(cert_file)
+        .collect::<Result<Vec<_>, _>>()
+        .context("Failed to load TLS cert file")?;
+
+    let priv_key: rustls::pki_types::PrivateKeyDer =
+        match read_one(key_file).context("Failed to read TLS key file")? {
+            Some(rustls_pemfile::Item::Sec1Key(key)) => key.into(),
+            Some(rustls_pemfile::Item::Pkcs1Key(key)) => key.into(),
+            Some(rustls_pemfile::Item::Pkcs8Key(key)) => key.into(),
+            _ => bail!("no keys found in TLS key file"),
+        };
 
     let tls_config = Arc::new(
-        rustls::ClientConfig::builder()
+        ClientConfig::builder()
             .dangerous()
             .with_custom_certificate_verifier(Arc::new(make_verifier(
                 cert_chain[0].as_ref().into(),
