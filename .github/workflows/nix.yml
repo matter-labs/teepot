@@ -42,9 +42,8 @@ jobs:
     - uses: cachix/cachix-action@v14
       continue-on-error: true
       with:
-        name: teepot
+        name: nixsgx
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        extraPullNames: nixsgx
     - name: cargo clippy
       run: nix develop -L --ignore-environment -c cargo clippy --all --locked
 
@@ -59,8 +58,29 @@ jobs:
       - uses: cachix/cachix-action@v14
         continue-on-error: true
         with:
-          name: teepot
+          name: nixsgx
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          extraPullNames: nixsgx
+
+      # Cache any artifacts that aren't already cached at https://cache.nixos.org
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
       - name: nix build
         run: nix run nixpkgs#nixci
+
+      - name: Log in to Docker Hub
+        if: ${{ github.event_name == 'push' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Load and push
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          nix build  -L .#container-verify-attestation
+          export IMAGE_TAG=$(docker load < result | grep -Po 'Loaded image.*: \K.*')
+          echo "Pushing image ${IMAGE_TAG} to Docker Hub"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          docker push "${IMAGE_TAG}"
+          docker push "${IMAGE_TAG%:*}:latest"
