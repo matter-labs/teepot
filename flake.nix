@@ -4,112 +4,48 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
 
-    nix-filter.url = "github:numtide/nix-filter";
-    flake-utils.url = "github:numtide/flake-utils";
-
     nixsgx-flake = {
       url = "github:matter-labs/nixsgx";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    snowfall-lib = {
+      url = "github:snowfallorg/lib?rev=92803a029b5314d4436a8d9311d8707b71d9f0b6";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay?rev=3ad32bb27c700b59306224e285b66577e3532dfc";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-filter.url = "github:numtide/nix-filter?rev=3449dc925982ad46246cfc36469baf66e1b64f17";
   };
 
-  outputs = { self, nixpkgs, flake-utils, nix-filter, nixsgx-flake, rust-overlay }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; overlays = [ (import rust-overlay) nixsgx-flake.overlays.default ]; };
-        rustVersion = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-        makeRustPlatform = pkgs.makeRustPlatform.override {
-          stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.gccStdenv;
+  outputs = inputs:
+    inputs.snowfall-lib.mkFlake {
+      inherit inputs;
+      src = ./.;
+
+      package-namespace = "teepot";
+
+      overlays = with inputs; [
+        nixsgx-flake.overlays.default
+        rust-overlay.overlays.default
+        nix-filter.overlays.default
+      ];
+
+      alias = {
+        packages = {
+          default = "teepot";
         };
-        rustPlatform = makeRustPlatform {
-          cargo = rustVersion;
-          rustc = rustVersion;
+        shells = {
+          default = "teepot";
         };
+      };
 
-        filter = nix-filter.lib;
-
-        bin = rustPlatform.buildRustPackage {
-          pname = "teepot";
-          version = "0.1.0";
-
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            rustPlatform.bindgenHook
-          ];
-
-          buildInputs = with pkgs; [
-            nixsgx.sgx-sdk
-            nixsgx.sgx-dcap
-            nixsgx.sgx-dcap.quote_verify
-          ];
-
-          src = filter {
-            root = ./.;
-            exclude = [
-              ".github"
-              ".gitignore"
-              "flake.lock"
-              "flake.nix"
-              "LICENSE-APACHE"
-              "LICENSE-MIT"
-              "README.md"
-              "renovate.json"
-              "deny.toml"
-              (filter.inDirectory "examples")
-              (filter.inDirectory "vault")
-            ];
-          };
-          RUSTFLAGS = "--cfg mio_unsupported_force_waker_pipe";
-          cargoBuildFlags = "--all";
-          checkType = "debug";
-          cargoLock = {
-            lockFile = ./Cargo.lock;
-          };
-
-          outputs = [
-            "out"
-            "tee_key_preexec"
-            "tee_self_attestation_test"
-            "tee_stress_client"
-            "tee_vault_admin"
-            "tee_vault_unseal"
-            "teepot_read"
-            "teepot_write"
-            "vault_admin"
-            "vault_unseal"
-            "verify_attestation"
-          ];
-
-          postInstall = ''
-            mkdir -p $out/nix-support
-            for i in $outputs; do
-              [[ $i == "out" ]] && continue
-              mkdir -p "''${!i}/bin"
-              echo "''${!i}" >> $out/nix-support/propagated-user-env-packages
-              binname=''${i//_/-}
-              mv "$out/bin/$binname" "''${!i}/bin/"
-            done
-          '';
-        };
-      in
-      {
-        formatter = pkgs.nixpkgs-fmt;
-
-        packages = rec {
-          teepot = bin;
-          default = teepot;
-        };
-
-        devShells = {
-          default = pkgs.mkShell {
-            inputsFrom = [ bin ];
-            nativeBuildInputs = with pkgs; [
-              rustup
-              rustVersion
-            ];
-          };
-        };
-      });
+      outputs-builder = channels: {
+        formatter = channels.nixpkgs.nixpkgs-fmt;
+      };
+    };
 }
