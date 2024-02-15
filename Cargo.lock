@@ -2401,7 +2401,6 @@ dependencies = [
  "hex",
  "k256",
  "rand",
- "sha2",
  "teepot",
  "tracing",
  "tracing-log",
