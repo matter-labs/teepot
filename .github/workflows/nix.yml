@@ -101,5 +101,5 @@ jobs:
           export IMAGE_TAG=$(docker load < result | grep -Po 'Loaded image.*: \K.*')
           echo "Pushing image ${IMAGE_TAG} to Docker Hub"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-          docker push matterlabsrobot/"${IMAGE_TAG}"
-          docker push matterlabsrobot/"${IMAGE_TAG%:*}:latest"
+          docker push "${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG}"
+          docker push "${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG%:*}:latest"
