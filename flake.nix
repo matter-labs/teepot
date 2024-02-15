@@ -18,8 +18,6 @@
       url = "github:oxalica/rust-overlay?rev=3ad32bb27c700b59306224e285b66577e3532dfc";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nix-filter.url = "github:numtide/nix-filter?rev=3449dc925982ad46246cfc36469baf66e1b64f17";
   };
 
   outputs = inputs:
@@ -32,7 +30,6 @@
       overlays = with inputs; [
         nixsgx-flake.overlays.default
         rust-overlay.overlays.default
-        nix-filter.overlays.default
       ];
 
       alias = {
