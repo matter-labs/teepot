@@ -1,7 +1,6 @@
 { lib
 , gccStdenv
 , makeRustPlatform
-, nix-filter
 , nixsgx
 , pkg-config
 , rust-bin
@@ -30,17 +29,17 @@ rustPlatform.buildRustPackage {
     nixsgx.sgx-dcap.quote_verify
   ];
 
-  src = nix-filter {
+  src = with lib.fileset; toSource {
     root = ./../..;
-    include = [
-      "Cargo.lock"
-      "Cargo.toml"
-      "assets"
-      "bin"
-      "crates"
-      "rust-toolchain.toml"
-      "src"
-      "tests"
+    fileset = unions [
+      ../../Cargo.lock
+      ../../Cargo.toml
+      ../../assets
+      ../../bin
+      ../../crates
+      ../../rust-toolchain.toml
+      ../../src
+      ../../tests
     ];
   };
   RUSTFLAGS = "--cfg mio_unsupported_force_waker_pipe";
