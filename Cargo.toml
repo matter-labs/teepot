@@ -88,7 +88,7 @@ num-traits = "0.2.18"
 pgp = "0.10"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
-ring = { version = "0.17.7", features = ["std"], default-features = false }
+ring = { version = "0.17.8", features = ["std"], default-features = false }
 rsa = { version = "0.9.6", features = ["sha2"] }
 rustls = { version = "0.22" }
 rustls-pemfile = "2"
