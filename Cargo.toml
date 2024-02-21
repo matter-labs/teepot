@@ -85,7 +85,7 @@ log = "0.4"
 mio = "0.8.10"
 num-integer = "0.1.46"
 num-traits = "0.2.18"
-pgp = "0.10"
+pgp = "0.11"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
 ring = { version = "0.17.8", features = ["std"], default-features = false }
