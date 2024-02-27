@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+#
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2024 Matter Labs
 #
+
 # This script is used to extract the signature of a gramine docker image.
-#
 # Usage: ./extract-sig.sh <image-name> <tee-name> <output-file>
 # Example: ./extract-sig.sh tva tee-vault-admin
 

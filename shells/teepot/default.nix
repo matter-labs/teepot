@@ -1,7 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2024 Matter Labs
 { lib
-, pkgs
+, mkShell
+, teepot
+, dive
+, taplo
 , ...
 }:
-pkgs.mkShell {
-  inputsFrom = [ pkgs.teepot.teepot ];
+mkShell {
+  inputsFrom = [ teepot.teepot ];
+  packages = [
+    dive
+    taplo
+  ];
 }

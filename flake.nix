@@ -9,6 +9,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    vault-auth-tee-flake = {
+      url = "github:matter-labs/vault-auth-tee";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     snowfall-lib = {
       url = "github:snowfallorg/lib?rev=92803a029b5314d4436a8d9311d8707b71d9f0b6";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,6 +34,7 @@
 
       overlays = with inputs; [
         nixsgx-flake.overlays.default
+        vault-auth-tee-flake.overlays.default
         rust-overlay.overlays.default
       ];
 

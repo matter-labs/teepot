@@ -14,80 +14,98 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-    - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28 # v25
-      with:
-        extra_nix_config: |
-          access-tokens = github.com=${{ github.token }}
-    - run: nix flake check -L --show-trace --keep-going
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          extraPullNames: vault-auth-tee
+
+      - run: nix flake check -L --show-trace --keep-going
 
   fmt:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-    - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28 # v25
-      with:
-        extra_nix_config: |
-          access-tokens = github.com=${{ github.token }}
-    - run: nix fmt
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          extraPullNames: vault-auth-tee
+
+      - run: nix fmt
 
   clippy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-    - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28 # v25
-      with:
-        extra_nix_config: |
-          access-tokens = github.com=${{ github.token }}
-    # Cache any artifacts that aren't already cached at https://cache.nixos.org
-    - name: Enable magic Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
-    - name: Use nixsgx cache
-      run: |
-        nix-env -iA cachix -f https://cachix.org/api/v1/install
-        cachix use nixsgx
-    - name: cargo clippy
-      run: nix develop -L --ignore-environment -c cargo clippy --all --locked
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          extraPullNames: vault-auth-tee
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: cargo clippy
+        run: nix develop -L --ignore-environment -c cargo clippy --all --locked
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28 # v25
+      - uses: cachix/install-nix-action@v25
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}
-
-      # Cache any artifacts that aren't already cached at https://cache.nixos.org
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          extraPullNames: vault-auth-tee
       - name: Enable magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Use nixsgx cache
-        run: |
-          nix-env -iA cachix -f https://cachix.org/api/v1/install
-          cachix use nixsgx
 
       - name: nix build
         run: nix run nixpkgs#nixci
 
   push_to_docker:
+    needs: build
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.config.dockerfile }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { nixpackage: 'container-vault-sgx-azure', dockerfile: 'packages/container-vault-sgx-azure/Dockerfile', tag: 'vault:latest', repository: 'teepot-vault' }
+          - { nixpackage: 'container-vault-unseal-sgx-azure', dockerfile: 'packages/container-vault-unseal-sgx-azure/Dockerfile', tag: 'tvu:latest', repository: 'teepot-tvu' }
+          - { nixpackage: 'container-vault-admin-sgx-azure', dockerfile: 'packages/container-vault-admin-sgx-azure/Dockerfile', tag: 'tva:latest', repository: 'teepot-tva' }
+          - { nixpackage: 'container-verify-attestation' }
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28 # v25
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}
-
-      # Cache any artifacts that aren't already cached at https://cache.nixos.org
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          extraPullNames: vault-auth-tee
       - name: Enable magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Use nixsgx cache
-        run: |
-          nix-env -iA cachix -f https://cachix.org/api/v1/install
-          cachix use nixsgx
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -95,13 +113,30 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Load and push
+      - name: Load and Push nix container
         run: |
-          nix build  -L .#container-verify-attestation
+          nix build  -L .#${{ matrix.config.nixpackage }}
           export IMAGE_TAG=$(docker load < result | grep -Po 'Loaded image.*: \K.*')
           echo "Pushing image ${IMAGE_TAG} to Docker Hub"
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
           docker tag "${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG}"
           docker push matterlabsrobot/"${IMAGE_TAG}"
           docker tag matterlabsrobot/"${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG%:*}:latest"
           docker push matterlabsrobot/"${IMAGE_TAG%:*}:latest"
+
+      - name: Generate build ID for Flux Image Automation
+        if: ${{ matrix.config.dockerfile }}
+        id: buildid
+        run: |
+          sha=$(git rev-parse --short HEAD)
+          ts=$(date +%s%N | cut -b1-13)
+          echo "BUILD_ID=${sha}-${ts}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and Push Container
+        if: ${{ matrix.config.dockerfile }}
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ matrix.config.dockerfile }}
+          tags: |
+            "matterlabsrobot/${{ matrix.config.repository }}:latest"
+            "matterlabsrobot/${{ matrix.config.repository }}:${{ steps.buildid.outputs.BUILD_ID }}"
+          push: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+#
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2024 Matter Labs
 #
+
 # This script is used to replace the signature of a gramine docker image with a new one.
-#
 # Usage: ./replace-sig.sh <image> <new-signature-file> <old-signature-file>
 # Example: ./replace-sig.sh tva tee-vault-admin.sig /app/tee-vault-admin.sig
 
