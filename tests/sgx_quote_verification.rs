@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2024 Matter Labs
 
 mod sgx {
     use anyhow::Result;
@@ -23,7 +24,7 @@ mod sgx {
             tcb_level_date_tag,
         } = verify_quote_with_collateral(quote, Some(collateral), current_time).unwrap();
 
-        if collateral_expired || !matches!(result, sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK) {
+        if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
             print!("Attestation failed: ");
 
             if collateral_expired {

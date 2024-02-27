@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use teepot::client::{AttestationArgs, TeeConnection};
 use teepot::json::http::{
     SignRequest, SignRequestData, SignResponse, VaultCommandRequest, VaultCommands,
-    VaultCommandsResponse, ATTESTATION_URL, DIGEST_URL,
+    VaultCommandsResponse, DIGEST_URL,
 };
 use teepot::server::signatures::verify_sig;
 use teepot::sgx::sign::Signature;
@@ -221,7 +221,7 @@ async fn send_commands(args: SendArgs) -> Result<()> {
         signatures,
     };
 
-    let conn = TeeConnection::new(&args.attestation, ATTESTATION_URL).await?;
+    let conn = TeeConnection::new(&args.attestation);
 
     let mut response = conn
         .client()
@@ -299,7 +299,7 @@ async fn send_sig_request(args: SignTeeArgs) -> Result<()> {
         signatures,
     };
 
-    let conn = TeeConnection::new(&args.attestation, ATTESTATION_URL).await?;
+    let conn = TeeConnection::new(&args.attestation);
 
     let mut response = conn
         .client()
@@ -338,7 +338,7 @@ async fn send_sig_request(args: SignTeeArgs) -> Result<()> {
 }
 
 async fn digest(args: DigestArgs) -> Result<()> {
-    let conn = TeeConnection::new(&args.attestation, ATTESTATION_URL).await?;
+    let conn = TeeConnection::new(&args.attestation);
 
     let mut response = conn
         .client()

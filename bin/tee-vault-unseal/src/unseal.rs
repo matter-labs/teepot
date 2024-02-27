@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
-use crate::{
-    create_https_client, get_vault_status, UnsealServerConfig, UnsealServerState, Worker,
-    VAULT_AUTH_TEE_SHA256, VAULT_TOKEN_HEADER,
-};
+use crate::{get_vault_status, UnsealServerConfig, UnsealServerState, Worker, VAULT_TOKEN_HEADER};
 use actix_web::http::StatusCode;
 use actix_web::rt::time::sleep;
 use actix_web::{web, HttpResponse};
@@ -16,6 +13,7 @@ use std::future::Future;
 use std::io::Read;
 use std::time::Duration;
 use teepot::client::vault::VaultConnection;
+use teepot::client::TeeConnection;
 use teepot::json::http::Unseal;
 use teepot::json::secrets::{AdminConfig, AdminState};
 use teepot::server::{HttpResponseError, Status};
@@ -26,7 +24,8 @@ pub async fn post_unseal(
     worker: web::Data<Worker>,
     item: web::Json<Unseal>,
 ) -> Result<HttpResponse, HttpResponseError> {
-    let client = create_https_client(worker.client_tls_config.clone());
+    let conn = TeeConnection::new(&worker.vault_attestation);
+    let client = conn.client();
     let app = &worker.config;
     let vault_url = &app.vault_url;
 
@@ -46,7 +45,7 @@ pub async fn post_unseal(
                 break;
             }
             UnsealServerState::Undefined => {
-                let state = get_vault_status(vault_url, client.clone()).await;
+                let state = get_vault_status(vault_url, client).await;
                 *worker.state.write().unwrap() = state;
                 continue;
             }
@@ -106,15 +105,13 @@ pub async fn post_unseal(
             } => {
                 debug!(root_token);
                 info!("Vault is unsealed");
-                let app = &worker.config;
-                let client = create_https_client(worker.client_tls_config.clone());
 
                 vault_configure_unsealed(
                     app,
                     &admin_config,
                     &root_token,
                     &admin_tee_mrenclave,
-                    &client,
+                    client,
                 )
                 .await
                 .context("Failed to configure unsealed vault")
@@ -204,9 +201,9 @@ pub async fn vault_configure_unsealed(
             )),
             root_token,
             json!({
-                "sha256": VAULT_AUTH_TEE_SHA256,
+                "sha256": app.vault_auth_tee_sha,
                 "command": "vault-auth-tee",
-                "version": "0.1.0+dev"
+                "version": app.vault_auth_tee_version
             }),
         )
         .await
@@ -374,7 +371,7 @@ async fn plugin_is_already_running(
             .and_then(|v| v.as_str())
             .and_then(|v| if v.is_empty() { None } else { Some(v) })
             .and_then(|v| {
-                if v == VAULT_AUTH_TEE_SHA256 {
+                if v == app.vault_auth_tee_sha {
                     Some(v)
                 } else {
                     None

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2024 Matter Labs
 
 //! Server to handle requests to the Vault TEE
 
@@ -45,7 +46,7 @@ async fn main() -> Result<()> {
 
     let args = Arguments::parse();
 
-    let (report_data, _cert_chain, _priv_key) = make_self_signed_cert()?;
+    let (report_data, _cert_chain, _priv_key) = make_self_signed_cert("CN=localhost", None)?;
     if let Err(e) = get_quote_and_collateral(Some(args.my_sgx_allowed_tcb_levels), &report_data) {
         error!("failed to get quote and collateral: {e:?}");
         // don't return for now, we can still serve requests but we won't be able to attest

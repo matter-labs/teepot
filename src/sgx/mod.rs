@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 // Copyright (c) The Enarx Project Developers https://github.com/enarx/sgx
 
@@ -114,7 +114,7 @@ pub struct QuoteVerificationResult<'a> {
     pub quote: &'a Quote,
 }
 
-/// Verifies a quote with collateral material
+/// Verifies a quote with optional collateral material
 pub fn verify_quote_with_collateral<'a>(
     quote: &'a [u8],
     collateral: Option<&Collateral>,

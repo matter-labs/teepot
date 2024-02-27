@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
-use crate::{create_https_client, get_vault_status, UnsealServerState, Worker};
+use crate::{get_vault_status, UnsealServerState, Worker};
 use actix_web::error::ErrorBadRequest;
 use actix_web::{web, HttpResponse};
 use anyhow::{anyhow, Context, Result};
 use awc::http::StatusCode;
 use serde_json::json;
+use teepot::client::TeeConnection;
 use teepot::json::http::{Init, InitResponse, VaultInitRequest};
 use teepot::json::secrets::AdminConfig;
 use teepot::server::{HttpResponseError, Status};
@@ -25,7 +26,8 @@ pub async fn post_init(
         admin_threshold,
         admin_tee_mrenclave,
     } = init.into_inner();
-    let client = create_https_client(worker.client_tls_config.clone());
+    let conn = TeeConnection::new(&worker.vault_attestation);
+    let client = conn.client();
     let vault_url = &worker.config.vault_url;
 
     let vault_init = VaultInitRequest {
@@ -62,7 +64,7 @@ pub async fn post_init(
                 return Err(anyhow!("Vault already initialized")).status(StatusCode::BAD_REQUEST);
             }
             UnsealServerState::Undefined => {
-                let state = get_vault_status(vault_url, client.clone()).await;
+                let state = get_vault_status(vault_url, client).await;
                 *worker.state.write().unwrap() = state;
                 continue;
             }

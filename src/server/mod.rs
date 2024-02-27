@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! # tee-server
 
@@ -78,9 +78,15 @@ impl HttpResponseError {
         S: Stream<Item = Result<Bytes, PayloadError>>,
     {
         let status_code = response.status();
-        error!("Vault returned server error: {}", status_code);
         let body = response.body().await.ok();
         let content_type = response.content_type().to_string();
+
+        error!(
+            "Vault returned server error: {status_code} {}",
+            body.as_ref()
+                .map_or("", |b| std::str::from_utf8(b).unwrap_or(""))
+        );
+
         Self::Proxy(ProxyResponseError {
             status_code,
             body,

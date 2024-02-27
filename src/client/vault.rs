@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Helper functions for CLI clients to verify Intel SGX enclaves and other TEEs.
 
@@ -22,11 +22,10 @@ use awc::error::{SendRequestError, StatusCode};
 use awc::{Client, ClientResponse, Connector};
 use bytes::Bytes;
 use futures_core::Stream;
-use getrandom::getrandom;
 use rustls::ClientConfig;
 use serde_json::{json, Value};
 use std::fmt::{Display, Formatter};
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use std::time;
 use tracing::{debug, error, info, trace};
 
@@ -85,15 +84,14 @@ impl VaultConnection {
     /// This will verify the attestation report and check that the enclave
     /// is running the expected code.
     pub async fn new(args: &AttestationArgs, name: String) -> Result<Self> {
-        let pk_hash = Arc::new(OnceLock::new());
-
-        let (key_hash, rustls_certificate, rustls_pk) = make_self_signed_cert()?;
+        let (key_hash, rustls_certificate, rustls_pk) =
+            make_self_signed_cert("CN=localhost", None)?;
 
         let tls_config = Arc::new(
             ClientConfig::builder()
                 .dangerous()
                 .with_custom_certificate_verifier(Arc::new(TeeConnection::make_verifier(
-                    pk_hash.clone(),
+                    args.clone(),
                 )))
                 .with_client_auth_cert(vec![rustls_certificate], rustls_pk)?,
         );
@@ -114,7 +112,7 @@ impl VaultConnection {
             client_token: Default::default(),
         };
 
-        this.client_token = this.auth(args).await?.auth.client_token;
+        this.client_token = this.auth().await?.auth.client_token;
 
         trace!("Got Token: {:#?}", &this.client_token);
 
@@ -147,24 +145,18 @@ impl VaultConnection {
         self.conn.client()
     }
 
-    async fn auth(&self, args: &AttestationArgs) -> Result<AuthResponse> {
+    async fn auth(&self) -> Result<AuthResponse> {
         info!("Getting attestation report");
         let attestation_url = AuthRequest::URL;
         let quote = sgx_gramine_get_quote(&self.key_hash).context("Failed to get own quote")?;
         let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
-
-        let mut challenge_bytes = [0u8; 32];
-        getrandom(&mut challenge_bytes)?;
-        let challenge = hex::encode(challenge_bytes);
-        info!("Challenging Vault with: {}", challenge);
-        let challenge = Some(challenge_bytes);
 
         let auth_req = AuthRequest {
             name: self.name.clone(),
             tee_type: "sgx".to_string(),
             quote,
             collateral: serde_json::to_string(&collateral)?,
-            challenge,
+            challenge: None,
         };
 
         let mut response = self
@@ -196,26 +188,6 @@ impl VaultConnection {
             serde_json::from_value(auth_response).context("Failed to parse AuthResponse")?;
 
         trace!("Got AuthResponse: {:#?}", &auth_response);
-
-        let current_time: i64 = time::SystemTime::now()
-            .duration_since(time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as _;
-
-        info!("Verifying attestation report");
-
-        let collateral: Option<Collateral> =
-            serde_json::from_str(&auth_response.data.collateral).ok();
-        let collateral = collateral.as_ref();
-
-        TeeConnection::check_attestation_args(
-            args,
-            current_time,
-            &auth_response.data.quote,
-            collateral,
-            &challenge_bytes,
-        )
-        .context("Failed to verify Vault attestation report")?;
 
         Ok(auth_response)
     }
@@ -306,7 +278,10 @@ impl VaultConnection {
         }
 
         // check if rel_path is alphanumeric
-        if !rel_path.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        if !rel_path
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '/')
+        {
             return Err(anyhow!("path is not alphanumeric")).status(StatusCode::BAD_REQUEST);
         }
 
