@@ -8,26 +8,27 @@
 
 pub mod vault;
 
-use crate::json::http::AttestationResponse;
-use crate::sgx::Collateral;
+use crate::server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension};
+use crate::sgx::Quote;
 pub use crate::sgx::{
     parse_tcb_levels, sgx_ql_qv_result_t, verify_quote_with_collateral, EnumSet,
     QuoteVerificationResult, TcbLevel,
 };
 use actix_web::http::header;
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::Result;
 use awc::{Client, Connector};
 use clap::Args;
+use const_oid::AssociatedOid;
+use intel_tee_quote_verification_rs::Collateral;
 use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerifier};
 use rustls::client::WebPkiServerVerifier;
 use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
 use rustls::{ClientConfig, DigitallySignedStruct, Error, SignatureScheme};
-use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use std::time;
 use std::time::Duration;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, trace, warn};
 use x509_cert::der::{Decode as _, Encode as _};
 use x509_cert::Certificate;
 
@@ -61,13 +62,11 @@ impl TeeConnection {
     ///
     /// This will verify the attestation report and check that the enclave
     /// is running the expected code.
-    pub async fn new(args: &AttestationArgs, attestation_url: &str) -> Result<Self> {
-        let pk_hash = Arc::new(OnceLock::new());
-
+    pub fn new(args: &AttestationArgs) -> Self {
         let tls_config = Arc::new(
             ClientConfig::builder()
                 .dangerous()
-                .with_custom_certificate_verifier(Arc::new(Self::make_verifier(pk_hash.clone())))
+                .with_custom_certificate_verifier(Arc::new(Self::make_verifier(args.clone())))
                 .with_no_client_auth(),
         );
 
@@ -78,15 +77,10 @@ impl TeeConnection {
             .timeout(Duration::from_secs(12000))
             .finish();
 
-        let this = Self {
+        Self {
             server: args.server.clone(),
             client: agent,
-        };
-
-        this.check_attestation(args, attestation_url, pk_hash)
-            .await?;
-
-        Ok(this)
+        }
     }
 
     /// Create a new connection to a TEE
@@ -110,131 +104,12 @@ impl TeeConnection {
         &self.server
     }
 
-    async fn check_attestation(
-        &self,
-        args: &AttestationArgs,
-        attestation_url: &str,
-        pk_hash: Arc<OnceLock<[u8; 32]>>,
-    ) -> Result<()> {
-        info!("Getting attestation report");
-
-        let mut response = self
-            .client
-            .get(&format!("{}{attestation_url}", args.server))
-            .send()
-            .await
-            .map_err(|e| anyhow!("Error sending attestation request: {}", e))?;
-
-        let status_code = response.status();
-        if !status_code.is_success() {
-            error!("Failed to get attestation: {}", status_code);
-            if let Ok(r) = response.json::<Value>().await {
-                eprintln!("Failed to get attestation: {}", r);
-            }
-            bail!("failed to get attestation: {}", status_code);
-        }
-
-        let attestation: AttestationResponse =
-            response.json().await.context("failed to get attestation")?;
-
-        let current_time: i64 = time::SystemTime::now()
-            .duration_since(time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as _;
-
-        info!("Verifying attestation report");
-
-        let quote: &[u8] = &attestation.quote;
-        let collateral: Option<&Collateral> = Some(&attestation.collateral);
-        let pk_hash = pk_hash.get().unwrap();
-
-        Self::check_attestation_args(args, current_time, quote, collateral, pk_hash)?;
-
-        Ok(())
-    }
-
-    /// Check the attestation report against `AttestationArgs`
-    pub fn check_attestation_args(
-        args: &AttestationArgs,
-        current_time: i64,
-        quote: &[u8],
-        collateral: Option<&Collateral>,
-        pk_hash: &[u8; 32],
-    ) -> Result<()> {
-        let QuoteVerificationResult {
-            collateral_expired,
-            result,
-            quote,
-            advisories,
-            ..
-        } = verify_quote_with_collateral(quote, collateral, current_time).unwrap();
-
-        if collateral_expired || !matches!(result, sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK) {
-            if collateral_expired {
-                error!("Collateral is out of date!");
-                bail!("Collateral is out of date!");
-            }
-
-            let tcblevel = TcbLevel::from(result);
-            if args
-                .sgx_allowed_tcb_levels
-                .map_or(true, |levels| !levels.contains(tcblevel))
-            {
-                error!("Quote verification result: {}", tcblevel);
-                bail!("Quote verification result: {}", tcblevel);
-            }
-
-            info!("TcbLevel is allowed: {}", tcblevel);
-        }
-
-        for advisory in advisories {
-            warn!("Info: Advisory ID: {advisory}");
-        }
-
-        if &quote.report_body.reportdata[..32] != pk_hash {
-            error!("Report data mismatch");
-            bail!("Report data mismatch");
-        } else {
-            info!(
-                "Report data matches `{}`",
-                hex::encode(&quote.report_body.reportdata[..32])
-            );
-        }
-
-        if let Some(mrsigner) = &args.sgx_mrsigner {
-            let mrsigner_bytes = hex::decode(mrsigner).context("Failed to decode mrsigner")?;
-            if quote.report_body.mrsigner[..] != mrsigner_bytes {
-                bail!(
-                    "mrsigner mismatch: got {}, expected {}",
-                    hex::encode(quote.report_body.mrsigner),
-                    &mrsigner
-                );
-            } else {
-                info!("mrsigner `{mrsigner}` matches");
-            }
-        }
-
-        if let Some(mrenclave) = &args.sgx_mrenclave {
-            let mrenclave_bytes = hex::decode(mrenclave).context("Failed to decode mrenclave")?;
-            if quote.report_body.mrenclave[..] != mrenclave_bytes {
-                bail!(
-                    "mrenclave mismatch: got {}, expected {}",
-                    hex::encode(quote.report_body.mrenclave),
-                    &mrenclave
-                );
-            } else {
-                info!("mrenclave `{mrenclave}` matches");
-            }
-        }
-        Ok(())
-    }
-
     /// Save the hash of the public server key to `REPORT_DATA` to check
     /// the attestations against it and it does not change on reconnect.
-    pub fn make_verifier(pk_hash: Arc<OnceLock<[u8; 32]>>) -> impl ServerCertVerifier {
+    pub fn make_verifier(args: AttestationArgs) -> impl ServerCertVerifier {
         #[derive(Debug)]
         struct V {
-            pk_hash: Arc<OnceLock<[u8; 32]>>,
+            args: AttestationArgs,
             server_verifier: Arc<WebPkiServerVerifier>,
         }
         impl ServerCertVerifier for V {
@@ -255,20 +130,133 @@ impl TeeConnection {
                     .unwrap();
 
                 let hash = Sha256::digest(pub_key);
-                let data = self.pk_hash.get_or_init(|| hash[..32].try_into().unwrap());
 
-                if data == &hash[..32] {
-                    info!(
-                        "Checked or set server certificate public key hash `{}`",
-                        hex::encode(&hash[..32])
-                    );
-                    Ok(rustls::client::danger::ServerCertVerified::assertion())
-                } else {
-                    error!("Server certificate does not match expected certificate");
-                    Err(rustls::Error::General(
-                        "Server certificate does not match expected certificate".to_string(),
-                    ))
+                let exts = cert
+                    .tbs_certificate
+                    .extensions
+                    .ok_or_else(|| Error::General("Failed get quote in certificate".into()))?;
+
+                trace!("Get quote bytes!");
+
+                let quote_bytes = exts
+                    .iter()
+                    .find(|ext| ext.extn_id == RaTlsQuoteExtension::OID)
+                    .ok_or_else(|| Error::General("Failed get quote in certificate".into()))?
+                    .extn_value
+                    .as_bytes();
+
+                trace!("Get collateral bytes!");
+
+                let collateral = exts
+                    .iter()
+                    .find(|ext| ext.extn_id == RaTlsCollateralExtension::OID)
+                    .and_then(|ext| {
+                        serde_json::from_slice::<Collateral>(ext.extn_value.as_bytes())
+                            .map_err(|e| {
+                                debug!("Failed to get collateral in certificate {e:?}");
+                                trace!(
+                                    "Failed to get collateral in certificate {:?}",
+                                    String::from_utf8_lossy(ext.extn_value.as_bytes())
+                                );
+                            })
+                            .ok()
+                    });
+
+                if collateral.is_none() {
+                    debug!("Failed to get collateral in certificate");
                 }
+
+                let quote = Quote::try_from_bytes(quote_bytes).map_err(|e| {
+                    Error::General(format!("Failed get quote in certificate {e:?}"))
+                })?;
+
+                if &quote.report_body.reportdata[..32] != hash.as_slice() {
+                    error!("Report data mismatch");
+                    return Err(Error::General("Report data mismatch".to_string()));
+                } else {
+                    info!(
+                        "Report data matches `{}`",
+                        hex::encode(&quote.report_body.reportdata[..32])
+                    );
+                }
+
+                let current_time: i64 = time::SystemTime::now()
+                    .duration_since(time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs() as _;
+
+                let QuoteVerificationResult {
+                    collateral_expired,
+                    result,
+                    quote,
+                    advisories,
+                    earliest_expiration_date,
+                    ..
+                } = verify_quote_with_collateral(quote_bytes, collateral.as_ref(), current_time)
+                    .unwrap();
+
+                if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
+                    if collateral_expired {
+                        error!(
+                            "Collateral is out of date! Expired {}",
+                            earliest_expiration_date
+                        );
+                        return Err(Error::General(format!(
+                            "Collateral is out of date! Expired {}",
+                            earliest_expiration_date
+                        )));
+                    }
+
+                    let tcblevel = TcbLevel::from(result);
+                    if self
+                        .args
+                        .sgx_allowed_tcb_levels
+                        .map_or(true, |levels| !levels.contains(tcblevel))
+                    {
+                        error!("Quote verification result: {}", tcblevel);
+                        return Err(Error::General(format!(
+                            "Quote verification result: {}",
+                            tcblevel
+                        )));
+                    }
+
+                    info!("TcbLevel is allowed: {}", tcblevel);
+                }
+
+                for advisory in advisories {
+                    warn!("Info: Advisory ID: {advisory}");
+                }
+
+                if let Some(mrsigner) = &self.args.sgx_mrsigner {
+                    let mrsigner_bytes = hex::decode(mrsigner)
+                        .map_err(|e| Error::General(format!("Failed to decode mrsigner: {}", e)))?;
+                    if quote.report_body.mrsigner[..] != mrsigner_bytes {
+                        return Err(Error::General(format!(
+                            "mrsigner mismatch: got {}, expected {}",
+                            hex::encode(quote.report_body.mrsigner),
+                            &mrsigner
+                        )));
+                    } else {
+                        info!("mrsigner `{mrsigner}` matches");
+                    }
+                }
+
+                if let Some(mrenclave) = &self.args.sgx_mrenclave {
+                    let mrenclave_bytes = hex::decode(mrenclave).map_err(|e| {
+                        Error::General(format!("Failed to decode mrenclave: {}", e))
+                    })?;
+                    if quote.report_body.mrenclave[..] != mrenclave_bytes {
+                        return Err(Error::General(format!(
+                            "mrenclave mismatch: got {}, expected {}",
+                            hex::encode(quote.report_body.mrenclave),
+                            &mrenclave
+                        )));
+                    } else {
+                        info!("mrenclave `{mrenclave}` matches");
+                    }
+                }
+
+                Ok(rustls::client::danger::ServerCertVerified::assertion())
             }
 
             fn verify_tls12_signature(
@@ -295,10 +283,14 @@ impl TeeConnection {
                 self.server_verifier.supported_verify_schemes()
             }
         }
-        let root_store = Arc::new(rustls::RootCertStore::empty());
-        let server_verifier = WebPkiServerVerifier::builder(root_store).build().unwrap();
+        let mut root_store = rustls::RootCertStore::empty();
+        root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+        let server_verifier = WebPkiServerVerifier::builder(Arc::new(root_store))
+            .build()
+            .unwrap();
+
         V {
-            pk_hash,
+            args,
             server_verifier,
         }
     }

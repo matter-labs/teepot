@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Common types for the teepot http JSON API
 
@@ -22,9 +22,6 @@ impl Unseal {
     /// The unseal URL
     pub const URL: &'static str = "/v1/sys/unseal";
 }
-
-/// The attestation URL
-pub const ATTESTATION_URL: &str = "/v1/sys/attestation";
 
 /// The attestation response
 #[derive(Debug, Serialize, Deserialize)]

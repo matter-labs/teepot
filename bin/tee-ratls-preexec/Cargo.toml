@@ -1,0 +1,21 @@
+[package]
+name = "tee-ratls-preexec"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+rsa.workspace = true
+rustls-pemfile.workspace = true
+rustls.workspace = true
+teepot.workspace = true
+tracing-log.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true
+x509-cert.workspace = true

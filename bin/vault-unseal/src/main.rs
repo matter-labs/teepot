@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
@@ -8,7 +8,7 @@ use serde_json::Value;
 use std::fs::File;
 use std::io::Read;
 use teepot::client::{AttestationArgs, TeeConnection};
-use teepot::json::http::{Init, InitResponse, Unseal, ATTESTATION_URL};
+use teepot::json::http::{Init, InitResponse, Unseal};
 use tracing::{error, info, trace, warn};
 use tracing_log::LogTracer;
 use tracing_subscriber::Registry;
@@ -70,7 +70,7 @@ async fn main() -> Result<()> {
 }
 
 async fn init(args: Arguments) -> Result<()> {
-    let conn = TeeConnection::new(&args.attestation, ATTESTATION_URL).await?;
+    let conn = TeeConnection::new(&args.attestation);
 
     info!("Quote verified! Connection secure!");
 
@@ -177,7 +177,7 @@ async fn unseal(args: Arguments) -> Result<()> {
         bail!("Error reading key from stdin");
     }
 
-    let conn = TeeConnection::new(&args.attestation, ATTESTATION_URL).await?;
+    let conn = TeeConnection::new(&args.attestation);
 
     info!("Quote verified! Connection secure!");
 

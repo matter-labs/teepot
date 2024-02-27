@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Server to handle requests to the Vault TEE
 
 #![deny(missing_docs)]
 #![deny(clippy::all)]
-
-mod attestation;
 mod command;
 mod digest;
 mod sign;
@@ -14,7 +12,6 @@ mod sign;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
-use attestation::get_attestation;
 use clap::Parser;
 use command::post_command;
 use digest::get_digest;
@@ -22,7 +19,7 @@ use rustls::ServerConfig;
 use sign::post_sign;
 use std::net::Ipv6Addr;
 use std::sync::Arc;
-use teepot::json::http::{SignRequest, VaultCommandRequest, ATTESTATION_URL, DIGEST_URL};
+use teepot::json::http::{SignRequest, VaultCommandRequest, DIGEST_URL};
 use teepot::server::attestation::{get_quote_and_collateral, VaultAttestationArgs};
 use teepot::server::new_json_cfg;
 use teepot::server::pki::make_self_signed_cert;
@@ -65,7 +62,7 @@ async fn main() -> Result<()> {
 
     let args = Arguments::parse();
 
-    let (report_data, cert_chain, priv_key) = make_self_signed_cert()?;
+    let (report_data, cert_chain, priv_key) = make_self_signed_cert("CN=localhost", None)?;
 
     if let Err(e) = get_quote_and_collateral(Some(args.server_sgx_allowed_tcb_levels), &report_data)
     {
@@ -94,7 +91,6 @@ async fn main() -> Result<()> {
             .wrap(TracingLogger::default())
             .app_data(new_json_cfg())
             .app_data(Data::new(server_state.clone()))
-            .service(web::resource(ATTESTATION_URL).route(web::get().to(get_attestation)))
             .service(web::resource(VaultCommandRequest::URL).route(web::post().to(post_command)))
             .service(web::resource(SignRequest::URL).route(web::post().to(post_sign)))
             .service(web::resource(DIGEST_URL).route(web::get().to(get_digest)))

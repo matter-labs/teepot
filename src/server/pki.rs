@@ -1,215 +1,283 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2023-2024 Matter Labs
 
-//! Some cryptographic utilities
+//! Create a private key and a signed and self-signed certificates
 
+use crate::quote::get_quote;
+use crate::sgx::tee_qv_get_collateral;
 pub use crate::sgx::{
     parse_tcb_levels, sgx_ql_qv_result_t, verify_quote_with_collateral, EnumSet,
     QuoteVerificationResult, TcbLevel,
 };
-use anyhow::{anyhow, Context, Result};
-use const_oid::db::rfc5280::{
-    ID_CE_BASIC_CONSTRAINTS, ID_CE_EXT_KEY_USAGE, ID_CE_KEY_USAGE, ID_KP_CLIENT_AUTH,
-    ID_KP_SERVER_AUTH,
-};
-use const_oid::db::rfc5912::SECP_256_R_1;
+use anyhow::{Context, Result};
+use const_oid::db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH};
+use const_oid::AssociatedOid;
 use getrandom::getrandom;
-use pkcs8::der::asn1::OctetString;
-use pkcs8::der::referenced::OwnedToRef;
-use pkcs8::der::referenced::RefToOwned;
-use pkcs8::{
-    AlgorithmIdentifierRef, ObjectIdentifier, PrivateKeyInfo, SubjectPublicKeyInfo,
-    SubjectPublicKeyInfoRef,
-};
+use p256::ecdsa::DerSignature;
+use p256::pkcs8::EncodePrivateKey;
+use pkcs8::der;
 use rustls::pki_types::PrivatePkcs8KeyDer;
-use sec1::EcPrivateKey;
 use sha2::{Digest, Sha256};
+use signature::Signer;
 use std::str::FromStr;
 use std::time::Duration;
-use x509_cert::der::asn1::BitString;
-use x509_cert::der::{Decode as _, Encode as _};
-use x509_cert::ext::pkix::{BasicConstraints, ExtendedKeyUsage, KeyUsage, KeyUsages};
-use x509_cert::name::RdnSequence;
+use tracing::debug;
+use x509_cert::builder::{Builder, CertificateBuilder, Profile};
+use x509_cert::der::pem::LineEnding;
+use x509_cert::der::{asn1::OctetString, Encode as _, EncodePem as _, Length};
+use x509_cert::ext::pkix::name::GeneralNames;
+use x509_cert::ext::pkix::{ExtendedKeyUsage, SubjectAltName};
+use x509_cert::ext::{AsExtension, Extension};
+use x509_cert::name::{Name, RdnSequence};
 use x509_cert::serial_number::SerialNumber;
+use x509_cert::spki::{
+    DynSignatureAlgorithmIdentifier, EncodePublicKey, ObjectIdentifier, SignatureBitStringEncoding,
+    SubjectPublicKeyInfoOwned,
+};
 use x509_cert::time::Validity;
-use x509_cert::{Certificate, TbsCertificate};
+use x509_cert::Certificate;
 use zeroize::Zeroizing;
 
-use const_oid::db::rfc5912::{
-    ECDSA_WITH_SHA_256, ECDSA_WITH_SHA_384, ID_EC_PUBLIC_KEY as ECPK, SECP_256_R_1 as P256,
-    SECP_384_R_1 as P384,
-};
-use pkcs8::der::asn1::BitStringRef;
+/// The OID for the `gramine-ra-tls` quote extension
+pub const ID_GRAMINE_RA_TLS_QUOTE: ObjectIdentifier =
+    ObjectIdentifier::new_unwrap("1.2.840.113741.1337.6");
 
-const ES256: AlgorithmIdentifierRef<'static> = AlgorithmIdentifierRef {
-    oid: ECDSA_WITH_SHA_256,
-    parameters: None,
-};
+/// The OID for the `enarx-ra-tls` collateral extension
+/// TODO: this OID is just made up in `enarx` OID namespace, reserve it somehow
+pub const ID_GRAMINE_RA_TLS_COLLATERAL: ObjectIdentifier =
+    ObjectIdentifier::new_unwrap("1.3.6.1.4.1.58270.1.99");
 
-const ES384: AlgorithmIdentifierRef<'static> = AlgorithmIdentifierRef {
-    oid: ECDSA_WITH_SHA_384,
-    parameters: None,
-};
-
-/// Utility trait for signing with a private key
-pub trait PrivateKeyInfoExt {
-    /// Generates a keypair
-    ///
-    /// Returns the DER encoding of the `PrivateKeyInfo` type.
-    fn generate(oid: ObjectIdentifier) -> Result<Zeroizing<Vec<u8>>>;
-
-    /// Get the public key
-    ///
-    /// This function creates a `SubjectPublicKeyInfo` which corresponds with
-    /// this private key. Note that this function does not do any cryptographic
-    /// calculations. It expects that the `PrivateKeyInfo` already contains the
-    /// public key.
-    fn public_key(&self) -> Result<SubjectPublicKeyInfoRef<'_>>;
-
-    /// Get the default signing algorithm for this `SubjectPublicKeyInfo`
-    fn signs_with(&self) -> Result<AlgorithmIdentifierRef<'_>>;
-
-    /// Signs the body with the specified algorithm
-    ///
-    /// Note that the signature is returned in its encoded form as it will
-    /// appear in an X.509 certificate or PKCS#10 certification request.
-    fn sign(&self, body: &[u8], algo: AlgorithmIdentifierRef<'_>) -> Result<Vec<u8>>;
+/// The `gramine-ra-tls` x509 extension
+pub struct RaTlsQuoteExtension {
+    /// The hash of the certificate's public key
+    pub quote: Vec<u8>,
 }
 
-impl<'a> PrivateKeyInfoExt for PrivateKeyInfo<'a> {
-    fn generate(oid: ObjectIdentifier) -> Result<Zeroizing<Vec<u8>>> {
-        let rand = ring::rand::SystemRandom::new();
+impl AssociatedOid for RaTlsQuoteExtension {
+    const OID: ObjectIdentifier = ID_GRAMINE_RA_TLS_QUOTE;
+}
 
-        let doc = match oid {
-            P256 => {
-                use ring::signature::{EcdsaKeyPair, ECDSA_P256_SHA256_ASN1_SIGNING as ALG};
-                EcdsaKeyPair::generate_pkcs8(&ALG, &rand)?
-            }
-
-            P384 => {
-                use ring::signature::{EcdsaKeyPair, ECDSA_P384_SHA384_ASN1_SIGNING as ALG};
-                EcdsaKeyPair::generate_pkcs8(&ALG, &rand)?
-            }
-
-            _ => return Err(anyhow!("unsupported")),
-        };
-
-        Ok(doc.as_ref().to_vec().into())
+impl x509_cert::der::Encode for RaTlsQuoteExtension {
+    fn encoded_len(&self) -> pkcs8::der::Result<Length> {
+        unimplemented!()
     }
 
-    fn public_key(&self) -> Result<SubjectPublicKeyInfoRef<'_>> {
-        match self.algorithm.oids()? {
-            (ECPK, ..) => {
-                let ec = EcPrivateKey::from_der(self.private_key)?;
-                let pk = ec.public_key.ok_or_else(|| anyhow!("missing public key"))?;
-                Ok(SubjectPublicKeyInfo {
-                    algorithm: self.algorithm,
-                    subject_public_key: BitStringRef::new(0, pk)?,
-                })
-            }
-            _ => Err(anyhow!("unsupported")),
-        }
+    fn encode(
+        &self,
+        _writer: &mut impl x509_cert::der::Writer,
+    ) -> Result<(), x509_cert::der::Error> {
+        unimplemented!()
+    }
+}
+
+impl AsExtension for RaTlsQuoteExtension {
+    fn critical(&self, _: &x509_cert::name::Name, _: &[x509_cert::ext::Extension]) -> bool {
+        false
+    }
+    fn to_extension(
+        &self,
+        _subject: &Name,
+        _extensions: &[Extension],
+    ) -> std::result::Result<Extension, der::Error> {
+        Ok(Extension {
+            extn_id: <Self as AssociatedOid>::OID,
+            critical: false,
+            extn_value: OctetString::new(self.quote.as_slice())?,
+        })
+    }
+}
+
+/// The `gramine-ra-tls` x509 extension
+pub struct RaTlsCollateralExtension {
+    /// The hash of the certificate's public key
+    pub collateral: Vec<u8>,
+}
+
+impl AssociatedOid for RaTlsCollateralExtension {
+    const OID: ObjectIdentifier = ID_GRAMINE_RA_TLS_COLLATERAL;
+}
+
+impl x509_cert::der::Encode for RaTlsCollateralExtension {
+    fn encoded_len(&self) -> pkcs8::der::Result<Length> {
+        unimplemented!()
     }
 
-    fn signs_with(&self) -> Result<AlgorithmIdentifierRef<'_>> {
-        match self.algorithm.oids()? {
-            (ECPK, Some(P256)) => Ok(ES256),
-            (ECPK, Some(P384)) => Ok(ES384),
-            _ => Err(anyhow!("unsupported")),
-        }
+    fn encode(
+        &self,
+        _writer: &mut impl x509_cert::der::Writer,
+    ) -> Result<(), x509_cert::der::Error> {
+        unimplemented!()
     }
+}
 
-    fn sign(&self, body: &[u8], algo: AlgorithmIdentifierRef<'_>) -> Result<Vec<u8>> {
-        let rng = ring::rand::SystemRandom::new();
-        match (self.algorithm.oids()?, algo) {
-            ((ECPK, Some(P256)), ES256) => {
-                use ring::signature::{EcdsaKeyPair, ECDSA_P256_SHA256_ASN1_SIGNING as ALG};
-                let kp = EcdsaKeyPair::from_pkcs8(&ALG, &self.to_der()?, &rng)?;
-                Ok(kp.sign(&rng, body)?.as_ref().to_vec())
-            }
-
-            ((ECPK, Some(P384)), ES384) => {
-                use ring::signature::{EcdsaKeyPair, ECDSA_P384_SHA384_ASN1_SIGNING as ALG};
-                let kp = EcdsaKeyPair::from_pkcs8(&ALG, &self.to_der()?, &rng)?;
-                Ok(kp.sign(&rng, body)?.as_ref().to_vec())
-            }
-
-            _ => Err(anyhow!("unsupported")),
-        }
+impl AsExtension for RaTlsCollateralExtension {
+    fn critical(&self, _: &x509_cert::name::Name, _: &[x509_cert::ext::Extension]) -> bool {
+        false
+    }
+    fn to_extension(
+        &self,
+        _subject: &Name,
+        _extensions: &[Extension],
+    ) -> std::result::Result<Extension, der::Error> {
+        Ok(Extension {
+            extn_id: <Self as AssociatedOid>::OID,
+            critical: false,
+            extn_value: OctetString::new(self.collateral.as_slice())?,
+        })
     }
 }
 
 /// Create a private key and a self-signed certificate
-pub fn make_self_signed_cert() -> Result<(
+pub fn make_self_signed_cert(
+    dn: &str,
+    an: Option<GeneralNames>,
+) -> Result<(
     [u8; 64],
     rustls::pki_types::CertificateDer<'static>,
     rustls::pki_types::PrivateKeyDer<'static>,
 )> {
     // Generate a keypair.
-    let raw = PrivateKeyInfo::generate(SECP_256_R_1).context("failed to generate a private key")?;
-    let pki = PrivateKeyInfo::from_der(raw.as_ref())
-        .context("failed to parse DER-encoded private key")?;
-    let der = pki.public_key().unwrap().to_der().unwrap();
+    let mut rng = rand::thread_rng();
+    let signing_key = p256::ecdsa::SigningKey::random(&mut rng);
+    let verifying_key = signing_key.verifying_key();
+    let verifying_key_der = verifying_key
+        .to_public_key_der()
+        .context("failed to create public key der")?;
 
     let mut key_hash = [0u8; 64];
-    let hash = Sha256::digest(der);
+    let hash = Sha256::digest(verifying_key_der.as_bytes());
     key_hash[..32].copy_from_slice(&hash);
 
+    let quote = get_quote(&key_hash)?;
+    debug!("quote.len: {:?}", quote.len());
     // Create a relative distinguished name.
-    let rdns = RdnSequence::from_str("CN=localhost")?;
-
-    // Create the extensions.
-    let ku = KeyUsage(KeyUsages::DigitalSignature | KeyUsages::KeyEncipherment).to_der()?;
-    let eu = ExtendedKeyUsage(vec![ID_KP_SERVER_AUTH, ID_KP_CLIENT_AUTH]).to_der()?;
-    let bc = BasicConstraints {
-        ca: false,
-        path_len_constraint: None,
-    }
-    .to_der()?;
+    let rdns = RdnSequence::from_str(dn)?;
+    let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
 
     let mut serial = [0u8; 16];
     getrandom(&mut serial)?;
 
-    // Create the certificate body.
-    let tbs = TbsCertificate {
-        version: x509_cert::Version::V3,
-        serial_number: SerialNumber::new(&serial)?,
-        signature: pki.signs_with()?.ref_to_owned(),
-        issuer: rdns.clone(),
-        validity: Validity::from_now(Duration::from_secs(60 * 60 * 24 * 365))?,
-        subject: rdns,
-        subject_public_key_info: pki.public_key()?.ref_to_owned(),
-        issuer_unique_id: None,
-        subject_unique_id: None,
-        extensions: Some(vec![
-            x509_cert::ext::Extension {
-                extn_id: ID_CE_KEY_USAGE,
-                critical: true,
-                extn_value: OctetString::new(ku)?,
-            },
-            x509_cert::ext::Extension {
-                extn_id: ID_CE_BASIC_CONSTRAINTS,
-                critical: true,
-                extn_value: OctetString::new(bc)?,
-            },
-            x509_cert::ext::Extension {
-                extn_id: ID_CE_EXT_KEY_USAGE,
-                critical: false,
-                extn_value: OctetString::new(eu)?,
-            },
-        ]),
-    };
+    let mut builder = CertificateBuilder::new(
+        Profile::Leaf {
+            issuer: rdns.clone(),
+            enable_key_agreement: true,
+            enable_key_encipherment: true,
+        },
+        SerialNumber::new(&serial)?,
+        Validity::from_now(Duration::from_secs(60 * 60 * 24 * 365 * 10))?,
+        rdns,
+        SubjectPublicKeyInfoOwned::try_from(verifying_key_der.as_bytes())
+            .context("failed to create SubjectPublicKeyInfo")?,
+        &signing_key,
+    )
+    .context("failed to create CertificateBuilder")?;
 
-    // Self-sign the certificate.
-    let alg = tbs.signature.clone();
-    let sig = pki.sign(&tbs.to_der()?, alg.owned_to_ref())?;
-    let crt = Certificate {
-        tbs_certificate: tbs,
-        signature_algorithm: alg,
-        signature: BitString::from_bytes(&sig)?,
-    };
+    builder
+        .add_extension(&ExtendedKeyUsage(vec![
+            ID_KP_SERVER_AUTH,
+            ID_KP_CLIENT_AUTH,
+        ]))
+        .context("failed to add ExtendedKeyUsage")?;
 
+    if let Some(an) = an {
+        builder
+            .add_extension(&SubjectAltName(an))
+            .context("failed to add SubjectAltName")?;
+    }
+
+    builder
+        .add_extension(&RaTlsQuoteExtension {
+            quote: quote.to_vec(),
+        })
+        .context("failed to add GRAMINE_RA_TLS")?;
+
+    builder
+        .add_extension(&RaTlsCollateralExtension {
+            collateral: serde_json::to_vec(&collateral).context("failed to add GRAMINE_RA_TLS")?,
+        })
+        .context("failed to add GRAMINE_RA_TLS")?;
+
+    let crt = builder.build::<DerSignature>().unwrap();
     let rustls_certificate = rustls::pki_types::CertificateDer::from(crt.to_der()?);
-    let rustls_pk = rustls::pki_types::PrivateKeyDer::from(PrivatePkcs8KeyDer::from(pki.to_der()?));
+    let signing_key_der = signing_key
+        .to_pkcs8_der()
+        .context("failed to encode PKCS#8")?;
+
+    let rustls_pk = rustls::pki_types::PrivateKeyDer::from(PrivatePkcs8KeyDer::from(
+        signing_key_der.as_bytes(),
+    ))
+    .clone_key();
     Ok((key_hash, rustls_certificate, rustls_pk))
+}
+
+/// Create a private key and a self-signed certificate
+pub fn make_signed_cert<S, Signature>(
+    dn: &str,
+    an: Option<GeneralNames>,
+    issuer_cert: &Certificate,
+    issuer_key: &S,
+) -> Result<([u8; 64], String, Zeroizing<String>)>
+where
+    Signature: SignatureBitStringEncoding,
+    S: signature::Keypair + DynSignatureAlgorithmIdentifier + Signer<Signature>,
+    S::VerifyingKey: EncodePublicKey,
+{
+    // Generate a keypair.
+    let mut rng = rand::thread_rng();
+    let signing_key = p256::ecdsa::SigningKey::random(&mut rng);
+    let verifying_key = signing_key.verifying_key();
+    let verifying_key_der = verifying_key
+        .to_public_key_der()
+        .context("failed to create public key der")?;
+
+    let mut key_hash = [0u8; 64];
+    let hash = Sha256::digest(verifying_key_der.as_bytes());
+    key_hash[..32].copy_from_slice(&hash);
+
+    let quote = get_quote(&key_hash).context("Failed to get own quote")?;
+
+    // Create a relative distinguished name.
+    let subject = Name::from_str(dn)?;
+
+    let mut serial = [0u8; 16];
+    getrandom(&mut serial)?;
+
+    let mut builder = CertificateBuilder::new(
+        Profile::Leaf {
+            issuer: issuer_cert.tbs_certificate.subject.clone(),
+            enable_key_agreement: true,
+            enable_key_encipherment: true,
+        },
+        SerialNumber::new(&serial)?,
+        Validity::from_now(Duration::from_secs(60 * 60 * 24 * 365 * 10))?,
+        subject,
+        SubjectPublicKeyInfoOwned::try_from(verifying_key_der.as_bytes())
+            .context("failed to create SubjectPublicKeyInfo")?,
+        issuer_key,
+    )
+    .context("failed to create CertificateBuilder")?;
+    builder
+        .add_extension(&ExtendedKeyUsage(vec![
+            ID_KP_SERVER_AUTH,
+            ID_KP_CLIENT_AUTH,
+        ]))
+        .context("failed to add ExtendedKeyUsage")?;
+
+    if let Some(an) = an {
+        builder
+            .add_extension(&SubjectAltName(an))
+            .context("failed to add SubjectAltName")?;
+    }
+
+    builder
+        .add_extension(&RaTlsQuoteExtension {
+            quote: quote.to_vec(),
+        })
+        .context("failed to add GRAMINE_RA_TLS")?;
+
+    let crt = builder.build::<Signature>().unwrap();
+    let cert_pem = crt.to_pem(LineEnding::LF)?;
+    let key_pem = signing_key.to_pkcs8_pem(LineEnding::LF)?;
+
+    Ok((key_hash, cert_pem, key_pem))
 }
