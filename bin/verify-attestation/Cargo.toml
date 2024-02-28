@@ -9,5 +9,4 @@ repository.workspace = true
 [dependencies]
 anyhow.workspace = true
 hex.workspace = true
-intel-tee-quote-verification-rs.workspace = true
 teepot.workspace = true
