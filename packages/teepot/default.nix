@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2024 Matter Labs
 { lib
 , gccStdenv
 , makeRustPlatform
@@ -34,7 +36,6 @@ rustPlatform.buildRustPackage {
     fileset = unions [
       ../../Cargo.lock
       ../../Cargo.toml
-      ../../assets
       ../../bin
       ../../crates
       ../../rust-toolchain.toml
@@ -42,6 +43,7 @@ rustPlatform.buildRustPackage {
       ../../tests
     ];
   };
+
   RUSTFLAGS = "--cfg mio_unsupported_force_waker_pipe";
   cargoBuildFlags = "--all";
   checkType = "debug";
@@ -52,6 +54,7 @@ rustPlatform.buildRustPackage {
   outputs = [
     "out"
     "tee_key_preexec"
+    "tee_ratls_preexec"
     "tee_self_attestation_test"
     "tee_stress_client"
     "tee_vault_admin"

@@ -1,3 +1,5 @@
+exclude = [".direnv/**/*", "target/**/*", "vendor/**/*"]
+
 [formatting]
 reorder_keys = false
 inline_table_expand = false

@@ -8,9 +8,13 @@ $ docker compose up
 ```
 
 ## Build and Run on client machine
+
 ```bash
-$ cd teepot
-$ gpg --export username@example.com | base64 > gpgkey.pub
+❯ cd teepot
+❯ gpg --export username@example.com | base64 > gpgkey.pub
+❯ export GPG_TTY="$(tty)"
+❯ gpg-connect-agent updatestartuptty /bye
+
 ❯ RUST_LOG=info cargo run -p vault-unseal --  --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d     --sgx-allowed-tcb-levels SwHardeningNeeded      --server https://20.172.154.218:8443    init   --unseal-threshold 1 -u bin/tee-vault-admin/tests/data/gpgkey.pub  --admin-threshold 1 -a  bin/tee-vault-admin/tests/data/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801
     Finished dev [unoptimized + debuginfo] target(s) in 0.09s
      Running `target/debug/vault-unseal --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d --sgx-allowed-tcb-levels SwHardeningNeeded --server 'https://20.172.154.218:8443' init --unseal-threshold 1 -u bin/tee-vault-admin/tests/data/gpgkey.pub --admin-threshold 1 -a bin/tee-vault-admin/tests/data/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801`
@@ -43,14 +47,17 @@ Vault is unsealed!
 
 ```
 
+With `teepot-admin` being the name of the image running the tee-vault-admin service, the following commands can be used
+to sign the admin tee:
+
 ```bash
-❯ (id=$(docker create tva); docker cp $id:/app/tee-vault-admin.sig ~/tee-vault-admin.sig; docker rm -v $id)
-❯ cargo run -p vault-admin -- create-sign-request ~/tee-vault-admin.sig > ~/sign_admin_tee.json
+❯ (id=$(docker create teepot-admin); docker cp $id:/app/tee-vault-admin.sig ~/tee-vault-admin.sig; docker rm -v $id)
+❯ cargo run -p vault-admin -- create-sign-request --tee-name admin ~/tee-vault-admin.sig > ~/sign_admin_tee.json
 ❯ vim sign_admin_tee.json
 ❯ gpg --local-user test@example.com --detach-sign --armor ~/sign_admin_tee.json
 ❯ RUST_LOG=info cargo run -p vault-admin -- \
   sign-tee \
-  --sgx-mrenclave 080c3210d5b6bcf47887101a554c117c21d80e75240bb70846c3e158a713ec65 \
+  --sgx-mrenclave c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d \
   --sgx-allowed-tcb-levels SwHardeningNeeded \
   --server https://127.0.0.1:8444 \
   --out new_admin.sig \
@@ -217,7 +224,8 @@ Next is to sign the admin tee with the vault-admin tool:
   ~/tee-vault-admin.json ~/tee-vault-admin.json.asc
 ```
 
-Then replace `tee-vault-admin.sig` with `tee-vault-admin-new.sig` in the container image `matterlabsrobot/teepot-tva:latest` with this Dockerfile:
+Then replace `tee-vault-admin.sig` with `tee-vault-admin-new.sig` in the container
+image `matterlabsrobot/teepot-tva:latest` with this Dockerfile:
 
 ```Dockerfile
 FROM matterlabsrobot/teepot-tva:latest
