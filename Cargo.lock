@@ -1212,12 +1212,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
-name = "hermit-abi"
-version = "0.3.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "379dada1584ad501b383485dd706b8afb7a70fcbc7f4da7d780638a5a6124a60"
-
-[[package]]
 name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1648,16 +1642,6 @@ checksum = "da0df0e5185db44f69b44f26786fe401b6c293d1907744beaa7fa62b2e5a517a"
 dependencies = [
  "autocfg",
  "libm",
-]
-
-[[package]]
-name = "num_cpus"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
-dependencies = [
- "hermit-abi",
- "libc",
 ]
 
 [[package]]
@@ -2152,16 +2136,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustls-pemfile"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c333bb734fcdedcea57de1602543590f545f127dc8b533324318fd492c5c70b"
-dependencies = [
- "base64",
- "rustls-pki-types",
-]
-
-[[package]]
 name = "rustls-pki-types"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2457,8 +2431,6 @@ dependencies = [
  "anyhow",
  "clap",
  "rsa",
- "rustls",
- "rustls-pemfile",
  "teepot",
  "tracing",
  "tracing-log",
@@ -2484,19 +2456,10 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "awc",
- "base64",
- "bytemuck",
  "clap",
- "hex",
- "mio",
- "rustls",
  "serde",
- "serde_json",
- "sha2",
  "teepot",
  "tracing",
- "tracing-actix-web",
  "tracing-log",
  "tracing-subscriber",
 ]
@@ -2508,13 +2471,10 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "base64",
  "bytemuck",
  "clap",
  "hex",
- "mio",
  "rustls",
- "serde",
  "serde_json",
  "sha2",
  "teepot",
@@ -2528,25 +2488,16 @@ dependencies = [
 name = "tee-vault-unseal"
 version = "0.1.0"
 dependencies = [
- "actix-tls",
  "actix-web",
  "anyhow",
  "awc",
  "clap",
- "hex",
- "mio",
  "rustls",
- "rustls-pemfile",
- "serde",
  "serde_json",
- "sha2",
  "teepot",
- "thiserror",
- "tokio",
  "tracing",
  "tracing-log",
  "tracing-subscriber",
- "x509-cert",
 ]
 
 [[package]]
@@ -2558,7 +2509,6 @@ dependencies = [
  "anyhow",
  "awc",
  "base64",
- "bitflags 2.4.2",
  "bytemuck",
  "bytes",
  "clap",
@@ -2574,10 +2524,8 @@ dependencies = [
  "pgp",
  "pkcs8",
  "rand",
- "ring",
  "rsa",
  "rustls",
- "sec1",
  "serde",
  "serde_json",
  "serde_with",
@@ -2599,11 +2547,9 @@ dependencies = [
  "anyhow",
  "awc",
  "clap",
- "serde",
  "serde_json",
  "teepot",
  "tracing",
- "tracing-actix-web",
  "tracing-log",
  "tracing-subscriber",
 ]
@@ -2616,11 +2562,9 @@ dependencies = [
  "anyhow",
  "awc",
  "clap",
- "serde",
  "serde_json",
  "teepot",
  "tracing",
- "tracing-actix-web",
  "tracing-log",
  "tracing-subscriber",
 ]
@@ -2748,24 +2692,11 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
- "num_cpus",
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
- "tokio-macros",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.51",
 ]
 
 [[package]]
@@ -2970,14 +2901,11 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "awc",
  "bytemuck",
  "clap",
  "hex",
  "pgp",
- "serde",
  "serde_json",
- "sha2",
  "teepot",
  "tracing",
  "tracing-log",
@@ -2990,13 +2918,9 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "awc",
  "base64",
  "clap",
- "hex",
- "serde",
  "serde_json",
- "sha2",
  "teepot",
  "tracing",
  "tracing-log",
@@ -3009,7 +2933,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "hex",
- "intel-tee-quote-verification-rs",
  "teepot",
 ]
 
