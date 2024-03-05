@@ -57,7 +57,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: cargo clippy
-        run: nix develop -L --ignore-environment -c cargo clippy --all --locked
+        run: nix develop -L --ignore-environment -c cargo clippy --all
 
   build:
     runs-on: ubuntu-latest
