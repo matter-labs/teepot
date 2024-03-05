@@ -91,7 +91,7 @@ pkcs8 = { version = "0.10" }
 rand = "0.8"
 ring = { version = "0.17.8", features = ["std"], default-features = false }
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
-rustls = { version = "0.22" }
+rustls = { version = "0.23" }
 rustls-pemfile = "2"
 sec1 = { version = "0.7.3", features = ["der"], default-features = false }
 serde = { version = "1", features = ["derive", "rc"] }
