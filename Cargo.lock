@@ -31,7 +31,7 @@ dependencies = [
  "actix-tls",
  "actix-utils",
  "ahash",
- "base64",
+ "base64 0.21.7",
  "bitflags 2.4.2",
  "brotli",
  "bytes",
@@ -313,7 +313,7 @@ dependencies = [
  "actix-service",
  "actix-tls",
  "actix-utils",
- "base64",
+ "base64 0.21.7",
  "bytes",
  "cfg-if",
  "cookie",
@@ -361,6 +361,12 @@ name = "base64"
 version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+
+[[package]]
+name = "base64"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51"
 
 [[package]]
 name = "base64ct"
@@ -1767,7 +1773,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "031fa1e28c4cb54c90502ef0642a44ef10ec8349349ebe6372089f1b1ef4f297"
 dependencies = [
  "aes",
- "base64",
+ "base64 0.21.7",
  "bitfield",
  "block-padding",
  "blowfish",
@@ -2239,7 +2245,7 @@ version = "3.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15d167997bd841ec232f5b2b8e0e26606df2e7caa4c31b95ea9ca52b200bd270"
 dependencies = [
- "base64",
+ "base64 0.21.7",
  "chrono",
  "hex",
  "indexmap 1.9.3",
@@ -2508,7 +2514,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "base64",
+ "base64 0.22.0",
  "bytemuck",
  "bytes",
  "clap",
@@ -2918,7 +2924,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "base64",
+ "base64 0.22.0",
  "clap",
  "serde_json",
  "teepot",
