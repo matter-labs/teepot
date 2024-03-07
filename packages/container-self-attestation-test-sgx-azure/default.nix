@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
 { pkgs
-, vat
 , nixsgx
 , curl
 , teepot
 , bash
 , coreutils
 , openssl
-, vault
 }:
 let manifest = ./tee-self-attestation-test.manifest.toml;
 in pkgs.dockerTools.buildLayeredImage {

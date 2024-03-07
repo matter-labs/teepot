@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
 { lib
-, gccStdenv
 , makeRustPlatform
 , nixsgx
 , pkg-config
 , rust-bin
-, ...
 }:
 let
-  cargoToml = (builtins.fromTOML (builtins.readFile ../../Cargo.toml));
+  cargoToml = builtins.fromTOML (builtins.readFile ../../Cargo.toml);
   rustVersion = rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml;
   rustPlatform = makeRustPlatform {
     cargo = rustVersion;
@@ -18,7 +16,7 @@ let
 in
 rustPlatform.buildRustPackage {
   pname = cargoToml.package.name;
-  version = cargoToml.workspace.package.version;
+  inherit (cargoToml.workspace.package) version;
 
   nativeBuildInputs = [
     pkg-config

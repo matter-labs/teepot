@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, dockerTools
+{ dockerTools
 , nixsgx
 , teepot
 , buildEnv
 , curl
-, ...
 }:
 dockerTools.buildLayeredImage {
   name = "vault-unseal";
@@ -18,7 +16,7 @@ dockerTools.buildLayeredImage {
     name = "image-root";
     paths = with dockerTools; with nixsgx;[
       azure-dcap-client
-      curl
+      curl.out
       sgx-dcap.quote_verify
       usrBinEnv
       binSh
