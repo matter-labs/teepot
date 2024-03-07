@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Simple TEE attestation verification test
 
@@ -18,6 +18,8 @@ fn main() -> Result<()> {
     std::io::stdin()
         .read_to_end(&mut myquote)
         .context("Failed to read quote from stdin")?;
+
+    println!("Verifying quote ({} bytes)...", myquote.len());
 
     let collateral = tee_qv_get_collateral(&myquote).context("Failed to get collateral")?;
 
