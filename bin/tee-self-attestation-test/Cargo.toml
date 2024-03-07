@@ -9,6 +9,7 @@ repository.workspace = true
 [dependencies]
 actix-web.workspace = true
 anyhow.workspace = true
+base64.workspace = true
 teepot.workspace = true
 tracing-log.workspace = true
 tracing-subscriber.workspace = true

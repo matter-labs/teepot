@@ -89,10 +89,13 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { nixpackage: 'container-vault-sgx-azure', dockerfile: 'packages/container-vault-sgx-azure/Dockerfile', tag: 'vault:latest', repository: 'teepot-vault' }
-          - { nixpackage: 'container-vault-unseal-sgx-azure', dockerfile: 'packages/container-vault-unseal-sgx-azure/Dockerfile', tag: 'tvu:latest', repository: 'teepot-tvu' }
-          - { nixpackage: 'container-vault-admin-sgx-azure', dockerfile: 'packages/container-vault-admin-sgx-azure/Dockerfile', tag: 'tva:latest', repository: 'teepot-tva' }
-          - { nixpackage: 'container-verify-attestation' }
+          - { nixpackage: 'container-vault-sgx-azure', dockerfile: 'packages/container-vault-sgx-azure/Dockerfile', repository: 'teepot-vault' }
+          - { nixpackage: 'container-vault-unseal-sgx-azure', dockerfile: 'packages/container-vault-unseal-sgx-azure/Dockerfile', repository: 'teepot-tvu' }
+          - { nixpackage: 'container-vault-admin-sgx-azure', dockerfile: 'packages/container-vault-admin-sgx-azure/Dockerfile', repository: 'teepot-tva' }
+          - { nixpackage: 'container-self-attestation-test-sgx-dcap', dockerfile: 'packages/container-self-attestation-test-sgx-dcap/Dockerfile', repository: 'teepot-self-attestation-test-sgx-dcap' }
+          - { nixpackage: 'container-self-attestation-test-sgx-azure', dockerfile: 'packages/container-self-attestation-test-sgx-azure/Dockerfile', repository: 'teepot-self-attestation-test-sgx-azure' }
+          - { nixpackage: 'container-verify-attestation-sgx-dcap' }
+          - { nixpackage: 'container-verify-attestation-sgx-azure' }
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v25

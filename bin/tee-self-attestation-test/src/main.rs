@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Simple TEE self-attestation test
 
@@ -7,8 +7,8 @@
 #![deny(clippy::all)]
 
 use anyhow::{Context, Result};
+use base64::{engine::general_purpose, Engine as _};
 use teepot::server::attestation::get_quote_and_collateral;
-use tracing::error;
 use tracing_log::LogTracer;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
 
@@ -22,9 +22,11 @@ async fn main() -> Result<()> {
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
     let report_data = [0u8; 64];
-    if let Err(e) = get_quote_and_collateral(None, &report_data) {
-        error!("failed to get quote and collateral: {e:?}");
-        return Err(e);
-    }
+    let report = get_quote_and_collateral(None, &report_data)
+        .context("failed to get quote and collateral")?;
+
+    let base64_string = general_purpose::STANDARD.encode(report.quote.as_ref());
+    print!("{}", base64_string);
+
     Ok(())
 }
