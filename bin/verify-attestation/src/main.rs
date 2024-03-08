@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Tool for SGX attestation and batch signature verification
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use core::convert::TryInto;
 use hex::encode;
@@ -113,6 +113,9 @@ fn verify_signature(
 }
 
 fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
+    if attestation_quote_bytes.is_empty() {
+        bail!("Empty quote provided!");
+    }
     println!(
         "Verifying quote ({} bytes)...",
         attestation_quote_bytes.len()
