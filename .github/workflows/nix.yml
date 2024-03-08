@@ -83,7 +83,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.config.dockerfile }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.config.nixpackage }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
