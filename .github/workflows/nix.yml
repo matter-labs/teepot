@@ -39,7 +39,7 @@ jobs:
           name: nixsgx
           extraPullNames: vault-auth-tee
 
-      - run: nix fmt
+      - run: nix fmt . -- --check
 
   clippy:
     runs-on: ubuntu-latest
