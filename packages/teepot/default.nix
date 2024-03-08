@@ -1,77 +1,58 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
 { lib
+, inputs
 , makeRustPlatform
 , nixsgx
 , pkg-config
 , rust-bin
-}:
+, pkgs
+, ...
+}@args:
 let
-  cargoToml = builtins.fromTOML (builtins.readFile ../../Cargo.toml);
-  rustVersion = rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml;
-  rustPlatform = makeRustPlatform {
-    cargo = rustVersion;
-    rustc = rustVersion;
-  };
+  teepotCrate = import ./teepot.nix args;
 in
-rustPlatform.buildRustPackage {
-  pname = cargoToml.package.name;
-  inherit (cargoToml.workspace.package) version;
+teepotCrate.craneLib.buildPackage (
+  teepotCrate.commonArgs // {
+    pname = "teepot";
+    inherit (teepotCrate) cargoArtifacts
+      NIX_OUTPATH_USED_AS_RANDOM_SEED;
 
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-  ];
 
-  buildInputs = [
-    nixsgx.sgx-sdk
-    nixsgx.sgx-dcap
-    nixsgx.sgx-dcap.quote_verify
-  ];
+    passthru = {
+      inherit (teepotCrate) rustPlatform
+        rustVersion
+        commonArgs
+        craneLib
+        cargoArtifacts;
+      NIX_OUTPATH_USED_AS_RANDOM_SEED = "aaaaaaaaaa";
+    };
 
-  src = with lib.fileset; toSource {
-    root = ./../..;
-    fileset = unions [
-      ../../Cargo.lock
-      ../../Cargo.toml
-      ../../bin
-      ../../crates
-      ../../rust-toolchain.toml
-      ../../src
-      ../../tests
+    outputs = [
+      "out"
+      "tee_key_preexec"
+      "tee_ratls_preexec"
+      "tee_self_attestation_test"
+      "tee_stress_client"
+      "tee_vault_admin"
+      "tee_vault_unseal"
+      "teepot_read"
+      "teepot_write"
+      "vault_admin"
+      "vault_unseal"
+      "verify_attestation"
     ];
-  };
 
-  RUSTFLAGS = "--cfg mio_unsupported_force_waker_pipe";
-  cargoBuildFlags = "--all";
-  checkType = "debug";
-  cargoLock = {
-    lockFile = ../../Cargo.lock;
-  };
+    postInstall = ''
+      mkdir -p $out/nix-support
+      for i in $outputs; do
+        [[ $i == "out" ]] && continue
+        mkdir -p "''${!i}/bin"
+        echo "''${!i}" >> $out/nix-support/propagated-user-env-packages
+        binname=''${i//_/-}
+        mv "$out/bin/$binname" "''${!i}/bin/"
+      done
+    '';
+  }
+)
 
-  outputs = [
-    "out"
-    "tee_key_preexec"
-    "tee_ratls_preexec"
-    "tee_self_attestation_test"
-    "tee_stress_client"
-    "tee_vault_admin"
-    "tee_vault_unseal"
-    "teepot_read"
-    "teepot_write"
-    "vault_admin"
-    "vault_unseal"
-    "verify_attestation"
-  ];
-
-  postInstall = ''
-    mkdir -p $out/nix-support
-    for i in $outputs; do
-      [[ $i == "out" ]] && continue
-      mkdir -p "''${!i}/bin"
-      echo "''${!i}" >> $out/nix-support/propagated-user-env-packages
-      binname=''${i//_/-}
-      mv "$out/bin/$binname" "''${!i}/bin/"
-    done
-  '';
-}

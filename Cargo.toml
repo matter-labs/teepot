@@ -1,56 +1,6 @@
-[package]
-name = "teepot"
-description = "TEE secret manager"
-# no MIT license, because of copied code from:
-# * https://github.com/enarx/enarx
-# * https://github.com/enarx/sgx
-license = "Apache-2.0"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-repository.workspace = true
-
-[dependencies]
-actix-http.workspace = true
-actix-web.workspace = true
-anyhow.workspace = true
-awc.workspace = true
-bytemuck.workspace = true
-bytes.workspace = true
-clap.workspace = true
-const-oid.workspace = true
-enumset.workspace = true
-futures-core.workspace = true
-getrandom.workspace = true
-hex.workspace = true
-intel-tee-quote-verification-rs.workspace = true
-num-integer.workspace = true
-num-traits.workspace = true
-p256.workspace = true
-pgp.workspace = true
-pkcs8.workspace = true
-rand.workspace = true
-rsa.workspace = true
-rustls.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-serde_with.workspace = true
-sha2.workspace = true
-signature.workspace = true
-thiserror.workspace = true
-tracing.workspace = true
-webpki-roots.workspace = true
-x509-cert.workspace = true
-zeroize.workspace = true
-
-[dev-dependencies]
-anyhow.workspace = true
-base64.workspace = true
-hex.workspace = true
-testaso.workspace = true
-
 [workspace]
 members = ["crates/*", "bin/*"]
+resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
@@ -78,7 +28,7 @@ enumset = { version = "1.1", features = ["serde", "std"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.12"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
-intel-tee-quote-verification-rs = { path = "crates/intel-tee-quote-verification-rs", version = "0.2.1" }
+intel-tee-quote-verification-rs = { path = "crates/intel-tee-quote-verification-rs" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
 log = "0.4"
@@ -99,7 +49,7 @@ serde_json = "1"
 serde_with = { version = "3.6", features = ["base64", "hex"] }
 sha2 = "0.10.8"
 signature = "2.2.0"
-teepot = { path = "." }
+teepot = { path = "crates/teepot" }
 testaso = "0.1.0"
 thiserror = "1.0.57"
 tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
