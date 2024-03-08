@@ -26,7 +26,8 @@ in pkgs.dockerTools.buildLayeredImage {
       teepot.teepot.tee_ratls_preexec
       vault
       azure-dcap-client
-      curl
+      openssl.out
+      curl.out
       vat.vault-auth-tee
       gramine
       restart-aesmd

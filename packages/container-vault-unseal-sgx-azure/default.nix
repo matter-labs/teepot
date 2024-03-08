@@ -8,7 +8,6 @@
 , bash
 , coreutils
 , openssl
-, vault
 }:
 let manifest = ./tee-vault-unseal.manifest.toml;
 in pkgs.dockerTools.buildLayeredImage {
@@ -20,13 +19,12 @@ in pkgs.dockerTools.buildLayeredImage {
   contents = pkgs.buildEnv {
     name = "image-root";
 
-    paths = with pkgs.dockerTools; with nixsgx; with teepot;[
+    paths = with pkgs.dockerTools; with nixsgx;[
       bash
       coreutils
-      openssl
-      vault
+      openssl.out
       azure-dcap-client
-      curl
+      curl.out
       vat.vault-auth-tee.sha
       teepot.teepot.tee_vault_unseal
       gramine

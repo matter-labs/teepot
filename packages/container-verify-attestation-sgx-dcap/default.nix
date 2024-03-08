@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, dockerTools
+{ dockerTools
 , buildEnv
 , teepot
 , openssl
 , curl
 , nixsgx
-, ...
 }:
 dockerTools.buildLayeredImage {
   name = "verify-attestation-sgx-dcap";

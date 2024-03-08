@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
 { pkgs
-, vat
 , nixsgx
 , curl
 , teepot
 , bash
 , coreutils
 , openssl
-, vault
 }:
 let manifest = ./tee-vault-admin.manifest.toml;
 in pkgs.dockerTools.buildLayeredImage {
@@ -20,13 +18,12 @@ in pkgs.dockerTools.buildLayeredImage {
   contents = pkgs.buildEnv {
     name = "image-root";
 
-    paths = with pkgs.dockerTools; with nixsgx; with teepot;[
+    paths = with pkgs.dockerTools; with nixsgx;[
       bash
       coreutils
-      openssl
-      vault
+      openssl.out
       azure-dcap-client
-      curl
+      curl.out
       teepot.teepot.tee_vault_admin
       gramine
       restart-aesmd
