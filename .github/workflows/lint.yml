@@ -16,18 +16,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      - name: Setup Rust toolchain
-        run: rustup show
-      - run: cargo fmt --all -- --check
+      - uses: cachix/install-nix-action@v26
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          extraPullNames: vault-auth-tee
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: cargo fmt
+        run: nix build -L .#cargoFmt
 
   deny:
     name: cargo deny
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      - uses: EmbarkStudios/cargo-deny-action@v1
+      - uses: cachix/install-nix-action@v26
         with:
-          arguments: --workspace
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          extraPullNames: vault-auth-tee
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: cargo deny
+        run: nix build -L .#cargoDeny
 
   check-spdx-headers:
     runs-on: ubuntu-latest

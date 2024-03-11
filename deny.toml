@@ -29,7 +29,7 @@ allow = [
   "Unlicense",
   "MPL-2.0",
   "Unicode-DFS-2016",
-  "CC0-1.0",
+  #  "CC0-1.0", # not yet seen
   "BSD-2-Clause",
   "BSD-3-Clause",
   "OpenSSL",
@@ -65,12 +65,9 @@ skip-tree = []
 unknown-registry = "warn"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = [
-  # we need the mio override to disable eventfd for SGX
-  "https://github.com/tokio-rs/mio?rev=ec0776f5af29548e4e1f48f86f5fa123a46caa07#ec0776f5af29548e4e1f48f86f5fa123a46caa07",
-]
+# allow-git = []
 
 [sources.allow-org]
-github = [""]
-gitlab = [""]
-bitbucket = [""]
+#github = [""]
+#gitlab = [""]
+#bitbucket = [""]

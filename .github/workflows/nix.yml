@@ -11,21 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      - uses: cachix/install-nix-action@v26
-        with:
-          extra_nix_config: |
-            access-tokens = github.com=${{ github.token }}
-      - uses: cachix/cachix-action@v14
-        with:
-          name: nixsgx
-          extraPullNames: vault-auth-tee
-
-      - run: nix flake check -L --show-trace --keep-going
-
   fmt:
     runs-on: ubuntu-latest
     steps:
@@ -37,7 +22,10 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: nixsgx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
           extraPullNames: vault-auth-tee
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
       - run: nix fmt . -- --check
 
@@ -52,14 +40,35 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: nixsgx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
           extraPullNames: vault-auth-tee
       - name: Enable magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: cargo clippy
-        run: nix develop -L --ignore-environment -c cargo clippy --all
+        run: nix build -L .#cargoClippy
+
+  check:
+    needs: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: cachix/install-nix-action@v26
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: nixsgx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          extraPullNames: vault-auth-tee
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - run: nix flake check -L --show-trace --keep-going
 
   build:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4

@@ -1,0 +1,50 @@
+[package]
+name = "teepot"
+description = "TEE secret manager"
+# no MIT license, because of copied code from:
+# * https://github.com/enarx/enarx
+# * https://github.com/enarx/sgx
+license = "Apache-2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+actix-http.workspace = true
+actix-web.workspace = true
+anyhow.workspace = true
+awc.workspace = true
+bytemuck.workspace = true
+bytes.workspace = true
+clap.workspace = true
+const-oid.workspace = true
+enumset.workspace = true
+futures-core.workspace = true
+getrandom.workspace = true
+hex.workspace = true
+intel-tee-quote-verification-rs.workspace = true
+num-integer.workspace = true
+num-traits.workspace = true
+p256.workspace = true
+pgp.workspace = true
+pkcs8.workspace = true
+rand.workspace = true
+rsa.workspace = true
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+sha2.workspace = true
+signature.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+webpki-roots.workspace = true
+x509-cert.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+anyhow.workspace = true
+base64.workspace = true
+hex.workspace = true
+testaso.workspace = true

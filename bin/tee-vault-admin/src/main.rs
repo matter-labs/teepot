@@ -117,7 +117,7 @@ mod tests {
     use serde_json::json;
     use teepot::json::http::{VaultCommand, VaultCommands};
 
-    const TEST_DATA: &str = include_str!("../../../tests/data/test.json");
+    const TEST_DATA: &str = include_str!("../../../crates/teepot/tests/data/test.json");
 
     #[test]
     fn test_vault_commands() {
