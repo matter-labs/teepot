@@ -51,7 +51,7 @@ sha2 = "0.10.8"
 signature = "2.2.0"
 teepot = { path = "crates/teepot" }
 testaso = "0.1.0"
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
 tracing = "0.1"
 tracing-actix-web = "0.7"
