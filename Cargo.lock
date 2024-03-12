@@ -1370,14 +1370,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "intel-tee-quote-verification-rs"
-version = "0.2.1"
-dependencies = [
- "intel-tee-quote-verification-sys",
- "serde",
-]
-
-[[package]]
 name = "intel-tee-quote-verification-sys"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2524,7 +2516,6 @@ dependencies = [
  "futures-core",
  "getrandom",
  "hex",
- "intel-tee-quote-verification-rs",
  "num-integer",
  "num-traits",
  "p256",
@@ -2538,6 +2529,7 @@ dependencies = [
  "serde_with",
  "sha2",
  "signature",
+ "teepot-tee-quote-verification-rs",
  "testaso",
  "thiserror",
  "tracing",
@@ -2559,6 +2551,14 @@ dependencies = [
  "tracing",
  "tracing-log",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "teepot-tee-quote-verification-rs"
+version = "0.2.1"
+dependencies = [
+ "intel-tee-quote-verification-sys",
+ "serde",
 ]
 
 [[package]]

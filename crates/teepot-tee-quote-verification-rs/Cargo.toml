@@ -1,10 +1,13 @@
 # Fork of the original crate: https://github.com/intel/SGXDataCenterAttestationPrimitives
 
 [package]
-name = "intel-tee-quote-verification-rs"
+name = "teepot-tee-quote-verification-rs"
 version = "0.2.1"
 edition = "2021"
 license = "BSD-3-Clause"
+repository.workspace = true
+homepage.workspace = true
+description = "Fork of intel-tee-quote-verification-rs"
 
 [dependencies]
 intel-tee-quote-verification-sys.workspace = true

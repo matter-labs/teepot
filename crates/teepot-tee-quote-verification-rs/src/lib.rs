@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2024 Matter Labs
+
 // SPDX-License-Identifier: BSD-3-Clause
 /*
  * Copyright (C) 2011-2021 Intel Corporation. All rights reserved.
@@ -77,7 +80,7 @@ pub use qvl_sys::tee_supp_data_descriptor_t;
 ///
 /// # Examples
 /// ```
-/// use intel_tee_quote_verification_rs::*;
+/// use teepot_tee_quote_verification_rs::*;
 ///
 /// let policy = sgx_ql_request_policy_t::SGX_QL_DEFAULT;
 /// let ret = sgx_qv_set_enclave_load_policy(policy);
@@ -100,7 +103,7 @@ pub fn sgx_qv_set_enclave_load_policy(policy: sgx_ql_request_policy_t) -> quote3
 ///
 /// # Examples
 /// ```
-/// use intel_tee_quote_verification_rs::*;
+/// use teepot_tee_quote_verification_rs::*;
 ///
 /// let data_size = sgx_qv_get_quote_supplemental_data_size().unwrap();
 ///
@@ -200,7 +203,7 @@ pub fn sgx_qv_verify_quote(
 ///
 /// # Examples
 /// ```
-/// use intel_tee_quote_verification_rs::*;
+/// use teepot_tee_quote_verification_rs::*;
 ///
 /// let data_size = tdx_qv_get_quote_supplemental_data_size().unwrap();
 ///

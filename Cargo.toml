@@ -10,6 +10,7 @@ authors = ["Harald Hoyer <hh@matterlabs.dev>"]
 # has the standard Apache-2.0 OR MIT license
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/matter-labs/teepot"
+homepage = "https://github.com/matter-labs/teepot"
 
 [workspace.dependencies]
 actix-http = "3"
@@ -28,7 +29,7 @@ enumset = { version = "1.1", features = ["serde", "std"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.12"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
-intel-tee-quote-verification-rs = { path = "crates/intel-tee-quote-verification-rs" }
+intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.2.1" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
 log = "0.4"
