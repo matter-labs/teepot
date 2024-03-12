@@ -3,7 +3,7 @@ members = ["crates/*", "bin/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 edition = "2021"
 authors = ["Harald Hoyer <hh@matterlabs.dev>"]
 # rest of the workspace, if not specified in the package section
@@ -29,7 +29,7 @@ enumset = { version = "1.1", features = ["serde", "std"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.12"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
-intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.2.1" }
+intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.2.3-alpha.1" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
 log = "0.4"

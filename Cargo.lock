@@ -2410,7 +2410,7 @@ dependencies = [
 
 [[package]]
 name = "tee-key-preexec"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "anyhow",
  "hex",
@@ -2424,7 +2424,7 @@ dependencies = [
 
 [[package]]
 name = "tee-ratls-preexec"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -2438,7 +2438,7 @@ dependencies = [
 
 [[package]]
 name = "tee-self-attestation-test"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2451,7 +2451,7 @@ dependencies = [
 
 [[package]]
 name = "tee-stress-client"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2465,7 +2465,7 @@ dependencies = [
 
 [[package]]
 name = "tee-vault-admin"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2485,7 +2485,7 @@ dependencies = [
 
 [[package]]
 name = "tee-vault-unseal"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2501,7 +2501,7 @@ dependencies = [
 
 [[package]]
 name = "teepot"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-http",
  "actix-web",
@@ -2540,7 +2540,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-read"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2555,7 +2555,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-tee-quote-verification-rs"
-version = "0.2.1"
+version = "0.2.3-alpha.1"
 dependencies = [
  "intel-tee-quote-verification-sys",
  "serde",
@@ -2563,7 +2563,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-write"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2904,7 +2904,7 @@ checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 
 [[package]]
 name = "vault-admin"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2921,7 +2921,7 @@ dependencies = [
 
 [[package]]
 name = "vault-unseal"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2936,7 +2936,7 @@ dependencies = [
 
 [[package]]
 name = "verify-attestation"
-version = "0.1.0"
+version = "0.1.2-alpha.1"
 dependencies = [
  "anyhow",
  "hex",
