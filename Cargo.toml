@@ -15,7 +15,7 @@ repository = "https://github.com/matter-labs/teepot"
 actix-http = "3"
 actix-tls = "3"
 actix-web = { version = "4.5", features = ["rustls-0_22"] }
-anyhow = "1.0.80"
+anyhow = "1.0.81"
 awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
 base64 = "0.22.0"
 bitflags = "2.4"
