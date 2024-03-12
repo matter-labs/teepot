@@ -3,7 +3,7 @@ members = ["crates/*", "bin/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Harald Hoyer <hh@matterlabs.dev>"]
 # rest of the workspace, if not specified in the package section
