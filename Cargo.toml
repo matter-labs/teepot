@@ -20,7 +20,7 @@ anyhow = "1.0.81"
 awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
 base64 = "0.22.0"
 bitflags = "2.4"
-bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics", "extern_crate_std"] }
+bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
 clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
 const-oid = { version = "0.9", default-features = false }
