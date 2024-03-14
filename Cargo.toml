@@ -2,6 +2,9 @@
 members = ["crates/*", "bin/*"]
 resolver = "2"
 
+[profile.release]
+strip = true
+
 [workspace.package]
 version = "0.1.2-alpha.1"
 edition = "2021"
