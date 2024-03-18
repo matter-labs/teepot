@@ -132,7 +132,7 @@ async fn init(args: Arguments) -> Result<()> {
         pgp_keys,
     };
 
-    info!("Inititalizing vault");
+    info!("Initializing vault");
 
     let mut response = conn
         .client()
