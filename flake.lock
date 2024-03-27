@@ -3,15 +3,16 @@
     "crane": {
       "inputs": {
         "nixpkgs": [
+          "nixsgx-flake",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1709610799,
-        "narHash": "sha256-5jfLQx0U9hXbi2skYMGodDJkIgffrjIOgMRjZqms2QE=",
+        "lastModified": 1711407199,
+        "narHash": "sha256-A/nB4j3JHL51ztlMQdfKw6y8tUJJzai3bLsZUEEaBxY=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "81c393c776d5379c030607866afef6406ca1be57",
+        "rev": "7e468a455506f2e65550e08dfd45092f0857a009",
         "type": "github"
       },
       "original": {
@@ -37,38 +38,6 @@
       }
     },
     "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1650374568,
-        "narHash": "sha256-Z+s0J8/r907g149rllvwhb4pKi8Wam5ij0st8PwAh+E=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "b4a34015c698c7793d592d66adbab377907a2be8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1650374568,
-        "narHash": "sha256-Z+s0J8/r907g149rllvwhb4pKi8Wam5ij0st8PwAh+E=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "b4a34015c698c7793d592d66adbab377907a2be8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_4": {
       "flake": false,
       "locked": {
         "lastModified": 1650374568,
@@ -138,42 +107,6 @@
         "type": "github"
       }
     },
-    "flake-utils-plus_3": {
-      "inputs": {
-        "flake-utils": "flake-utils_4"
-      },
-      "locked": {
-        "lastModified": 1696331477,
-        "narHash": "sha256-YkbRa/1wQWdWkVJ01JvV+75KIdM37UErqKgTf0L54Fk=",
-        "owner": "gytis-ivaskevicius",
-        "repo": "flake-utils-plus",
-        "rev": "bfc53579db89de750b25b0c5e7af299e0c06d7d3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "gytis-ivaskevicius",
-        "repo": "flake-utils-plus",
-        "type": "github"
-      }
-    },
-    "flake-utils-plus_4": {
-      "inputs": {
-        "flake-utils": "flake-utils_5"
-      },
-      "locked": {
-        "lastModified": 1696331477,
-        "narHash": "sha256-YkbRa/1wQWdWkVJ01JvV+75KIdM37UErqKgTf0L54Fk=",
-        "owner": "gytis-ivaskevicius",
-        "repo": "flake-utils-plus",
-        "rev": "bfc53579db89de750b25b0c5e7af299e0c06d7d3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "gytis-ivaskevicius",
-        "repo": "flake-utils-plus",
-        "type": "github"
-      }
-    },
     "flake-utils_2": {
       "inputs": {
         "systems": "systems_2"
@@ -210,49 +143,29 @@
         "type": "github"
       }
     },
-    "flake-utils_4": {
-      "inputs": {
-        "systems": "systems_4"
-      },
-      "locked": {
-        "lastModified": 1694529238,
-        "narHash": "sha256-zsNZZGTGnMOf9YpHKJqMSsa0dXbfmxeoJ7xHlrt+xmY=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "ff7b65b44d01cf9ba6a71320833626af21126384",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_5": {
-      "inputs": {
-        "systems": "systems_5"
-      },
-      "locked": {
-        "lastModified": 1694529238,
-        "narHash": "sha256-zsNZZGTGnMOf9YpHKJqMSsa0dXbfmxeoJ7xHlrt+xmY=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "ff7b65b44d01cf9ba6a71320833626af21126384",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1707786466,
-        "narHash": "sha256-yLPfrmW87M2qt+8bAmwopJawa+MJLh3M9rUbXtpUc1o=",
+        "lastModified": 1710283656,
+        "narHash": "sha256-nI+AOy4uK6jLGBi9nsbHjL1EdSIzoo8oa+9oeVhbyFc=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "01885a071465e223f8f68971f864b15829988504",
+        "rev": "51063ed4f2343a59fdeebb279bb81d87d453942b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-23.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1710283656,
+        "narHash": "sha256-nI+AOy4uK6jLGBi9nsbHjL1EdSIzoo8oa+9oeVhbyFc=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "51063ed4f2343a59fdeebb279bb81d87d453942b",
         "type": "github"
       },
       "original": {
@@ -264,17 +177,15 @@
     },
     "nixsgx-flake": {
       "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs",
         "snowfall-lib": "snowfall-lib"
       },
       "locked": {
-        "lastModified": 1707844282,
-        "narHash": "sha256-V8JkiRtQBw0mjw7NozRQqF4yWxRpp6og0LeutWgqyEY=",
+        "lastModified": 1711549197,
+        "narHash": "sha256-Oup/VoprW91b5y/3pY63C/gYAVHiQbqBCDR4EDA9f5c=",
         "owner": "matter-labs",
         "repo": "nixsgx",
-        "rev": "c837db99a811dc1762e3ed25abb1465a1b3d96c2",
+        "rev": "628eb257bff690a3bfc896693838322212302eb7",
         "type": "github"
       },
       "original": {
@@ -285,18 +196,15 @@
     },
     "nixsgx-flake_2": {
       "inputs": {
-        "nixpkgs": [
-          "vault-auth-tee-flake",
-          "nixpkgs"
-        ],
-        "snowfall-lib": "snowfall-lib_3"
+        "nixpkgs": "nixpkgs_2",
+        "snowfall-lib": "snowfall-lib_2"
       },
       "locked": {
-        "lastModified": 1707314146,
-        "narHash": "sha256-NcqWVXkGBautT44YcQgZdVK1Vwqop1V8nDoPEzKr0uE=",
+        "lastModified": 1711549197,
+        "narHash": "sha256-Oup/VoprW91b5y/3pY63C/gYAVHiQbqBCDR4EDA9f5c=",
         "owner": "matter-labs",
         "repo": "nixsgx",
-        "rev": "e3bbd5415eb845c8857dd0963febcef71866cd4a",
+        "rev": "628eb257bff690a3bfc896693838322212302eb7",
         "type": "github"
       },
       "original": {
@@ -308,10 +216,16 @@
     "root": {
       "inputs": {
         "crane": "crane",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": [
+          "nixsgx-flake",
+          "nixpkgs"
+        ],
         "nixsgx-flake": "nixsgx-flake",
         "rust-overlay": "rust-overlay",
-        "snowfall-lib": "snowfall-lib_2",
+        "snowfall-lib": [
+          "nixsgx-flake",
+          "snowfall-lib"
+        ],
         "vault-auth-tee-flake": "vault-auth-tee-flake"
       }
     },
@@ -319,6 +233,7 @@
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": [
+          "nixsgx-flake",
           "nixpkgs"
         ]
       },
@@ -365,29 +280,6 @@
         "flake-compat": "flake-compat_2",
         "flake-utils-plus": "flake-utils-plus_2",
         "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1696432959,
-        "narHash": "sha256-oJQZv2MYyJaVyVJY5IeevzqpGvMGKu5pZcCCJvb+xjc=",
-        "owner": "snowfallorg",
-        "repo": "lib",
-        "rev": "92803a029b5314d4436a8d9311d8707b71d9f0b6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "snowfallorg",
-        "repo": "lib",
-        "rev": "92803a029b5314d4436a8d9311d8707b71d9f0b6",
-        "type": "github"
-      }
-    },
-    "snowfall-lib_3": {
-      "inputs": {
-        "flake-compat": "flake-compat_3",
-        "flake-utils-plus": "flake-utils-plus_3",
-        "nixpkgs": [
           "vault-auth-tee-flake",
           "nixsgx-flake",
           "nixpkgs"
@@ -404,30 +296,6 @@
       "original": {
         "owner": "snowfallorg",
         "repo": "lib",
-        "type": "github"
-      }
-    },
-    "snowfall-lib_4": {
-      "inputs": {
-        "flake-compat": "flake-compat_4",
-        "flake-utils-plus": "flake-utils-plus_4",
-        "nixpkgs": [
-          "vault-auth-tee-flake",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1696432959,
-        "narHash": "sha256-oJQZv2MYyJaVyVJY5IeevzqpGvMGKu5pZcCCJvb+xjc=",
-        "owner": "snowfallorg",
-        "repo": "lib",
-        "rev": "92803a029b5314d4436a8d9311d8707b71d9f0b6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "snowfallorg",
-        "repo": "lib",
-        "rev": "92803a029b5314d4436a8d9311d8707b71d9f0b6",
         "type": "github"
       }
     },
@@ -476,50 +344,25 @@
         "type": "github"
       }
     },
-    "systems_4": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_5": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
     "vault-auth-tee-flake": {
       "inputs": {
         "nixpkgs": [
+          "nixsgx-flake",
           "nixpkgs"
         ],
         "nixsgx-flake": "nixsgx-flake_2",
-        "snowfall-lib": "snowfall-lib_4"
+        "snowfall-lib": [
+          "vault-auth-tee-flake",
+          "nixsgx-flake",
+          "snowfall-lib"
+        ]
       },
       "locked": {
-        "lastModified": 1708593089,
-        "narHash": "sha256-HtRZmjLZEcwTRLbqxRIkilLL94OZccbe22UtNInhk4Y=",
+        "lastModified": 1711553563,
+        "narHash": "sha256-ejFvJRbzYiXvIq834bN15GpZhjPZ/MnotEI77eSkt8c=",
         "owner": "matter-labs",
         "repo": "vault-auth-tee",
-        "rev": "0f9a672c9925e9de6888ca4b30bc4573c52c6899",
+        "rev": "aa72f9bbbada1e4dc80f9af2c89573fa1fb210f9",
         "type": "github"
       },
       "original": {
