@@ -9,31 +9,23 @@
   ];
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
-
-    nixsgx-flake = {
-      url = "github:matter-labs/nixsgx";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixsgx-flake.url = "github:matter-labs/nixsgx";
+    nixpkgs.follows = "nixsgx-flake/nixpkgs";
+    snowfall-lib.follows = "nixsgx-flake/snowfall-lib";
 
     vault-auth-tee-flake = {
       url = "github:matter-labs/vault-auth-tee";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    snowfall-lib = {
-      url = "github:snowfallorg/lib?rev=92803a029b5314d4436a8d9311d8707b71d9f0b6";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixsgx-flake/nixpkgs";
     };
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay?rev=3ad32bb27c700b59306224e285b66577e3532dfc";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixsgx-flake/nixpkgs";
     };
 
     crane = {
       url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixsgx-flake/nixpkgs";
     };
   };
 
