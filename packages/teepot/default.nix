@@ -42,8 +42,8 @@ teepotCrate.craneLib.buildPackage (
       "vault_unseal"
       "verify_attestation"
     ];
-
     postInstall = ''
+      removeReferencesToVendoredSources "$out" "$cargoVendorDir"
       mkdir -p $out/nix-support
       for i in $outputs; do
         [[ $i == "out" ]] && continue
