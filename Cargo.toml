@@ -27,7 +27,7 @@ bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "ex
 bytes = "1"
 clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
 const-oid = { version = "0.9", default-features = false }
-der = "0.7.8"
+der = "0.7.9"
 enumset = { version = "1.1", features = ["serde", "std"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.12"
