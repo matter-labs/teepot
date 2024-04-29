@@ -50,7 +50,7 @@ rustls-pemfile = "2"
 sec1 = { version = "0.7.3", features = ["der"], default-features = false }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
-serde_with = { version = "3.7", features = ["base64", "hex"] }
+serde_with = { version = "3.8", features = ["base64", "hex"] }
 sha2 = "0.10.8"
 signature = "2.2.0"
 teepot = { path = "crates/teepot" }
