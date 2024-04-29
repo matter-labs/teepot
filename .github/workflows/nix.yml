@@ -47,7 +47,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: nix build
-        run: nix run nixpkgs#nixci
+        run: nix run github:nixos/nixpkgs/nixos-23.11#nixci
 
   push_to_docker:
     needs: build
