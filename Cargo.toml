@@ -16,7 +16,7 @@ repository = "https://github.com/matter-labs/teepot"
 homepage = "https://github.com/matter-labs/teepot"
 
 [workspace.dependencies]
-actix-http = "3"
+actix-http = "3.6.0"
 actix-tls = "3"
 actix-web = { version = "4.5", features = ["rustls-0_22"] }
 anyhow = "1.0.82"
