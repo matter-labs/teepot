@@ -35,7 +35,7 @@ hex = { version = "0.4.3", features = ["std"], default-features = false }
 intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.2.3-alpha.1" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
-log = "0.4"
+log = "0.4.21"
 mio = "0.8.11"
 num-integer = "0.1.46"
 num-traits = "0.2.18"
