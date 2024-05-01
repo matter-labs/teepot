@@ -21,7 +21,7 @@ actix-tls = "3"
 actix-web = { version = "4.5", features = ["rustls-0_22"] }
 anyhow = "1.0.82"
 awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
-base64 = "0.22.0"
+base64 = "0.22.1"
 bitflags = "2.5"
 bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
