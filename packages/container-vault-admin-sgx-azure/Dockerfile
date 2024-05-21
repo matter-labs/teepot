@@ -22,4 +22,4 @@ EXPOSE 8443
 
 ENTRYPOINT ["/bin/sh", "-c"]
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
-CMD [ "echo tee-vault-admin in SGX mode starting; restart-aesmd ; exec gramine-sgx tee-vault-admin" ]
+CMD [ "echo tee-vault-admin in SGX mode starting; [[ -r /var/run/aesmd/aesm.socket ]] || restart-aesmd ; exec gramine-sgx tee-vault-admin" ]

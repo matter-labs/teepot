@@ -22,4 +22,4 @@ EXPOSE 8443
 
 ENTRYPOINT ["/bin/sh", "-c"]
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
-CMD [ "restart-aesmd >&2; exec gramine-sgx tee-self-attestation-test" ]
+CMD [ "[[ -r /var/run/aesmd/aesm.socket ]] || restart-aesmd >&2; exec gramine-sgx tee-self-attestation-test" ]

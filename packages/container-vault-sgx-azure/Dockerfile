@@ -22,4 +22,4 @@ VOLUME /opt/vault/data
 
 ENTRYPOINT ["/bin/sh", "-c"]
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
-CMD [ "echo vault in SGX mode starting; restart-aesmd ; exec gramine-sgx vault" ]
+CMD [ "echo vault in SGX mode starting; [[ -r /var/run/aesmd/aesm.socket ]] || restart-aesmd ; exec gramine-sgx vault" ]
