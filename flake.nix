@@ -24,22 +24,29 @@
     };
 
     crane = {
-      url = "github:ipetkov/crane";
+      url = "github:ipetkov/crane?tag=v0.17.3";
       inputs.nixpkgs.follows = "nixsgx-flake/nixpkgs";
     };
   };
 
   outputs = inputs:
+    let src = ./.; in
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
-      src = ./.;
+      inherit src;
 
-      package-namespace = "teepot";
+      snowfall.namespace = "teepot";
+
+      channels-config = {
+        allowUnfree = true;
+      };
 
       overlays = with inputs; [
         nixsgx-flake.overlays.default
         vault-auth-tee-flake.overlays.default
         rust-overlay.overlays.default
+        # somehow the original `src` is not available anymore
+        (final: prev: { teepotCrate = prev.pkgs.callPackage ./teepot-crate.nix { inherit inputs; inherit src; }; })
       ];
 
       alias = {
@@ -62,7 +69,6 @@
           inherit
             (channels.nixpkgs.teepot) cargoDeny;
         };
-
       };
     };
 }

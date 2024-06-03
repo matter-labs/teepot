@@ -19,8 +19,5 @@ stdenv.mkDerivation {
   postInstall = ''
     mkdir -p $out/opt/vault
     cp -r $src/* $out/opt/vault
-
-    mkdir -p $out/etc
-    printf "precedence ::ffff:0:0/96  100\n" > $out/etc/gai.conf
   '';
 }

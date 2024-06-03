@@ -1,18 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, inputs
-, makeRustPlatform
-, nixsgx
-, pkg-config
-, rust-bin
-, pkgs
-, ...
-}@args:
-let
-  teepotCrate = import ./teepot.nix args;
-in
-teepotCrate.craneLib.buildPackage (
+{ teepotCrate }: teepotCrate.craneLib.buildPackage (
   teepotCrate.commonArgs // {
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts

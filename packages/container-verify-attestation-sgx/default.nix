@@ -8,23 +8,19 @@
 , nixsgx
 }:
 dockerTools.buildLayeredImage {
-  name = "verify-attestation-sgx-azure";
+  name = "verify-attestation-sgx";
   tag = "latest";
 
   config.Cmd = [ "${teepot.teepot.verify_attestation}/bin/verify-attestation" ];
-  config.Env = [
-    "LD_LIBRARY_PATH=/lib"
-    "AZDCAP_DEBUG_LOG_LEVEL=ignore"
-    "AZDCAP_COLLATERAL_VERSION=v4"
-  ];
+  config.Env = [ "LD_LIBRARY_PATH=/lib" ];
   contents = buildEnv {
     name = "image-root";
 
     paths = with dockerTools; with nixsgx;[
       openssl.out
       curl.out
-      azure-dcap-client
       sgx-dcap.quote_verify
+      sgx-dcap.default_qpl
       teepot.teepot.verify_attestation
       usrBinEnv
       binSh

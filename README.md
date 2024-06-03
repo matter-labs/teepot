@@ -78,19 +78,26 @@ $ nix run .#fmt
 ### Build as the CI would
 
 ```shell
-$ nix run nixpgks#ci
+$ nix run github:nixos/nixpkgs/nixos-23.11#nixci
 ```
 
 ### Build and test individual container
 
-See the `packages` directory for the available packages.
+See the `packages` directory for the available packages and containers.
 
 ```shell
 $ nix build -L .#container-vault-sgx-azure
-$ docker load -i result
-$ docker build --progress plain --no-cache -f packages/container-vault-sgx-azure/Dockerfile -t vault-sgx-azure:latest  .
 [...]
 #8 5.966 Measurement:
-#8 5.966     96602d8ae60673b3c44b6198b4b5f728480b1f00e9d48e7d3979cf1cf075bb5d
+#8 5.966     45b9f90fc2562e66516f40c83adc30007c88427d8d9fa7a35718f4cbdeac3efd
 [...]
+$ docker load -i result
+$ docker run -v $(pwd):/mnt -i --init --rm teepot-vault-sgx-azure:latest "cp teepot-vault-sgx-azure.sig /mnt"
+$ nix shell github:matter-labs/nixsgx#gramine -c gramine-sgx-sigstruct-view teepot-vault-sgx-azure.sig
+Attributes:
+    mr_signer: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
+    mr_enclave: 45b9f90fc2562e66516f40c83adc30007c88427d8d9fa7a35718f4cbdeac3efd
+    isv_prod_id: 0
+    isv_svn: 0
+    debug_enclave: False
 ```
