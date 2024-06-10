@@ -291,6 +291,7 @@ async fn send_sig_request(args: SignTeeArgs) -> Result<()> {
     // open out_file early to fail fast if it is not writable
     let mut out_file = OpenOptions::new()
         .create(true)
+        .truncate(true)
         .write(true)
         .open(&args.out)?;
 

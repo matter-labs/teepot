@@ -58,7 +58,7 @@ pub async fn post_command(
     hasher.update(item.commands.as_bytes());
     let hash = hasher.finalize();
     let digest = hex::encode(hash);
-    admin_state.last_digest = digest.clone();
+    admin_state.last_digest.clone_from(&digest);
     conn.store_secret(admin_state, "state").await?;
 
     let mut responds = VaultCommandsResponse {
