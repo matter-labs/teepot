@@ -18,7 +18,9 @@ use clap::Parser;
 use init::post_init;
 use rustls::ServerConfig;
 use std::fmt::Debug;
+use std::io::Read;
 use std::net::Ipv6Addr;
+use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use teepot::client::{AttestationArgs, TeeConnection};
@@ -95,6 +97,8 @@ struct Args {
     port: u16,
     #[arg(long, env = "VAULT_AUTH_TEE_SHA256")]
     vault_auth_tee_sha: String,
+    #[arg(long, env = "VAULT_AUTH_TEE_SHA256_FILE")]
+    vault_auth_tee_sha_file: Option<PathBuf>,
     #[arg(long, env = "VAULT_AUTH_TEE_VERSION")]
     vault_auth_tee_version: String,
     #[clap(flatten)]
@@ -114,7 +118,7 @@ async fn main() -> Result<()> {
         );
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
-    let args = Args::parse();
+    let mut args = Args::parse();
 
     info!("Starting up");
 
@@ -136,6 +140,14 @@ async fn main() -> Result<()> {
     let conn = TeeConnection::new(&attestation_args);
 
     let server_state = get_vault_status(&args.attestation.vault_addr, conn.client()).await;
+
+    // If sha file given, override env variable with contents
+    if let Some(sha_file) = args.vault_auth_tee_sha_file {
+        let mut file = std::fs::File::open(sha_file)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        args.vault_auth_tee_sha = contents.trim_end().into();
+    }
 
     info!("Starting HTTPS server at port {}", args.port);
     let server_config = Arc::new(UnsealServerConfig {
