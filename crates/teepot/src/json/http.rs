@@ -122,17 +122,17 @@ pub struct AuthDataField {
 /// Vault auth
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct AuthField {
-    /// TODO
+    /// if the auth token is renewable
     pub renewable: bool,
-    /// TODO
+    /// the lease duration of the auth token
     pub lease_duration: isize,
-    /// TODO
+    /// the policies of the auth token
     pub policies: Vec<String>,
-    /// TODO
+    /// the accessor of the auth token
     pub accessor: String,
-    /// TODO
+    /// the client token
     pub client_token: String,
-    /// TODO
+    /// additional metadata
     pub metadata: AuthMetadataField,
 }
 
@@ -141,7 +141,7 @@ pub struct AuthField {
 pub struct AuthResponse {
     /// vault auth
     pub auth: AuthField,
-    ///
+    /// vault auth data
     pub data: AuthDataField,
 }
 
