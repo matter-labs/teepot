@@ -2,10 +2,7 @@
 # ❯ docker compose -f examples/docker-compose.yml --project-directory $PWD up
 services:
   tvu-1:
-    build:
-      context: .
-      dockerfile: packages/container-vault-unseal-sgx-azure/Dockerfile
-    image: tee-vault-unseal
+    image: teepot-vault-unseal-sgx-azure
     restart: "no"
     ports:
       - 8413
@@ -21,10 +18,7 @@ services:
       - /run/aesmd:/run/aesmd
       - /dev/sgx_enclave:/dev/sgx_enclave
   vault-1:
-    build:
-      context: .
-      dockerfile: packages/container-vault-sgx-azure/Dockerfile
-    image: vault
+    image: teepot-vault-sgx-azure
     restart: "no"
     ports:
       - 8210
@@ -40,7 +34,7 @@ services:
       - data-1:/opt/vault/data
 
   tvu-2:
-    image: tee-vault-unseal
+    image: teepot-vault-unseal-sgx-azure
     restart: "no"
     ports:
       - 8423
@@ -56,7 +50,7 @@ services:
       - /run/aesmd:/run/aesmd
       - /dev/sgx_enclave:/dev/sgx_enclave
   vault-2:
-    image: vault
+    image: teepot-vault-sgx-azure
     restart: "no"
     ports:
       - 8220:8210
@@ -72,7 +66,7 @@ services:
       - data-2:/opt/vault/data
 
   tvu-3:
-    image: tee-vault-unseal
+    image: teepot-vault-unseal-sgx-azure
     restart: "no"
     ports:
       - 8433
@@ -88,7 +82,7 @@ services:
       - /run/aesmd:/run/aesmd
       - /dev/sgx_enclave:/dev/sgx_enclave
   vault-3:
-    image: vault
+    image: teepot-vault-sgx-azure
     restart: "no"
     ports:
       - 8230:8210
@@ -104,9 +98,7 @@ services:
       - data-3:/opt/vault/data
 
   admin:
-    build:
-      context: .
-      dockerfile: packages/container-vault-admin-sgx-azure/Dockerfile
+    image: teepot-vault-admin-sgx-azure
     restart: "no"
     ports:
       - 8444:8444

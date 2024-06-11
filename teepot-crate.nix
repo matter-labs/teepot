@@ -7,10 +7,11 @@
 , pkg-config
 , rust-bin
 , pkgs
+, src
 , ...
 }:
 let
-  rustVersion = rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml;
+  rustVersion = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
   rustPlatform = makeRustPlatform {
     cargo = rustVersion;
     rustc = rustVersion;
@@ -29,16 +30,18 @@ let
     ];
 
     strictDeps = true;
+
+
     src = with lib.fileset; toSource {
-      root = ../../.;
+      root = src;
       fileset = unions [
-        ../../Cargo.lock
-        ../../Cargo.toml
-        ../../bin
-        ../../crates
-        ../../rust-toolchain.toml
-        ../../deny.toml
-        ../../taplo.toml
+        ./Cargo.lock
+        ./Cargo.toml
+        ./bin
+        ./crates
+        ./rust-toolchain.toml
+        ./deny.toml
+        ./taplo.toml
       ];
     };
 
