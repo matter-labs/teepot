@@ -47,12 +47,13 @@ Vault is unsealed!
 
 ```
 
-With `teepot-admin` being the name of the image running the tee-vault-admin service, the following commands can be used
+With `teepot-vault-admin-sgx-azure` being the name of the image running the teepot-vault-admin-sgx-azure service, the
+following commands can be used
 to sign the admin tee:
 
 ```bash
-❯ (id=$(docker create teepot-admin); docker cp $id:/app/tee-vault-admin.sig ~/tee-vault-admin.sig; docker rm -v $id)
-❯ cargo run -p vault-admin -- create-sign-request --tee-name admin ~/tee-vault-admin.sig > ~/sign_admin_tee.json
+❯ (id=$(docker create teepot-vault-admin-sgx-azure); docker cp $id:/app/teepot-vault-admin-sgx-azure.sig ~/teepot-vault-admin-sgx-azure.sig; docker rm -v $id)
+❯ cargo run -p vault-admin -- create-sign-request --tee-name admin ~/teepot-vault-admin-sgx-azure.sig > ~/sign_admin_tee.json
 ❯ vim sign_admin_tee.json
 ❯ gpg --local-user test@example.com --detach-sign --armor ~/sign_admin_tee.json
 ❯ RUST_LOG=info cargo run -p vault-admin -- \
@@ -91,8 +92,8 @@ Attributes:
 ```bash
 ❯ docker compose build && (docker compose rm; docker volume rm teepot_vault-storage teepot_ha-raft-1 teepot_shared-1 teepot_ha-raft-2 teepot_shared-2 teepot_ha-raft-3 teepot_shared-3; docke
 r compose up --remove-orphans vault-1 tvu-1)
-❯ (id=$(docker create teepot-admin); docker cp $id:/app/tee-vault-admin.sig ~/tee-vault-admin.sig; docker rm -v $id)
-❯ gramine-sgx-sigstruct-view ~/tee-vault-admin.sig
+❯ (id=$(docker create teepot-vault-admin-sgx-azure); docker cp $id:/app/teepot-vault-admin-sgx-azure.sig ~/teepot-vault-admin-sgx-azure.sig; docker rm -v $id)
+❯ gramine-sgx-sigstruct-view ~/teepot-vault-admin-sgx-azure.sig
 Attributes:
     mr_signer: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
     mr_enclave: 265ca491bf13e2486fd67d12038fcce02f133c5d91277e42f58c0ab464d5b46b
@@ -117,10 +118,10 @@ Passphrase:
 
 ## Kubernetes
 
-Find out the `mr_enclave` value of the tee-vault-admin enclave and extract the sigstruct file:
+Find out the `mr_enclave` value of the teepot-vault-admin-sgx-azure enclave and extract the sigstruct file:
 
 ```bash
-❯ docker run -v .:/mnt --pull always -it matterlabsrobot/teepot-tva:latest 'gramine-sgx-sigstruct-view tee-vault-admin.sig; cp tee-vault-admin.sig /mnt'
+❯ docker run -v .:/mnt --pull always -it matterlabsrobot/teepot-vault-admin-sgx-azure:latest 'gramine-sgx-sigstruct-view teepot-vault-admin-sgx-azure.sig; cp teepot-vault-admin-sgx-azure.sig /mnt'
 [...]
 Attributes:
     mr_signer: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
@@ -128,8 +129,8 @@ Attributes:
     isv_prod_id: 0
     isv_svn: 0
     debug_enclave: False
-❯ ls -l ~/tee-vault-admin.sig
--rw-r--r--. 1 harald harald 1808  2. Nov 10:46 tee-vault-admin.sig
+❯ ls -l ~/teepot-vault-admin-sgx-azure.sig
+-rw-r--r--. 1 harald harald 1808  2. Nov 10:46 teepot-vault-admin-sgx-azure.sig
 ```
 
 Start the vault service and pod and forward the port
@@ -145,7 +146,8 @@ Start the vault service and pod and forward the port
 
 Initialize the instance.
 This can take up to 6 minutes, depending on the `performance_multiplier` setting in vault.
-Adjust the `--admin-tee-mrenclave` parameter to match the `mr_enclave` value of the tee-vault-admin container.
+Adjust the `--admin-tee-mrenclave` parameter to match the `mr_enclave` value of the teepot-vault-admin-sgx-azure
+container.
 
 ```bash
 ❯ RUST_LOG=info cargo run -p vault-unseal --  \
@@ -209,40 +211,40 @@ The vault cluster should now settle to be completely unsealed and synced.
 Start the vault-admin pod and forward the port:
 
 ```bash
-❯ kubectl port-forward pods/tee-vault-admin 8444
+❯ kubectl port-forward pods/teepot-vault-admin-sgx-azure 8444
 ```
 
 Next is to sign the admin tee with the vault-admin tool:
 
 ```bash
-❯ cargo run -p vault-admin -- create-sign-request --tee-name admin ~/tee-vault-admin.sig > ~/tee-vault-admin.json
-❯ gpg --local-user test@example.com --detach-sign --armor ~/tee-vault-admin.json
+❯ cargo run -p vault-admin -- create-sign-request --tee-name admin ~/teepot-vault-admin-sgx-azure.sig > ~/teepot-vault-admin-sgx-azure.json
+❯ gpg --local-user test@example.com --detach-sign --armor ~/teepot-vault-admin-sgx-azure.json
 ❯ cargo run -p vault-admin -- command \
   --server https://127.0.0.1:8444 \
   --sgx-allowed-tcb-levels SwHardeningNeeded \
-  --out ~/tee-vault-admin-new.sig \
-  ~/tee-vault-admin.json ~/tee-vault-admin.json.asc
+  --out ~/teepot-vault-admin-sgx-azure-new.sig \
+  ~/teepot-vault-admin-sgx-azure.json ~/teepot-vault-admin-sgx-azure.json.asc
 ```
 
-Then replace `tee-vault-admin.sig` with `tee-vault-admin-new.sig` in the container
-image `matterlabsrobot/teepot-tva:latest` with this Dockerfile:
+Then replace `teepot-vault-admin-sgx-azure.sig` with `teepot-vault-admin-sgx-azure-new.sig` in the container
+image `matterlabsrobot/teepot-vault-admin-sgx-azure:latest` with this Dockerfile:
 
 ```Dockerfile
-FROM matterlabsrobot/teepot-tva:latest
-COPY tee-vault-admin-new.sig /app/tee-vault-admin.sig
+FROM matterlabsrobot/teepot-vault-admin-sgx-azure:latest
+COPY teepot-vault-admin-sgx-azure-new.sig /app/teepot-vault-admin-sgx-azure.sig
 ```
 
 Build and push the new image:
 
 ```bash
-❯ docker build -t matterlabsrobot/teepot-tva-signed:latest .
-❯ docker push matterlabsrobot/teepot-tva-signed:latest
+❯ docker build -t matterlabsrobot/teepot-vault-admin-sgx-azure-signed:latest .
+❯ docker push matterlabsrobot/teepot-vault-admin-sgx-azure-signed:latest
 ```
 
 Delete the old vault-admin pod and start the new one:
 
 ```bash
-❯ kubectl delete pod/tee-vault-admin
+❯ kubectl delete pod/teepot-vault-admin-sgx-azure
 ❯ kubectl apply -f examples/k8s/vault-admin-signed-pod.yaml
 ```
 
