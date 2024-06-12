@@ -118,5 +118,5 @@ jobs:
       - name: Push Docker image to matterlabs-infra
         if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
         run: |
-          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}::${{ steps.buildid.outputs.BUILD_ID }}"
-          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}::${{ steps.buildid.outputs.BUILD_ID }}"
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.buildid.outputs.BUILD_ID }}"
+          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.buildid.outputs.BUILD_ID }}"
