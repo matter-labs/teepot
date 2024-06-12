@@ -51,7 +51,6 @@ jobs:
 
   push_to_docker:
     needs: build
-    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.config.nixpackage }}
@@ -60,11 +59,13 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { nixpackage: 'container-vault-sgx-azure', dockerfile: 'packages/container-vault-sgx-azure/Dockerfile', repository: 'teepot-vault' }
-          - { nixpackage: 'container-vault-unseal-sgx-azure', dockerfile: 'packages/container-vault-unseal-sgx-azure/Dockerfile', repository: 'teepot-tvu' }
-          - { nixpackage: 'container-vault-admin-sgx-azure', dockerfile: 'packages/container-vault-admin-sgx-azure/Dockerfile', repository: 'teepot-tva' }
-          - { nixpackage: 'container-self-attestation-test-sgx-dcap', dockerfile: 'packages/container-self-attestation-test-sgx-dcap/Dockerfile', repository: 'teepot-self-attestation-test-sgx-dcap' }
-          - { nixpackage: 'container-self-attestation-test-sgx-azure', dockerfile: 'packages/container-self-attestation-test-sgx-azure/Dockerfile', repository: 'teepot-self-attestation-test-sgx-azure' }
+          - { nixpackage: 'container-vault-sgx-azure' }
+          - { nixpackage: 'container-vault-unseal-sgx-azure' }
+          - { nixpackage: 'container-vault-admin-sgx-azure' }
+          - { nixpackage: 'container-vault-unseal' }
+          - { nixpackage: 'container-vault-admin' }
+          - { nixpackage: 'container-self-attestation-test-sgx-dcap' }
+          - { nixpackage: 'container-self-attestation-test-sgx-azure' }
           - { nixpackage: 'container-verify-attestation-sgx' }
     steps:
       - uses: actions/checkout@v4
@@ -86,30 +87,36 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Load and Push nix container
+      - name: Load container
+        id: build
         run: |
-          nix build  -L .#${{ matrix.config.nixpackage }}
+          nix build --accept-flake-config -L .#${{ matrix.config.nixpackage }}
           export IMAGE_TAG=$(docker load < result | grep -Po 'Loaded image.*: \K.*')
-          echo "Pushing image ${IMAGE_TAG} to Docker Hub"
-          docker tag "${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG}"
-          docker push matterlabsrobot/"${IMAGE_TAG}"
-          docker tag matterlabsrobot/"${IMAGE_TAG}" matterlabsrobot/"${IMAGE_TAG%:*}:latest"
-          docker push matterlabsrobot/"${IMAGE_TAG%:*}:latest"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME=${IMAGE_TAG%:*}" >> "$GITHUB_OUTPUT"
+
+      - name: Push container
+        run: |
+          echo "Pushing image ${{ steps.build.outputs.IMAGE_TAG }} to Docker Hub"
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_TAG }}"
+          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_TAG }}"
+
+      - name: Tag container as latest
+        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
+        run: |
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
+          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
 
       - name: Generate build ID for Flux Image Automation
-        if: ${{ matrix.config.dockerfile }}
+        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
         id: buildid
         run: |
           sha=$(git rev-parse --short HEAD)
           ts=$(date +%s%N | cut -b1-13)
           echo "BUILD_ID=${sha}-${ts}" >> "$GITHUB_OUTPUT"
 
-      - name: Build and Push Container
-        if: ${{ matrix.config.dockerfile }}
-        uses: docker/build-push-action@v5
-        with:
-          file: ${{ matrix.config.dockerfile }}
-          tags: |
-            "matterlabsrobot/${{ matrix.config.repository }}:latest"
-            "matterlabsrobot/${{ matrix.config.repository }}:${{ steps.buildid.outputs.BUILD_ID }}"
-          push: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
+      - name: Push Docker image to matterlabs-infra
+        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
+        run: |
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}::${{ steps.buildid.outputs.BUILD_ID }}"
+          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}::${{ steps.buildid.outputs.BUILD_ID }}"
