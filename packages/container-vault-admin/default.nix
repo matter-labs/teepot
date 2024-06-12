@@ -8,9 +8,9 @@
 , nixsgx
 }:
 dockerTools.buildLayeredImage {
-  name = "vault-unseal";
+  name = "vault-admin";
 
-  config.Entrypoint = [ "${teepot.teepot.vault_unseal}/bin/vault-unseal" ];
+  config.Entrypoint = [ "${teepot.teepot.vault_admin}/bin/vault-admin" ];
 
   contents = buildEnv {
     name = "image-root";
@@ -23,7 +23,7 @@ dockerTools.buildLayeredImage {
       binSh
       caCertificates
       fakeNss
-      teepot.teepot.vault_unseal
+      teepot.teepot.vault_admin
     ];
     pathsToLink = [ "/bin" "/lib" "/etc" ];
   };

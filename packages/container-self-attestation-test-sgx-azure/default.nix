@@ -6,7 +6,7 @@
 , teepot
 , nixsgx
 , container-name ? "teepot-self-attestation-test-sgx-azure"
-, tag ? "latest"
+, tag ? null
 , isAzure ? true
 }:
 pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {

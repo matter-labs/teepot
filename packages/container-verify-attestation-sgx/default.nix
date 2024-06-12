@@ -9,7 +9,6 @@
 }:
 dockerTools.buildLayeredImage {
   name = "verify-attestation-sgx";
-  tag = "latest";
 
   config.Cmd = [ "${teepot.teepot.verify_attestation}/bin/verify-attestation" ];
   config.Env = [ "LD_LIBRARY_PATH=/lib" ];

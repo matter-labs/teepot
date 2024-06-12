@@ -7,7 +7,7 @@
 , nixsgx
 , vat
 , container-name ? "teepot-vault-unseal-sgx-azure"
-, tag ? "latest"
+, tag ? null
 , isAzure ? true
 }:
 pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {

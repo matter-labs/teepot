@@ -27,7 +27,7 @@ spec:
   imagePullSecrets:
     - name: docker-regcred
   containers:
-    - image: matterlabsrobot/teepot-vault:latest
+    - image: matterlabsrobot/teepot-vault-sgx-azure:latest
       name: vault
       imagePullPolicy: Always
       env:
@@ -64,7 +64,7 @@ spec:
           name: shared-3
         - mountPath: /opt/vault/data
           name: data-3
-    - image: matterlabsrobot/teepot-tvu:latest
+    - image: matterlabsrobot/teepot-vault-unseal-sgx-azure:latest
       name: vault-unseal
       imagePullPolicy: Always
       env:
