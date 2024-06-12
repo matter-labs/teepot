@@ -8,7 +8,7 @@
 , vat
 , vault
 , container-name ? "teepot-vault-sgx-azure"
-, tag ? "latest"
+, tag ? null
 , isAzure ? true
 }:
 let

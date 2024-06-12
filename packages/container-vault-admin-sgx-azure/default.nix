@@ -6,8 +6,8 @@
 , teepot
 , nixsgx
 , container-name ? "teepot-vault-admin-sgx-azure"
-, tag ? "latest"
-, isAzure ? true
+, tag ? null
+, isAzure ? null
 }:
 pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {
   name = container-name;
