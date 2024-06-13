@@ -7,8 +7,9 @@
 #![deny(clippy::all)]
 
 use anyhow::{Context, Result};
-use hex::ToHex;
 use k256::ecdsa::SigningKey;
+use k256::pkcs8::{EncodePrivateKey, LineEnding};
+
 use std::env;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
@@ -39,7 +40,7 @@ fn main_with_error() -> Result<()> {
     let mut rng = rand::thread_rng();
     let signing_key = SigningKey::random(&mut rng);
     let verifying_key_bytes = signing_key.verifying_key().to_sec1_bytes();
-    let signing_key_string = signing_key.to_bytes().encode_hex::<String>();
+    let signing_key_string = signing_key.to_pkcs8_pem(LineEnding::LF)?;
     let tee_type = match get_quote(&verifying_key_bytes) {
         Ok(quote) => {
             // save quote to file
