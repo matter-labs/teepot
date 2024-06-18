@@ -45,7 +45,6 @@ let
       ];
     };
 
-    RUSTFLAGS = "--cfg mio_unsupported_force_waker_pipe";
     checkType = "debug";
   };
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
