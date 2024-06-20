@@ -39,7 +39,7 @@ log = "0.4"
 mio = "0.8.11"
 num-integer = "0.1.46"
 num-traits = "0.2.18"
-pgp = "0.11"
+pgp = "0.13"
 p256 = "0.13.2"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
