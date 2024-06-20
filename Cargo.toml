@@ -36,7 +36,7 @@ intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs"
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 k256 = "0.13"
 log = "0.4"
-mio = "0.8.11"
+mio = "1.0.0"
 num-integer = "0.1.46"
 num-traits = "0.2.18"
 pgp = "0.13"
