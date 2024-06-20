@@ -12,6 +12,6 @@ anyhow.workspace = true
 clap.workspace = true
 serde.workspace = true
 teepot.workspace = true
+tracing.workspace = true
 tracing-log.workspace = true
 tracing-subscriber.workspace = true
-tracing.workspace = true

@@ -23,7 +23,7 @@ jobs:
   taplo:
     name: taplo
     runs-on: ubuntu-latest
-    container: tamasfe/taplo:latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-      - run: taplo fmt --check
+      - uses: cachix/install-nix-action@v27
+      - run: nix run nixpkgs#taplo -- fmt --check
