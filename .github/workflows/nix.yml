@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   push:
     branches: [ "main" ]
+    tags: [ "*-sgx-*" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -102,21 +103,38 @@ jobs:
           docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_TAG }}"
 
       - name: Tag container as latest
-        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'push' }}
         run: |
           docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
           docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
 
       - name: Generate build ID for Flux Image Automation
-        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
-        id: buildid
+        id: flux
+        if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags') }}
         run: |
           sha=$(git rev-parse --short HEAD)
           ts=$(date +%s%N | cut -b1-13)
           echo "BUILD_ID=${sha}-${ts}" >> "$GITHUB_OUTPUT"
 
-      - name: Push Docker image to matterlabs-infra
-        if: ${{ github.event_name == 'push' ||  github.event_name == 'schedule' }}
+      - name: Generate build ID for Flux Image Automation
+        id: tag
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
         run: |
-          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.buildid.outputs.BUILD_ID }}"
-          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.buildid.outputs.BUILD_ID }}"
+          echo "BUILD_ID=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Auth to google artifact registry
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          gcloud auth configure-docker us-docker.pkg.dev -q
+
+      - name: Push Docker image to matterlabs-infra
+        if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags') }}
+        run: |
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" "us-docker.pkg.dev/matterlabs-infra/matterlabs-docker/${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.flux.outputs.BUILD_ID }}"
+          docker push "us-docker.pkg.dev/matterlabs-infra/matterlabs-docker/${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.flux.outputs.BUILD_ID }}"
+
+      - name: Push Docker image to matterlabs-infra
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+        run: |
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" "us-docker.pkg.dev/matterlabs-infra/matterlabs-docker/${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.tag.outputs.BUILD_ID }}"
+          docker push "us-docker.pkg.dev/matterlabs-infra/matterlabs-docker/${{ steps.build.outputs.IMAGE_NAME }}:${{ steps.tag.outputs.BUILD_ID }}"
