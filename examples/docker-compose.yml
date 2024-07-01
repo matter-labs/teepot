@@ -114,26 +114,7 @@ services:
       - /run/aesmd:/run/aesmd
       - /dev/sgx_enclave:/dev/sgx_enclave
 
-#  stress:
-#    build:
-#      context: .
-#      dockerfile: bin/tee-stress-client/Dockerfile-azure
-#    restart: "no"
-#    environment:
-#      VAULT_ADDR: "https://vault-1:8210"
-#      VAULT_SGX_MRSIGNER: "c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d"
-#      VAULT_SGX_ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
-#      ALLOWED_TCB_LEVELS: "SwHardeningNeeded"
-#    privileged: true
-#    init: true
-#    volumes:
-#      - /run/aesmd:/run/aesmd
-#      - /dev/sgx_enclave:/dev/sgx_enclave
-
 volumes:
-  shared-1:
   data-1:
-  shared-2:
   data-2:
-  shared-3:
   data-3:
