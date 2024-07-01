@@ -165,11 +165,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1717281328,
-        "narHash": "sha256-evZPzpf59oNcDUXxh2GHcxHkTEG4fjae2ytWP85jXRo=",
+        "lastModified": 1719707984,
+        "narHash": "sha256-RoxIr/fbndtuKqulGvNCcuzC6KdAib85Q8gXnjzA1dw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b3b2b28c1daa04fe2ae47c21bb76fd226eac4ca1",
+        "rev": "7dca15289a1c2990efbe4680f0923ce14139b042",
         "type": "github"
       },
       "original": {
@@ -201,11 +201,11 @@
         "snowfall-lib": "snowfall-lib"
       },
       "locked": {
-        "lastModified": 1718699802,
-        "narHash": "sha256-1Q+xMLgggLj2W/u8M1zJeqqGMDRoEjIeve12Jt4EAXM=",
+        "lastModified": 1719845153,
+        "narHash": "sha256-i2S/3JenGdtUFublhYSnfoUGcvIyngUBlF3l3XKsn08=",
         "owner": "matter-labs",
         "repo": "nixsgx",
-        "rev": "d9eb744741368eb13fc2247cb3603551828d623f",
+        "rev": "07ae787761c3c7195d743f16d18071daf5f49dfd",
         "type": "github"
       },
       "original": {
@@ -281,11 +281,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1716675292,
-        "narHash": "sha256-7TFvVE4HR/b65/0AAhewYHEJzUXxIEJn82ow5bCkrDo=",
+        "lastModified": 1719005984,
+        "narHash": "sha256-mpFl3Jv4fKnn+5znYXG6SsBjfXHJdRG5FEqNSPx0GLA=",
         "owner": "snowfallorg",
         "repo": "lib",
-        "rev": "5d6e9f235735393c28e1145bec919610b172a20f",
+        "rev": "c6238c83de101729c5de3a29586ba166a9a65622",
         "type": "github"
       },
       "original": {

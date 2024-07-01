@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, pkgs
-, inputs
-, teepot
-, nixsgx
+{ teepot
+, nixsgxLib
 , vat
 , vault
 , container-name ? "teepot-vault-sgx-azure"
@@ -15,7 +12,7 @@ let
   entrypoint = "${teepot.teepot.tee_ratls_preexec}/bin/tee-ratls-preexec";
   appDir = "/opt/vault";
 in
-pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {
+nixsgxLib.mkSGXContainer {
   name = container-name;
   inherit tag;
   inherit appDir;

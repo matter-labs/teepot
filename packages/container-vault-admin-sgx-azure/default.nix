@@ -1,15 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, pkgs
-, inputs
-, teepot
-, nixsgx
+{ teepot
+, nixsgxLib
 , container-name ? "teepot-vault-admin-sgx-azure"
 , tag ? null
 , isAzure ? null
 }:
-pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {
+nixsgxLib.mkSGXContainer {
   name = container-name;
   inherit tag;
 
