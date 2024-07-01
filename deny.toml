@@ -29,11 +29,10 @@ allow = [
   "Unlicense",
   "MPL-2.0",
   "Unicode-DFS-2016",
-  #  "CC0-1.0", # not yet seen
   "BSD-2-Clause",
   "BSD-3-Clause",
   "OpenSSL",
-  "Unicode-3.0",
+  "CC0-1.0",
 ]
 deny = []
 allow-osi-fsf-free = "neither"

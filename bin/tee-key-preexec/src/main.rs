@@ -7,8 +7,7 @@
 #![deny(clippy::all)]
 
 use anyhow::{Context, Result};
-use k256::ecdsa::SigningKey;
-use k256::pkcs8::{EncodePrivateKey, LineEnding};
+use secp256k1::{rand, Keypair, PublicKey, Secp256k1, SecretKey};
 
 use std::env;
 use std::os::unix::process::CommandExt;
@@ -38,10 +37,12 @@ fn main_with_error() -> Result<()> {
     }
 
     let mut rng = rand::thread_rng();
-    let signing_key = SigningKey::random(&mut rng);
-    let verifying_key_bytes = signing_key.verifying_key().to_sec1_bytes();
-    let signing_key_string = signing_key.to_pkcs8_pem(LineEnding::LF)?;
-    let tee_type = match get_quote(&verifying_key_bytes) {
+    let secp = Secp256k1::new();
+    let keypair = Keypair::new(&secp, &mut rng);
+    let signing_key = SecretKey::from_keypair(&keypair);
+    let verifying_key = PublicKey::from_keypair(&keypair);
+    let verifying_key_bytes = verifying_key.serialize();
+    let tee_type = match get_quote(verifying_key_bytes.as_ref()) {
         Ok(quote) => {
             // save quote to file
             std::fs::write(TEE_QUOTE_FILE, quote)?;
@@ -56,7 +57,7 @@ fn main_with_error() -> Result<()> {
 
     let err = Command::new(&args[1])
         .args(&args[2..])
-        .env("TEE_SIGNING_KEY", signing_key_string)
+        .env("TEE_SIGNING_KEY", signing_key.display_secret().to_string())
         .env("TEE_QUOTE_FILE", TEE_QUOTE_FILE)
         .env("TEE_TYPE", tee_type)
         .exec();
