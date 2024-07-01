@@ -1,26 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib
-, pkgs
-, inputs
-, teepot
-, nixsgx
+{ teepot
+, nixsgxLib
 , vat
 , container-name ? "teepot-vault-unseal-sgx-azure"
 , tag ? null
 , isAzure ? true
 }:
-pkgs.callPackage inputs.nixsgx-flake.lib.mkSGXContainer {
+nixsgxLib.mkSGXContainer {
   name = container-name;
-  inherit tag;
+  inherit tag isAzure;
 
   packages = [
     vat.vault-auth-tee.sha
     teepot.teepot.tee_vault_unseal
   ];
   entrypoint = "${teepot.teepot.tee_vault_unseal}/bin/tee-vault-unseal";
-
-  isAzure = true;
 
   manifest = {
     loader = {
