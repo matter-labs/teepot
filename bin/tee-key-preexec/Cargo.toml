@@ -10,8 +10,8 @@ repository.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-k256.workspace = true
 rand.workspace = true
+secp256k1.workspace = true
 teepot.workspace = true
 tracing.workspace = true
 tracing-log.workspace = true
