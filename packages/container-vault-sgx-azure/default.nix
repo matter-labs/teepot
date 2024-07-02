@@ -69,7 +69,6 @@ nixsgxLib.mkSGXContainer {
       edmm_enable = false;
       enclave_size = "8G";
       max_threads = 64;
-      nonpie_binary = true;
 
       trusted_files = [
         "file:/opt/vault/plugins/"

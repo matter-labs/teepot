@@ -33,6 +33,7 @@ In `~/.config/nix/nix.conf`
 
 ```ini
 experimental-features = nix-command flakes
+sandbox = true
 ```
 
 or on nixos in `/etc/nixos/configuration.nix` add the following lines:
@@ -42,22 +43,16 @@ or on nixos in `/etc/nixos/configuration.nix` add the following lines:
   nix = {
     extraOptions = ''
       experimental-features = nix-command flakes
+      sandbox = true
     '';
   };
 }
 ```
 
-Optionally install cachix (to save build time) and use the nixsgx cache:
-
-```shell
-$ nix-env -iA cachix -f https://cachix.org/api/v1/install
-$ cachix use nixsgx
-```
-
 ### Develop
 
 ```shell
-$ nix develop --impure
+$ nix develop
 ```
 
 optionally create `.envrc` for `direnv` to automatically load the environment when entering the directory:
@@ -86,17 +81,17 @@ $ nix run github:nixos/nixpkgs/nixos-23.11#nixci
 See the `packages` directory for the available packages and containers.
 
 ```shell
-$ nix build -L .#container-vault-sgx-azure
+$ nix build -L .#container-self-attestation-test-sgx-azure
 [...]
-#8 5.966 Measurement:
-#8 5.966     45b9f90fc2562e66516f40c83adc30007c88427d8d9fa7a35718f4cbdeac3efd
+teepot-self-attestation-test-sgx-azure-manifest-app-customisation-layer> Measurement:
+teepot-self-attestation-test-sgx-azure-manifest-app-customisation-layer>     eaaabf210797606bcfde818a52e4a434fbf4f2e620d7edcc7025e3e1bbaa95c4
 [...]
-$ docker load -i result
-$ docker run -v $(pwd):/mnt -i --init --rm teepot-vault-sgx-azure:latest "cp teepot-vault-sgx-azure.sig /mnt"
-$ nix shell github:matter-labs/nixsgx#gramine -c gramine-sgx-sigstruct-view teepot-vault-sgx-azure.sig
+$ export IMAGE_TAG=$(docker load < result | grep -Po 'Loaded image.*: \K.*')
+$ docker run -v $(pwd):/mnt -i --init --rm $IMAGE_TAG "cp app.sig /mnt"
+$ nix shell github:matter-labs/nixsgx#gramine -c gramine-sgx-sigstruct-view app.sig
 Attributes:
     mr_signer: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
-    mr_enclave: 45b9f90fc2562e66516f40c83adc30007c88427d8d9fa7a35718f4cbdeac3efd
+    mr_enclave: eaaabf210797606bcfde818a52e4a434fbf4f2e620d7edcc7025e3e1bbaa95c4
     isv_prod_id: 0
     isv_svn: 0
     debug_enclave: False
