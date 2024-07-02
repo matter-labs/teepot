@@ -40,9 +40,9 @@ spec:
       readinessProbe:
         exec:
           command:
-          - curl
-          - -k
-          - https://localhost:8210/v1/sys/health
+            - curl
+            - -k
+            - https://localhost:8210/v1/sys/health
         initialDelaySeconds: 5
         periodSeconds: 5
       ports:
@@ -60,8 +60,6 @@ spec:
       securityContext:
         privileged: true
       volumeMounts:
-        - mountPath: /opt/vault/tls
-          name: shared-2
         - mountPath: /opt/vault/data
           name: data-2
     - image: matterlabsrobot/teepot-vault-unseal-sgx-azure:latest
@@ -83,15 +81,9 @@ spec:
           sgx.intel.com/epc: "10Mi"
       securityContext:
         privileged: true
-      volumeMounts:
-        - mountPath: /opt/vault/tls
-          name: shared-2
   restartPolicy: Never
   volumes:
-    - name: shared-2
-      persistentVolumeClaim:
-        claimName: shared-2
     - name: data-2
       persistentVolumeClaim:
         claimName: data-2
-status: {}
+status: { }

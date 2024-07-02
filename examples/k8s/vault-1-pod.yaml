@@ -40,9 +40,9 @@ spec:
       readinessProbe:
         exec:
           command:
-          - curl
-          - -k
-          - https://localhost:8210/v1/sys/health
+            - curl
+            - -k
+            - https://localhost:8210/v1/sys/health
         initialDelaySeconds: 5
         periodSeconds: 5
       ports:
@@ -60,18 +60,16 @@ spec:
       securityContext:
         privileged: true
       volumeMounts:
-        - mountPath: /opt/vault/tls
-          name: shared-1
         - mountPath: /opt/vault/data
           name: data-1
     - image: matterlabsrobot/teepot-vault-unseal-sgx-azure:latest
       name: vault-unseal
       imagePullPolicy: Always
       env:
-      - name: VAULT_ADDR
-        value: "https://vault-1:8210"
-      - name: ALLOWED_TCB_LEVELS
-        value: "SwHardeningNeeded"
+        - name: VAULT_ADDR
+          value: "https://vault-1:8210"
+        - name: ALLOWED_TCB_LEVELS
+          value: "SwHardeningNeeded"
       ports:
         - containerPort: 8443
           hostPort: 8443
@@ -83,15 +81,9 @@ spec:
           sgx.intel.com/epc: "10Mi"
       securityContext:
         privileged: true
-      volumeMounts:
-        - mountPath: /opt/vault/tls
-          name: shared-1
   restartPolicy: Never
   volumes:
-    - name: shared-1
-      persistentVolumeClaim:
-        claimName: shared-1
     - name: data-1
       persistentVolumeClaim:
         claimName: data-1
-status: {}
+status: { }

@@ -90,8 +90,7 @@ Attributes:
 ```
 
 ```bash
-❯ docker compose build && (docker compose rm; docker volume rm teepot_vault-storage teepot_ha-raft-1 teepot_shared-1 teepot_ha-raft-2 teepot_shared-2 teepot_ha-raft-3 teepot_shared-3; docke
-r compose up --remove-orphans vault-1 tvu-1)
+❯ docker compose build && (docker compose rm; docker volume rm teepot_vault-storage teepot_ha-raft-1 teepot_ha-raft-2 teepot_ha-raft-3; docker compose up --remove-orphans vault-1 tvu-1)
 ❯ (id=$(docker create teepot-vault-admin-sgx-azure); docker cp $id:/app/teepot-vault-admin-sgx-azure.sig ~/teepot-vault-admin-sgx-azure.sig; docker rm -v $id)
 ❯ gramine-sgx-sigstruct-view ~/teepot-vault-admin-sgx-azure.sig
 Attributes:
@@ -138,7 +137,6 @@ Start the vault service and pod and forward the port
 ```bash
 ❯ kubectl apply \
   -f examples/k8s/data-1-persistentvolumeclaim.yaml \
-  -f examples/k8s/shared-1-persistentvolumeclaim.yaml \
   -f examples/k8s/vault-1-pod.yaml \
   -f examples/k8s/vault-1-service.yaml
 ❯ kubectl port-forward pods/vault-1 8443
