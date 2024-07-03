@@ -130,7 +130,7 @@ pub async fn post_unseal(
                 info!("Vault is unsealed and hopefully configured!");
                 info!("Initiating raft join");
                 // load TLS cert chain
-                let mut cert_file = File::open("/opt/vault/tls/cacert.pem")
+                let mut cert_file = File::open(&app.ca_cert_file)
                     .context("Failed to open TLS cert chain")
                     .status(StatusCode::INTERNAL_SERVER_ERROR)?;
 
