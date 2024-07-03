@@ -38,7 +38,7 @@ nixsgxLib.mkSGXContainer {
         ### Enclave security ###
         ALLOWED_TCB_LEVELS = "SwHardeningNeeded";
 
-        VAULT_AUTH_TEE_SHA256 = "${vat.vault-auth-tee.sha}/share/vault-auth-tee.sha256";
+        VAULT_AUTH_TEE_SHA256_FILE = "${vat.vault-auth-tee.sha}/share/vault-auth-tee.sha256";
         ### TODO: remove hardcoded version ###
         VAULT_AUTH_TEE_VERSION = "0.1.0+dev";
       };
