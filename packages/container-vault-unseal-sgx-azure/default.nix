@@ -12,6 +12,7 @@ nixsgxLib.mkSGXContainer {
   inherit tag isAzure;
 
   packages = [
+    teepot.container-vault-start-config
     vat.vault-auth-tee.sha
     teepot.teepot.tee_vault_unseal
   ];

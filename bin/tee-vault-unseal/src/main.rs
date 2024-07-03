@@ -61,6 +61,8 @@ pub struct UnsealServerConfig {
     pub vault_auth_tee_sha: String,
     /// version string of the vault_auth_tee plugin
     pub vault_auth_tee_version: String,
+    /// the common cacert file for the vault cluster
+    pub ca_cert_file: PathBuf,
 }
 
 /// Server state
@@ -101,6 +103,9 @@ struct Args {
     vault_auth_tee_sha_file: Option<PathBuf>,
     #[arg(long, env = "VAULT_AUTH_TEE_VERSION")]
     vault_auth_tee_version: String,
+    /// ca cert file
+    #[arg(long, env = "CA_CERT_FILE", default_value = "/opt/vault/cacert.pem")]
+    ca_cert_file: PathBuf,
     #[clap(flatten)]
     pub attestation: VaultAttestationArgs,
 }
@@ -156,6 +161,7 @@ async fn main() -> Result<()> {
         allowed_tcb_levels: Some(args.allowed_tcb_levels),
         vault_auth_tee_sha: args.vault_auth_tee_sha,
         vault_auth_tee_version: args.vault_auth_tee_version,
+        ca_cert_file: args.ca_cert_file,
     });
 
     let server_state = Arc::new(RwLock::new(server_state));
