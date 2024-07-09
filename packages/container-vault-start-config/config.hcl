@@ -18,7 +18,7 @@ listener "tcp" {
 storage "raft" {
   path = "/opt/vault/data/"
   # override via env var VAULT_RAFT_NODE_ID
-  node_id = "vault-0.teepot-vault"
+  node_id = "teepot-vault-0.teepot-vault"
 
   # Parameter needed because of slow plugin loading
   # may be relaxed for faster machines
@@ -27,19 +27,19 @@ storage "raft" {
   #autopilot_update_interval = "60s"
 
   retry_join {
-    leader_api_addr         = "https://vault-0.teepot-vault:8210"
+    leader_api_addr         = "https://teepot-vault-0.teepot-vault:8210"
     leader_ca_cert_file     = "/opt/vault/cacert.pem"
     leader_client_cert_file = "/opt/vault/tls/tls.crt"
     leader_client_key_file  = "/opt/vault/tls/tls.key"
   }
   retry_join {
-    leader_api_addr         = "https://vault-1.teepot-vault:8210"
+    leader_api_addr         = "https://teepot-vault-1.teepot-vault:8210"
     leader_ca_cert_file     = "/opt/vault/cacert.pem"
     leader_client_cert_file = "/opt/vault/tls/tls.crt"
     leader_client_key_file  = "/opt/vault/tls/tls.key"
   }
   retry_join {
-    leader_api_addr         = "https://vault-2.teepot-vault:8210"
+    leader_api_addr         = "https://teepot-vault-2.teepot-vault:8210"
     leader_ca_cert_file     = "/opt/vault/cacert.pem"
     leader_client_cert_file = "/opt/vault/tls/tls.crt"
     leader_client_key_file  = "/opt/vault/tls/tls.key"
