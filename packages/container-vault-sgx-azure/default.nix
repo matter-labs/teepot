@@ -48,7 +48,7 @@ nixsgxLib.mkSGXContainer {
         VAULT_API_ADDR.passthrough = true;
         VAULT_RAFT_NODE_ID.passthrough = true;
 
-        DNS_NAMES = "teepot-vault.teepot-vault,vault-0.teepot-vault,vault-1.teepot-vault,vault-2.teepot-vault";
+        DNS_NAMES = "teepot-vault.teepot-vault,teepot-vault-0.teepot-vault,teepot-vault-1.teepot-vault,teepot-vault-2.teepot-vault";
 
         # otherwise vault will lock a lot of unused EPC memory
         VAULT_RAFT_INITIAL_MMAP_SIZE = "0";
