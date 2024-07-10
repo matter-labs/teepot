@@ -3076,6 +3076,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "verify-attestation-sgx"
+version = "0.1.2-alpha.1"
+dependencies = [
+ "anyhow",
+ "clap",
+ "hex",
+ "secp256k1",
+ "teepot",
+]
+
+[[package]]
 name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

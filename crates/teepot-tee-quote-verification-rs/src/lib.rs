@@ -416,7 +416,7 @@ impl<'a> Deref for SgxQlQveCollateralT<'a> {
 /// SGX/TDX Quote, presented as u8 vector.
 ///
 /// # Return
-/// Result type of quote_collecteral.
+/// Result type of quote_collateral.
 ///
 /// - **quote_collateral**\
 /// This is the Quote Certification Collateral retrieved based on Quote.
