@@ -8,6 +8,7 @@ repository.workspace = true
 homepage.workspace = true
 
 [dependencies]
+alloy-primitives.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 hex.workspace = true
