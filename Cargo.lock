@@ -3671,15 +3671,6 @@ dependencies = [
 name = "verify-attestation"
 version = "0.1.2-alpha.1"
 dependencies = [
- "anyhow",
- "hex",
- "teepot",
-]
-
-[[package]]
-name = "verify-attestation-sgx"
-version = "0.1.2-alpha.1"
-dependencies = [
  "alloy-primitives",
  "anyhow",
  "clap",

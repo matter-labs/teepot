@@ -29,7 +29,6 @@
       "vault_admin"
       "vault_unseal"
       "verify_attestation"
-      "verify_attestation_sgx"
     ];
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
