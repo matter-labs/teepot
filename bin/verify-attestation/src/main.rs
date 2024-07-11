@@ -17,7 +17,7 @@ use teepot::{
 #[command(author = "Matter Labs", version, about = "SGX attestation and batch signature verifier", long_about = None)]
 struct Arguments {
     /// Attestation quote proving the signature originated from a TEE enclave.
-    #[clap(value_parser)]
+    #[clap(name = "attestation_file", value_parser)]
     attestation: ArgSource,
     /// An optional subcommand, for instance, for optional signature verification.
     #[clap(subcommand)]
