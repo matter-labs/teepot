@@ -3,7 +3,6 @@
 
 //! Tool for SGX attestation and batch signature verification
 
-use alloy_primitives::B256;
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand};
 use secp256k1::{ecdsa::Signature, Message, PublicKey};
@@ -12,6 +11,7 @@ use teepot::{
     client::TcbLevel,
     sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
 };
+use zksync_basic_types::H256;
 
 #[derive(Parser, Debug)]
 #[command(author = "Matter Labs", version, about = "SGX attestation and batch signature verifier", long_about = None)]
@@ -48,7 +48,7 @@ struct SignatureArgs {
     signature_file: PathBuf,
     /// Batch root hash for signature verification.
     #[arg(long)]
-    root_hash: B256,
+    root_hash: H256,
 }
 
 #[derive(Subcommand, Debug)]
