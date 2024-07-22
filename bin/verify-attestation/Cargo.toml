@@ -7,9 +7,9 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-alloy-primitives.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 hex.workspace = true
 secp256k1.workspace = true
 teepot.workspace = true
+zksync_basic_types.workspace = true
