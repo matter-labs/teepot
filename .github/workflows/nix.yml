@@ -60,7 +60,7 @@ jobs:
 
   push_to_docker:
     needs: build
-    runs-on: [ matterlabs-ci-runner ]
+    runs-on: [ matterlabs-default-infra-runners ]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.config.nixpackage }}
       cancel-in-progress: true
