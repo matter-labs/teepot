@@ -6,6 +6,7 @@ mod sgx {
     use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
     use std::time::{Duration, UNIX_EPOCH};
     use teepot::sgx::{verify_quote_with_collateral, QuoteVerificationResult};
+    use test_log::test;
 
     fn check_quote(
         quote: &[u8],

@@ -45,6 +45,6 @@ zeroize.workspace = true
 
 [dev-dependencies]
 anyhow.workspace = true
-base64.workspace = true
 hex.workspace = true
+test-log.workspace = true
 testaso.workspace = true

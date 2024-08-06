@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! post commands
 
@@ -14,7 +14,7 @@ use teepot::json::http::{
     VaultCommandRequest, VaultCommandResponse, VaultCommands, VaultCommandsResponse,
 };
 use teepot::json::secrets::{AdminConfig, AdminState};
-use teepot::server::{signatures::VerifySig, HttpResponseError, Status};
+use teepot::server::{HttpResponseError, Status};
 use tracing::instrument;
 
 /// Post command
@@ -52,7 +52,9 @@ pub async fn post_command(
         .await?
         .context("empty admin config")
         .status(StatusCode::BAD_GATEWAY)?;
-    admin_config.check_sigs(&item.signatures, item.commands.as_bytes())?;
+    admin_config
+        .policy
+        .check_sigs(&item.signatures, item.commands.as_bytes())?;
 
     let mut hasher = Sha256::new();
     hasher.update(item.commands.as_bytes());

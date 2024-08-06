@@ -116,6 +116,7 @@ async fn main() -> Result<()> {
 mod tests {
     use serde_json::json;
     use teepot::json::http::{VaultCommand, VaultCommands};
+    use test_log::test;
 
     const TEST_DATA: &str = include_str!("../../../crates/teepot/tests/data/test.json");
 

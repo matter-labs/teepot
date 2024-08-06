@@ -3,6 +3,7 @@
 
 //! Common types for the teepot http JSON API
 
+use crate::json::secrets::AdminConfig;
 use crate::sgx::Collateral;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -42,11 +43,8 @@ pub struct Init {
     pub secret_shares: usize,
     /// secret threshold
     pub secret_threshold: usize,
-    /// PGP keys to sign commands for the admin tee
-    #[serde_as(as = "Box<[Base64]>")]
-    pub admin_pgp_keys: Box<[Box<[u8]>]>,
-    /// admin threshold
-    pub admin_threshold: usize,
+    /// The m of n admin config
+    pub admin_config: AdminConfig,
     /// admin TEE mrenclave
     pub admin_tee_mrenclave: String,
 }

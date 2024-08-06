@@ -2,14 +2,11 @@
 // Copyright (c) 2023-2024 Matter Labs
 
 use crate::{get_vault_status, UnsealServerState, Worker};
-use actix_web::error::ErrorBadRequest;
 use actix_web::{web, HttpResponse};
 use anyhow::{anyhow, Context, Result};
 use awc::http::StatusCode;
-use serde_json::json;
 use teepot::client::TeeConnection;
 use teepot::json::http::{Init, InitResponse, VaultInitRequest};
-use teepot::json::secrets::AdminConfig;
 use teepot::server::{HttpResponseError, Status};
 use tracing::{debug, error, info, instrument, trace};
 
@@ -22,8 +19,7 @@ pub async fn post_init(
         pgp_keys,
         secret_shares,
         secret_threshold,
-        admin_pgp_keys,
-        admin_threshold,
+        admin_config,
         admin_tee_mrenclave,
     } = init.into_inner();
     let conn = TeeConnection::new(&worker.vault_attestation);
@@ -36,17 +32,10 @@ pub async fn post_init(
         secret_threshold,
     };
 
-    if admin_threshold < 1 {
-        return Ok(HttpResponse::from_error(ErrorBadRequest(
-            json!({"error": "admin_threshold must be at least 1"}),
-        )));
-    }
-
-    if admin_threshold > admin_pgp_keys.len() {
-        return Ok(HttpResponse::from_error(ErrorBadRequest(
-            json!({"error": "admin_threshold must be less than or equal to the number of admin_pgp_keys"}),
-        )));
-    }
+    admin_config
+        .validate()
+        .context("Invalid admin config")
+        .status(StatusCode::BAD_REQUEST)?;
 
     loop {
         let current_state = worker.state.read().unwrap().clone();
@@ -123,10 +112,7 @@ pub async fn post_init(
     */
 
     *worker.state.write().unwrap() = UnsealServerState::VaultInitialized {
-        admin_config: AdminConfig {
-            admin_pgp_keys,
-            admin_threshold,
-        },
+        admin_config,
         admin_tee_mrenclave,
         root_token,
     };
