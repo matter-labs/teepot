@@ -42,7 +42,7 @@ nixsgxLib.mkSGXContainer {
         "-config=/opt/vault/config.hcl"
         "-log-level=trace"
       ];
-      log_level = "error";
+      log_level = "warning";
       env = {
         VAULT_CLUSTER_ADDR.passthrough = true;
         VAULT_API_ADDR.passthrough = true;
@@ -67,8 +67,8 @@ nixsgxLib.mkSGXContainer {
     sgx = {
       debug = false;
       edmm_enable = false;
-      enclave_size = "8G";
-      max_threads = 64;
+      enclave_size = "16G";
+      max_threads = 128;
 
       trusted_files = [
         "file:/opt/vault/plugins/"
@@ -79,7 +79,7 @@ nixsgxLib.mkSGXContainer {
 
     };
 
-    sys.stack.size = "1M";
+    sys.stack.size = "16M";
     # vault needs flock
     sys.experimental__enable_flock = true;
   };
