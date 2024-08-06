@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: teepot-vault-unseal-2
+  name: teepot-vault-unseal-2
+  namespace: stage2
+spec:
+  tolerations:
+    - key: sgx.intel.com/provision
+      operator: Exists
+      effect: NoSchedule
+  containers:
+    - image: matterlabsrobot/teepot-vault-unseal-sgx-azure:latest
+      name: vault-unseal
+      imagePullPolicy: Always
+      env:
+        - name: VAULT_ADDR
+          value: "https://teepot-vault-2.teepot-vault:8210"
+        - name: ALLOWED_TCB_LEVELS
+          value: "SwHardeningNeeded"
+        - name: VAULT_SGX_ALLOWED_TCB_LEVELS
+          value: "SwHardeningNeeded"
+        #        - name: VAULT_SGX_MRENCLAVE
+        #          value: "7754423259719411a536d3a11d0bf764b0910e44a9e15721d879d763a5f3fa39"
+        - name: VAULT_SGX_MRSIGNER
+          value: "c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d"
+      ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+      resources:
+        limits:
+          sgx.intel.com/epc: "10Mi"
+        requests:
+          sgx.intel.com/epc: "10Mi"
+      securityContext:
+        privileged: true
+  restartPolicy: Never
+status: { }
