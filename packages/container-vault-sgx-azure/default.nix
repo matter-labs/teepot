@@ -42,7 +42,7 @@ nixsgxLib.mkSGXContainer {
         "-config=/opt/vault/config.hcl"
         "-log-level=trace"
       ];
-      log_level = "warning";
+      log_level = "trace";
       env = {
         VAULT_CLUSTER_ADDR.passthrough = true;
         VAULT_API_ADDR.passthrough = true;
@@ -67,7 +67,7 @@ nixsgxLib.mkSGXContainer {
     sgx = {
       debug = false;
       edmm_enable = false;
-      enclave_size = "16G";
+      enclave_size = "8G";
       max_threads = 128;
 
       trusted_files = [
