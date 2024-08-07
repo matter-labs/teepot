@@ -54,7 +54,7 @@ nixsgxLib.mkSGXContainer {
         VAULT_RAFT_INITIAL_MMAP_SIZE = "0";
 
         # possible tweak option, if problems with raft
-        # VAULT_RAFT_DISABLE_MAP_POPULATE = "true"
+        # VAULT_RAFT_DISABLE_MAP_POPULATE = "true";
       };
     };
 

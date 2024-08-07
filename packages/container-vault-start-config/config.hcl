@@ -22,9 +22,9 @@ storage "raft" {
 
   # Parameter needed because of slow plugin loading
   # may be relaxed for faster machines
-  # performance_multiplier = 200
-  #autopilot_reconcile_interval = "120s"
-  #autopilot_update_interval = "60s"
+  performance_multiplier = 200
+  # autopilot_reconcile_interval = "120s"
+  # autopilot_update_interval    = "60s"
 
   retry_join {
     leader_api_addr         = "https://teepot-vault-0.teepot-vault:8210"
