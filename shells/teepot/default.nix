@@ -5,12 +5,13 @@
 , teepot
 , dive
 , taplo
-, ...
+, vault
 }:
 mkShell {
   inputsFrom = [ teepot.teepot ];
   packages = [
     dive
     taplo
+    vault
   ];
 }
