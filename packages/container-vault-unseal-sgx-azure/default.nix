@@ -41,6 +41,7 @@ nixsgxLib.mkSGXContainer {
         VAULT_AUTH_TEE_SHA256_FILE = "${vat.vault-auth-tee.sha}/share/vault-auth-tee.sha256";
         ### TODO: remove hardcoded version ###
         VAULT_AUTH_TEE_VERSION = "0.1.0+dev";
+        CA_CERT_FILE = "${teepot.container-vault-start-config}/opt/vault/cacert.pem";
       };
     };
 
