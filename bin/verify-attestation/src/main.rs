@@ -60,7 +60,7 @@ enum SubCommands {
 fn main() -> Result<()> {
     let args = Arguments::parse();
     let attestation_quote_bytes = match args.attestation {
-        ArgSource::File(path) => fs::read(&path)?,
+        ArgSource::File(path) => fs::read(path)?,
         ArgSource::Stdin => {
             let mut quote = Vec::new();
             std::io::stdin()
@@ -104,11 +104,11 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         attestation_quote_bytes.len()
     );
     let collateral =
-        tee_qv_get_collateral(&attestation_quote_bytes).context("Failed to get collateral")?;
+        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral")?;
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
-    verify_quote_with_collateral(&attestation_quote_bytes, Some(&collateral), unix_time)
+    verify_quote_with_collateral(attestation_quote_bytes, Some(&collateral), unix_time)
         .context("Failed to verify quote with collateral")
 }
 
