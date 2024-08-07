@@ -22,7 +22,7 @@ storage "raft" {
 
   # Parameter needed because of slow plugin loading
   # may be relaxed for faster machines
-  performance_multiplier = 200
+  # performance_multiplier = 200
   # autopilot_reconcile_interval = "120s"
   # autopilot_update_interval    = "60s"
 
