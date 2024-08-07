@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Helper functions to verify Intel SGX enclaves and other TEEs.
 
