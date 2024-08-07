@@ -23,7 +23,7 @@ storage "raft" {
   # Parameter needed because of slow plugin loading
   # may be relaxed for faster machines
   # see also https://github.com/hashicorp/vault/issues/28009
-  performance_multiplier = 10
+  performance_multiplier = 100
   # autopilot_reconcile_interval = "120s"
   # autopilot_update_interval    = "60s"
 
