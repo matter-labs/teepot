@@ -42,7 +42,7 @@ nixsgxLib.mkSGXContainer {
         "-config=/opt/vault/config.hcl"
         "-log-level=trace"
       ];
-      log_level = "debug";
+      log_level = "error";
       env = {
         VAULT_CLUSTER_ADDR.passthrough = true;
         VAULT_API_ADDR.passthrough = true;
