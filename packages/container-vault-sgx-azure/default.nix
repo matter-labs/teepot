@@ -84,6 +84,11 @@ nixsgxLib.mkSGXContainer {
     sys.stack.size = "16M";
     # vault needs flock
     sys.experimental__enable_flock = true;
+
+    # recent golang switched to eventfd for netpoll
+    # https://github.com/golang/go/commit/d068c2cb620c1daeedc8b9cce488af45a6c2c889
+    # enable it to mitigate surprises for golang >= 1.23
+    sys.insecure__allow_eventfd = true;
   };
 }
 
