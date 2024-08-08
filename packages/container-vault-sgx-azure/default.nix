@@ -17,6 +17,8 @@ nixsgxLib.mkSGXContainer {
   inherit tag;
   inherit appDir;
 
+  extraCmd = "echo \"Starting ${container-name}\"; gramine-sgx-sigstruct-view app.sig; ulimit -n 65535; ulimit -n";
+
   packages = [
     teepot.teepot.tee_ratls_preexec
     vault
