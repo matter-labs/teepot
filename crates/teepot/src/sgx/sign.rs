@@ -316,8 +316,9 @@ impl PrivateKey for RS256PrivateKey {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::{Author, Body, Signature};
+    use test_log::test;
     use testaso::testaso;
 
     testaso! {

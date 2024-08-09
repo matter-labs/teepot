@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! post signing request
 
@@ -12,7 +12,6 @@ use std::sync::Arc;
 use teepot::client::vault::VaultConnection;
 use teepot::json::http::{SignRequest, SignRequestData, SignResponse};
 use teepot::json::secrets::{AdminConfig, AdminState, SGXSigningKey};
-use teepot::server::signatures::VerifySig as _;
 use teepot::server::{HttpResponseError, Status};
 use teepot::sgx::sign::PrivateKey as _;
 use teepot::sgx::sign::{Author, Signature};
@@ -76,7 +75,9 @@ pub async fn post_sign(
         .await?
         .context("empty admin config")
         .status(StatusCode::BAD_GATEWAY)?;
-    admin_config.check_sigs(&item.signatures, item.sign_request_data.as_bytes())?;
+    admin_config
+        .policy
+        .check_sigs(&item.signatures, item.sign_request_data.as_bytes())?;
 
     let mut hasher = Sha256::new();
     hasher.update(item.sign_request_data.as_bytes());

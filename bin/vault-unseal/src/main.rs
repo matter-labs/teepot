@@ -2,13 +2,13 @@
 // Copyright (c) 2023-2024 Matter Labs
 
 use anyhow::{anyhow, bail, Context, Result};
-use base64::{engine::general_purpose, Engine as _};
 use clap::{Args, Parser, Subcommand};
 use serde_json::Value;
 use std::fs::File;
 use std::io::Read;
 use teepot::client::{AttestationArgs, TeeConnection};
 use teepot::json::http::{Init, InitResponse, Unseal};
+use teepot::json::secrets::AdminConfig;
 use tracing::{error, info, trace, warn};
 use tracing_log::LogTracer;
 use tracing_subscriber::Registry;
@@ -16,12 +16,9 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 #[derive(Args, Debug)]
 pub struct InitArgs {
-    /// admin threshold
-    #[arg(long)]
-    admin_threshold: usize,
     /// PGP keys to sign commands for the admin tee
     #[arg(short, long)]
-    admin_pgp_key_file: Vec<String>,
+    admin_config_json: String,
     /// admin TEE mrenclave
     #[arg(long)]
     admin_tee_mrenclave: String,
@@ -78,17 +75,12 @@ async fn init(args: Arguments) -> Result<()> {
         unreachable!()
     };
 
-    if init_args.admin_threshold == 0 {
-        bail!("admin threshold must be greater than 0");
-    }
-
     if init_args.unseal_threshold == 0 {
         bail!("unseal threshold must be greater than 0");
     }
 
-    if init_args.admin_threshold > init_args.admin_pgp_key_file.len() {
-        bail!("admin threshold must be less than or equal to the number of admin pgp keys");
-    }
+    let admin_config: AdminConfig = serde_json::from_str(&init_args.admin_config_json)
+        .context("failed to parse admin config")?;
 
     if init_args.unseal_threshold > init_args.unseal_pgp_key_file.len() {
         bail!("unseal threshold must be less than or equal to the number of unseal pgp keys");
@@ -105,30 +97,11 @@ async fn init(args: Arguments) -> Result<()> {
         pgp_keys.push(key);
     }
 
-    let mut admin_pgp_keys = Vec::new();
-
-    for filename in init_args.admin_pgp_key_file {
-        let mut file =
-            File::open(&filename).context(format!("Failed to open pgp key file {}", &filename))?;
-        // read all lines from file and concatenate them
-        let mut key = String::new();
-        file.read_to_string(&mut key)
-            .context(format!("Failed to read pgp key file {}", &filename))?;
-        key.retain(|c| !c.is_ascii_whitespace());
-
-        let bytes = general_purpose::STANDARD.decode(key).context(format!(
-            "Failed to base64 decode pgp key file {}",
-            &filename
-        ))?;
-        admin_pgp_keys.push(bytes.into_boxed_slice());
-    }
-
     let init = Init {
         secret_shares: pgp_keys.len() as _,
         secret_threshold: init_args.unseal_threshold,
-        admin_threshold: init_args.admin_threshold,
         admin_tee_mrenclave: init_args.admin_tee_mrenclave,
-        admin_pgp_keys: admin_pgp_keys.into_boxed_slice(),
+        admin_config,
         pgp_keys,
     };
 

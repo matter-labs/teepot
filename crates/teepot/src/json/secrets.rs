@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Common types for the teepot secrets JSON API
 
+use crate::server::signatures::MultiSigPolicy;
 use crate::sgx::sign::Zeroizing;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use serde_with::base64::Base64;
-use serde_with::serde_as;
 
 /// Configuration for the admin tee
-#[serde_as]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AdminConfig {
-    /// PGP keys to sign commands for the admin tee
-    #[serde_as(as = "Box<[Base64]>")]
-    pub admin_pgp_keys: Box<[Box<[u8]>]>,
-    /// admin threshold
-    pub admin_threshold: usize,
+    /// admin signature policy
+    pub policy: MultiSigPolicy,
+}
+
+impl AdminConfig {
+    /// validate the configuration
+    pub fn validate(&self) -> Result<()> {
+        self.policy.validate()
+    }
 }
 
 /// Configuration for the admin tee
