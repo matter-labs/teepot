@@ -29,6 +29,7 @@
       "vault_admin"
       "vault_unseal"
       "verify_attestation"
+      "verify_rpc_attestation"
     ];
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
