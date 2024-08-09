@@ -54,6 +54,9 @@
         shells = {
           default = "teepot";
         };
+        devShells = {
+          default = "teepot";
+        };
       };
 
       outputs-builder = channels: {

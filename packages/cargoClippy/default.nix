@@ -3,6 +3,6 @@
 { teepotCrate }: teepotCrate.craneLib.cargoClippy (
   teepotCrate.commonArgs // {
     pname = "teepot";
-    inherit (teepotCrate) cargoArtifacts NIX_OUTPATH_USED_AS_RANDOM_SEED;
+    inherit (teepotCrate) cargoArtifacts;
   }
 )

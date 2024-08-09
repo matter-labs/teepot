@@ -8,7 +8,7 @@
 , rust-bin
 , pkgs
 , src
-, ...
+, openssl
 }:
 let
   rustVersion = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -24,13 +24,13 @@ let
     ];
 
     buildInputs = [
+      openssl
       nixsgx.sgx-sdk
       nixsgx.sgx-dcap
       nixsgx.sgx-dcap.quote_verify
     ];
 
     strictDeps = true;
-
 
     src = with lib.fileset; toSource {
       root = src;
@@ -46,12 +46,15 @@ let
     };
 
     checkType = "debug";
+    env = {
+      OPENSSL_NO_VENDOR = "1";
+      NIX_OUTPATH_USED_AS_RANDOM_SEED = "aaaaaaaaaa";
+    };
   };
+
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
     pname = "teepot-workspace";
-    inherit NIX_OUTPATH_USED_AS_RANDOM_SEED;
   });
-  NIX_OUTPATH_USED_AS_RANDOM_SEED = "aaaaaaaaaa";
 in
 {
   inherit rustPlatform
@@ -59,5 +62,4 @@ in
     commonArgs
     craneLib
     cargoArtifacts;
-  NIX_OUTPATH_USED_AS_RANDOM_SEED = "aaaaaaaaaa";
 }
