@@ -42,6 +42,7 @@ pgp = "0.13"
 p256 = "0.13.2"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
+reqwest = { version = "0.12", features = ["json"] }
 ring = { version = "0.17.8", features = ["std"], default-features = false }
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
 rustls = { version = "0.22" }
@@ -60,7 +61,10 @@ tracing = "0.1"
 tracing-actix-web = "0.7"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2.5.2"
 x509-cert = { version = "0.2", features = ["builder", "signature"] }
 zeroize = { version = "1.7.0", features = ["serde"] }
 webpki-roots = "0.26.1"
 zksync_basic_types = "=0.1.0"
+zksync_web3_decl = "=0.1.0"
+zksync_types = "=0.1.0"

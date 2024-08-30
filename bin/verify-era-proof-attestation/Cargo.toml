@@ -1,0 +1,21 @@
+[package]
+name = "verify-era-proof-attestation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+hex.workspace = true
+reqwest.workspace = true
+secp256k1.workspace = true
+serde.workspace = true
+teepot.workspace = true
+tokio.workspace = true
+url.workspace = true
+zksync_basic_types.workspace = true
+zksync_types.workspace = true
+zksync_web3_decl.workspace = true

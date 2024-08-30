@@ -9,6 +9,7 @@
 }:
 mkShell {
   inputsFrom = [ teepot.teepot ];
+
   packages = [
     dive
     taplo

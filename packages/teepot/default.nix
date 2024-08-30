@@ -3,9 +3,7 @@
 { teepotCrate }: teepotCrate.craneLib.buildPackage (
   teepotCrate.commonArgs // {
     pname = "teepot";
-    inherit (teepotCrate) cargoArtifacts
-      NIX_OUTPATH_USED_AS_RANDOM_SEED;
-
+    inherit (teepotCrate) cargoArtifacts;
 
     passthru = {
       inherit (teepotCrate) rustPlatform
@@ -13,7 +11,6 @@
         commonArgs
         craneLib
         cargoArtifacts;
-      NIX_OUTPATH_USED_AS_RANDOM_SEED = "aaaaaaaaaa";
     };
 
     outputs = [
@@ -29,6 +26,7 @@
       "vault_admin"
       "vault_unseal"
       "verify_attestation"
+      "verify_era_proof_attestation"
     ];
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
