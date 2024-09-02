@@ -1,18 +1,12 @@
 {
   "nodes": {
     "crane": {
-      "inputs": {
-        "nixpkgs": [
-          "nixsgx-flake",
-          "nixpkgs"
-        ]
-      },
       "locked": {
-        "lastModified": 1716156051,
-        "narHash": "sha256-TjUX7WWRcrhuUxDHsR8pDR2N7jitqZehgCVSy3kBeS8=",
+        "lastModified": 1725125250,
+        "narHash": "sha256-CB20rDD5eHikF6mMTTJdwPP1qvyoiyyw1RDUzwIaIF8=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "7443df1c478947bf96a2e699209f53b2db26209d",
+        "rev": "96fd12c7100e9e05fa1a0a5bd108525600ce282f",
         "type": "github"
       },
       "original": {
@@ -92,7 +86,7 @@
     },
     "flake-utils-plus_2": {
       "inputs": {
-        "flake-utils": "flake-utils_4"
+        "flake-utils": "flake-utils_3"
       },
       "locked": {
         "lastModified": 1715533576,
@@ -114,24 +108,6 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1705309234,
-        "narHash": "sha256-uNRRNRKmJyCRC/8y1RqBkqWBLM034y4qN7EprSdmgyA=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "1ef2e671c3b0c19053962c07dbda38332dcebf26",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_3": {
-      "inputs": {
-        "systems": "systems_3"
-      },
-      "locked": {
         "lastModified": 1710146030,
         "narHash": "sha256-SZ5L6eA7HJ/nmkzGG7/ISclqe6oZdOZTNoesiInkXPQ=",
         "owner": "numtide",
@@ -145,9 +121,9 @@
         "type": "github"
       }
     },
-    "flake-utils_4": {
+    "flake-utils_3": {
       "inputs": {
-        "systems": "systems_4"
+        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1694529238,
@@ -201,11 +177,11 @@
         "snowfall-lib": "snowfall-lib"
       },
       "locked": {
-        "lastModified": 1723120465,
-        "narHash": "sha256-sWu5lKy71hHnSwydhwzG2XgSehjvLfK2iuUtNimvGkg=",
+        "lastModified": 1725271440,
+        "narHash": "sha256-CY79oPHWtDQdCDSJTMPZPYVgONAgsqCUZHr2idff53U=",
         "owner": "matter-labs",
         "repo": "nixsgx",
-        "rev": "b080c32f2aa8b3d4b4bc4356a8a513279b6f82ab",
+        "rev": "00bb72e3ef79c79030ab622cfe9ced39d21006cc",
         "type": "github"
       },
       "original": {
@@ -220,11 +196,11 @@
         "snowfall-lib": "snowfall-lib_2"
       },
       "locked": {
-        "lastModified": 1717758565,
-        "narHash": "sha256-yscuZ3ixjwTkqS6ew5cB3Uvy9e807szRlMoPSyQuRJM=",
+        "lastModified": 1719403531,
+        "narHash": "sha256-JYqPdAB393YZIndGs5om7EsLUha3fpLckb9RKjKN7Fg=",
         "owner": "matter-labs",
         "repo": "nixsgx",
-        "rev": "49a1ae79d92ccb6ed7cabfe5c5042b1399e3cd3e",
+        "rev": "3a272950fa21601f31e8ca8b4e4897975069a00a",
         "type": "github"
       },
       "original": {
@@ -251,18 +227,17 @@
     },
     "rust-overlay": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixsgx-flake",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1717985971,
-        "narHash": "sha256-24h/qKp0aeI+Ew13WdRF521kY24PYa5HOvw0mlrABjk=",
+        "lastModified": 1725243956,
+        "narHash": "sha256-0A5ZP8uDCyBdYUzayZfy6JFdTefP79oZVAjyqA/yuSI=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "abfe5b3126b1b7e9e4daafc1c6478d17f0b584e7",
+        "rev": "a10c8092d5f82622be79ed4dd12289f72011f850",
         "type": "github"
       },
       "original": {
@@ -363,24 +338,9 @@
         "type": "github"
       }
     },
-    "systems_4": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
     "vault-auth-tee-flake": {
       "inputs": {
-        "flake-utils": "flake-utils_3",
+        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixsgx-flake",
           "nixpkgs"
@@ -388,11 +348,11 @@
         "nixsgx-flake": "nixsgx-flake_2"
       },
       "locked": {
-        "lastModified": 1718012107,
-        "narHash": "sha256-uKiUBaEOj9f3NCn6oTw5VqoZJxsTXSoAn2IWVB/LSS0=",
+        "lastModified": 1719832445,
+        "narHash": "sha256-Dnueq3A1sf8zT+bY6CcuaxPvX4AK7B6Sveqb8YfoY8o=",
         "owner": "matter-labs",
         "repo": "vault-auth-tee",
-        "rev": "b10204436bc2fbad74c5716bd265fad74acc197c",
+        "rev": "2b53a4387fc8ecfb7826acd93d4895e7e810677d",
         "type": "github"
       },
       "original": {
