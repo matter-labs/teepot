@@ -8,10 +8,12 @@ use clap::Parser;
 use reqwest::Client;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use teepot::{
     client::TcbLevel,
     sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
 };
+use tokio::time::sleep;
 use url::Url;
 use zksync_basic_types::{L1BatchNumber, H256};
 use zksync_types::L2ChainId;
@@ -28,11 +30,14 @@ struct Arguments {
     #[clap(short = 'n', long = "batch-number", value_parser = parse_batch_range)]
     batch_range: (L1BatchNumber, L1BatchNumber),
     /// URL of the RPC server to query for the batch attestation and signature.
-    #[clap(short, long)]
+    #[clap(short = 'u', long)]
     rpc_url: Url,
     /// Chain ID of the network to query.
-    #[clap(short, long, default_value_t = L2ChainId::default().as_u64())]
+    #[clap(short = 'c', long, default_value_t = L2ChainId::default().as_u64())]
     chain_id: u64,
+    /// Rate limit between requests in milliseconds.
+    #[clap(short = 'r', long, default_value_t = Duration::from_millis(0), value_parser = parse_duration)]
+    rate_limit: Duration,
 }
 
 fn parse_batch_range(s: &str) -> Result<(L1BatchNumber, L1BatchNumber)> {
@@ -59,6 +64,11 @@ fn parse_batch_range(s: &str) -> Result<(L1BatchNumber, L1BatchNumber)> {
             Ok((batch_number, batch_number))
         }
     }
+}
+
+fn parse_duration(s: &str) -> Result<Duration> {
+    let millis = s.parse()?;
+    Ok(Duration::from_millis(millis))
 }
 
 trait JsonRpcClient {
@@ -163,6 +173,8 @@ async fn main() -> Result<()> {
             verify_signature(&proof.signature, public_key, root_hash)?;
             println!();
         }
+
+        sleep(args.rate_limit).await;
     }
 
     Ok(())
