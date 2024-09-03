@@ -8,10 +8,12 @@ use clap::Parser;
 use reqwest::Client;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use teepot::{
     client::TcbLevel,
     sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
 };
+use tokio::time::sleep;
 use url::Url;
 use zksync_basic_types::{L1BatchNumber, H256};
 use zksync_types::L2ChainId;
@@ -24,20 +26,54 @@ use zksync_web3_decl::{
 #[derive(Parser, Debug)]
 #[command(author = "Matter Labs", version, about = "SGX attestation and batch signature verifier", long_about = None)]
 struct Arguments {
-    /// The batch number for which we want to verify the attestation and signature.
-    #[clap(short = 'n', long)]
-    batch_number: L1BatchNumber,
+    /// The batch number or range of batch numbers to verify the attestation and signature (e.g., "42" or "42-45").
+    #[clap(short = 'n', long = "batch-number", value_parser = parse_batch_range)]
+    batch_range: (L1BatchNumber, L1BatchNumber),
     /// URL of the RPC server to query for the batch attestation and signature.
-    #[clap(short, long)]
+    #[clap(short = 'u', long)]
     rpc_url: Url,
     /// Chain ID of the network to query.
-    #[clap(short, long, default_value_t = L2ChainId::default().as_u64())]
+    #[clap(short = 'c', long, default_value_t = L2ChainId::default().as_u64())]
     chain_id: u64,
+    /// Rate limit between requests in milliseconds.
+    #[clap(short = 'r', long, default_value = "0", value_parser = parse_duration)]
+    rate_limit: Duration,
+}
+
+fn parse_batch_range(s: &str) -> Result<(L1BatchNumber, L1BatchNumber)> {
+    let parse = |s: &str| {
+        s.parse::<u32>()
+            .map(L1BatchNumber::from)
+            .map_err(|e| anyhow!(e))
+    };
+    match s.split_once('-') {
+        Some((start, end)) => {
+            let (start, end) = (parse(start)?, parse(end)?);
+            if start > end {
+                Err(anyhow!(
+                    "Start batch number ({}) must be less than or equal to end batch number ({})",
+                    start,
+                    end
+                ))
+            } else {
+                Ok((start, end))
+            }
+        }
+        None => {
+            let batch_number = parse(s)?;
+            Ok((batch_number, batch_number))
+        }
+    }
+}
+
+fn parse_duration(s: &str) -> Result<Duration> {
+    let millis = s.parse()?;
+    Ok(Duration::from_millis(millis))
 }
 
 trait JsonRpcClient {
     async fn get_root_hash(&self, batch_number: L1BatchNumber) -> Result<H256>;
-    // TODO implement get_tee_proofs(batch_number, tee_type) once zksync_web3_decl crate is updated
+    // TODO implement get_tee_proofs(batch_number, tee_type) once https://crates.io/crates/zksync_web3_decl crate is updated
 }
 
 struct MainNodeClient(NodeClient<L2>);
@@ -87,7 +123,7 @@ struct Proof {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Arguments::parse();
-    let node_client: NodeClient<L2> = NodeClient::http(args.rpc_url.clone().into())
+    let node_client = NodeClient::http(args.rpc_url.clone().into())
         .context("failed creating JSON-RPC client for main node")?
         .for_network(
             L2ChainId::try_from(args.chain_id)
@@ -97,33 +133,48 @@ async fn main() -> Result<()> {
         .build();
     let node_client = MainNodeClient(node_client);
     let http_client = Client::new();
-    let request = GetProofsRequest {
-        jsonrpc: "2.0".to_string(),
-        id: 1,
-        method: "unstable_getTeeProofs".to_string(),
-        params: (args.batch_number, "Sgx".to_string()),
-    };
-    let response = http_client
-        .post(args.rpc_url)
-        .json(&request)
-        .send()
-        .await?
-        .error_for_status()?
-        .json::<GetProofsResponse>()
-        .await?;
+    let (start_batch_number, end_batch_number) = args.batch_range;
 
-    for proof in response.result {
-        println!("Verifying batch #{}", proof.l1_batch_number);
-        let quote_verification_result = verify_attestation_quote(&proof.attestation)?;
-        print_quote_verification_summary(&quote_verification_result);
-        let public_key = PublicKey::from_slice(
-            &quote_verification_result.quote.report_body.reportdata[..PUBLIC_KEY_SIZE],
-        )?;
-        println!("Public key from attestation quote: {}", public_key);
-        let root_hash = node_client.get_root_hash(args.batch_number).await?;
-        println!("Root hash: {}", root_hash);
-        verify_signature(&proof.signature, public_key, root_hash)?;
-        println!();
+    for batch_number in start_batch_number.0..=end_batch_number.0 {
+        let proofs_request = GetProofsRequest {
+            jsonrpc: "2.0".to_string(),
+            id: 1,
+            method: "unstable_getTeeProofs".to_string(),
+            params: (L1BatchNumber(batch_number), "Sgx".to_string()),
+        };
+        let proofs_response = http_client
+            .post(args.rpc_url.clone())
+            .json(&proofs_request)
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<GetProofsResponse>()
+            .await?;
+
+        for proof in proofs_response
+            .result
+            .into_iter()
+            .filter(|proof| proof.tee_type.to_lowercase() == "sgx")
+        {
+            println!(
+                "Verifying batch #{} proved at {}",
+                proof.l1_batch_number, proof.proved_at
+            );
+            let quote_verification_result = verify_attestation_quote(&proof.attestation)?;
+            print_quote_verification_summary(&quote_verification_result);
+            let public_key = PublicKey::from_slice(
+                &quote_verification_result.quote.report_body.reportdata[..PUBLIC_KEY_SIZE],
+            )?;
+            println!("Public key from attestation quote: {}", public_key);
+            let root_hash = node_client
+                .get_root_hash(L1BatchNumber(proof.l1_batch_number))
+                .await?;
+            println!("Root hash: {}", root_hash);
+            verify_signature(&proof.signature, public_key, root_hash)?;
+            println!();
+        }
+
+        sleep(args.rate_limit).await;
     }
 
     Ok(())
