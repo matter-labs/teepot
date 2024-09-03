@@ -36,7 +36,7 @@ struct Arguments {
     #[clap(short = 'c', long, default_value_t = L2ChainId::default().as_u64())]
     chain_id: u64,
     /// Rate limit between requests in milliseconds.
-    #[clap(short = 'r', long, default_value_t = Duration::from_millis(0), value_parser = parse_duration)]
+    #[clap(short = 'r', long, default_value = "0", value_parser = parse_duration)]
     rate_limit: Duration,
 }
 
