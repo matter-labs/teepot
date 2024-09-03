@@ -7,9 +7,9 @@
 #![deny(clippy::all)]
 
 use anyhow::{Context, Result};
+use clap::Parser;
 use secp256k1::{rand, Keypair, PublicKey, Secp256k1, SecretKey};
-
-use std::env;
+use std::ffi::OsString;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 use teepot::quote::get_quote;
@@ -19,6 +19,17 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
 
 const TEE_QUOTE_FILE: &str = "/tmp/tee_quote";
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// environment variable prefix to use
+    #[arg(long, default_value = "")]
+    env_prefix: String,
+    /// program to exec [args...] (required)
+    #[arg(required = true, allow_hyphen_values = true, last = true)]
+    cmd_args: Vec<OsString>,
+}
+
 fn main_with_error() -> Result<()> {
     LogTracer::init().context("Failed to set logger")?;
 
@@ -27,14 +38,7 @@ fn main_with_error() -> Result<()> {
         .with(fmt::layer().with_writer(std::io::stderr));
     tracing::subscriber::set_global_default(subscriber).context("Failed to set logger")?;
 
-    let args = env::args_os().collect::<Box<_>>();
-
-    if args.len() < 2 {
-        return Err(anyhow::anyhow!(
-            "Usage: {} <command> [args...]",
-            args[0].to_string_lossy()
-        ));
-    }
+    let args = Args::parse();
 
     let mut rng = rand::thread_rng();
     let secp = Secp256k1::new();
@@ -55,14 +59,25 @@ fn main_with_error() -> Result<()> {
         }
     };
 
-    let err = Command::new(&args[1])
-        .args(&args[2..])
-        .env("TEE_SIGNING_KEY", signing_key.display_secret().to_string())
-        .env("TEE_QUOTE_FILE", TEE_QUOTE_FILE)
-        .env("TEE_TYPE", tee_type)
+    let err = Command::new(&args.cmd_args[0])
+        .args(&args.cmd_args[1..])
+        .env(
+            format!("{}SIGNING_KEY", args.env_prefix),
+            signing_key.display_secret().to_string(),
+        )
+        .env(
+            format!("{}ATTESTATION_QUOTE_FILE_PATH", args.env_prefix),
+            TEE_QUOTE_FILE,
+        )
+        .env(format!("{}TEE_TYPE", args.env_prefix), tee_type)
         .exec();
 
-    Err(err).with_context(|| format!("exec of `{cmd}` failed", cmd = args[1].to_string_lossy()))
+    Err(err).with_context(|| {
+        format!(
+            "exec of `{cmd}` failed",
+            cmd = args.cmd_args[0].to_string_lossy()
+        )
+    })
 }
 
 fn main() -> Result<()> {

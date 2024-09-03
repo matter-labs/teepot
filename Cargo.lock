@@ -4780,6 +4780,7 @@ name = "tee-key-preexec"
 version = "0.1.2-alpha.1"
 dependencies = [
  "anyhow",
+ "clap",
  "rand",
  "secp256k1 0.29.0",
  "teepot",
