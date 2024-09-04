@@ -13,6 +13,8 @@ pkgs.lib.tee.sgxGramineContainer {
   packages = [ teepot.teepot.tee_vault_admin ];
   entrypoint = "${teepot.teepot.tee_vault_admin}/bin/tee-vault-admin";
 
+  extraCmd = "echo \"Starting ${container-name}\"; gramine-sgx-sigstruct-view app.sig";
+
   isAzure = true;
 
   manifest = {
