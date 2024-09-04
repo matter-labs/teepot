@@ -16,7 +16,10 @@ pkgs.lib.tee.sgxGramineContainer {
     vat.vault-auth-tee.sha
     teepot.teepot.tee_vault_unseal
   ];
+
   entrypoint = "${teepot.teepot.tee_vault_unseal}/bin/tee-vault-unseal";
+
+  extraCmd = "echo \"Starting ${container-name}\"; gramine-sgx-sigstruct-view app.sig";
 
   manifest = {
     loader = {
