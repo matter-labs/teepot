@@ -1,227 +1,231 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2023-2024 Matter Labs
 
-//! Tool for SGX attestation and batch signature verification
+//! Tool for SGX attestation and batch signature verification, both continuous and one-shot
 
-use anyhow::{anyhow, Context, Result};
+mod args;
+mod client;
+mod proof;
+mod verification;
+
+use anyhow::{Context, Result};
+use args::{Arguments, AttestationPolicyArgs};
 use clap::Parser;
+use client::MainNodeClient;
+use proof::get_proofs;
 use reqwest::Client;
-use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
-use serde::{Deserialize, Serialize};
-use std::time::Duration;
-use teepot::{
-    client::TcbLevel,
-    sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
-};
-use tokio::time::sleep;
+use tokio::{signal, sync::watch};
+use tracing::{debug, error, info, trace, warn};
+use tracing_log::LogTracer;
+use tracing_subscriber::{filter::LevelFilter, fmt, prelude::*, EnvFilter, Registry};
 use url::Url;
-use zksync_basic_types::{L1BatchNumber, H256};
-use zksync_types::L2ChainId;
-use zksync_web3_decl::{
-    client::{Client as NodeClient, L2},
-    error::ClientRpcContext,
-    namespaces::ZksNamespaceClient,
+use zksync_basic_types::L1BatchNumber;
+
+use crate::verification::{
+    log_quote_verification_summary, verify_attestation_quote, verify_batch_proof,
 };
-
-#[derive(Parser, Debug)]
-#[command(author = "Matter Labs", version, about = "SGX attestation and batch signature verifier", long_about = None)]
-struct Arguments {
-    /// The batch number or range of batch numbers to verify the attestation and signature (e.g., "42" or "42-45").
-    #[clap(short = 'n', long = "batch-number", value_parser = parse_batch_range)]
-    batch_range: (L1BatchNumber, L1BatchNumber),
-    /// URL of the RPC server to query for the batch attestation and signature.
-    #[clap(short = 'u', long)]
-    rpc_url: Url,
-    /// Chain ID of the network to query.
-    #[clap(short = 'c', long, default_value_t = L2ChainId::default().as_u64())]
-    chain_id: u64,
-    /// Rate limit between requests in milliseconds.
-    #[clap(short = 'r', long, default_value = "0", value_parser = parse_duration)]
-    rate_limit: Duration,
-}
-
-fn parse_batch_range(s: &str) -> Result<(L1BatchNumber, L1BatchNumber)> {
-    let parse = |s: &str| {
-        s.parse::<u32>()
-            .map(L1BatchNumber::from)
-            .map_err(|e| anyhow!(e))
-    };
-    match s.split_once('-') {
-        Some((start, end)) => {
-            let (start, end) = (parse(start)?, parse(end)?);
-            if start > end {
-                Err(anyhow!(
-                    "Start batch number ({}) must be less than or equal to end batch number ({})",
-                    start,
-                    end
-                ))
-            } else {
-                Ok((start, end))
-            }
-        }
-        None => {
-            let batch_number = parse(s)?;
-            Ok((batch_number, batch_number))
-        }
-    }
-}
-
-fn parse_duration(s: &str) -> Result<Duration> {
-    let millis = s.parse()?;
-    Ok(Duration::from_millis(millis))
-}
-
-trait JsonRpcClient {
-    async fn get_root_hash(&self, batch_number: L1BatchNumber) -> Result<H256>;
-    // TODO implement get_tee_proofs(batch_number, tee_type) once https://crates.io/crates/zksync_web3_decl crate is updated
-}
-
-struct MainNodeClient(NodeClient<L2>);
-
-impl JsonRpcClient for MainNodeClient {
-    async fn get_root_hash(&self, batch_number: L1BatchNumber) -> Result<H256> {
-        self.0
-            .get_l1_batch_details(batch_number)
-            .rpc_context("get_l1_batch_details")
-            .await?
-            .and_then(|res| res.base.root_hash)
-            .ok_or_else(|| anyhow!("No root hash found for batch #{}", batch_number))
-    }
-}
-
-// JSON-RPC request and response structures for fetching TEE proofs
-
-#[derive(Debug, Serialize, Deserialize)]
-struct GetProofsRequest {
-    jsonrpc: String,
-    id: u32,
-    method: String,
-    params: (L1BatchNumber, String),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct GetProofsResponse {
-    jsonrpc: String,
-    result: Vec<Proof>,
-    id: u32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Proof {
-    #[serde(rename = "l1BatchNumber")]
-    l1_batch_number: u32,
-    #[serde(rename = "teeType")]
-    tee_type: String,
-    pubkey: Vec<u8>,
-    signature: Vec<u8>,
-    proof: Vec<u8>,
-    #[serde(rename = "provedAt")]
-    proved_at: String,
-    attestation: Vec<u8>,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Arguments::parse();
-    let node_client = NodeClient::http(args.rpc_url.clone().into())
-        .context("failed creating JSON-RPC client for main node")?
-        .for_network(
-            L2ChainId::try_from(args.chain_id)
-                .map_err(anyhow::Error::msg)?
-                .into(),
-        )
-        .build();
-    let node_client = MainNodeClient(node_client);
+    setup_logging(&args.log_level)?;
+    validate_arguments(&args)?;
+    let (stop_sender, stop_receiver) = watch::channel(false);
+    let mut process_handle = tokio::spawn(verify_batches_proofs(stop_receiver, args));
+    tokio::select! {
+        ret = &mut process_handle => { return ret?; },
+        _ = signal::ctrl_c() => {
+            tracing::info!("Stop signal received, shutting down");
+            stop_sender.send(true).ok();
+            // Wait for process_batches to complete gracefully
+            process_handle.await??;
+        }
+    }
+
+    Ok(())
+}
+
+fn setup_logging(log_level: &LevelFilter) -> Result<()> {
+    LogTracer::init().context("Failed to set logger")?;
+    let filter = EnvFilter::builder()
+        .try_from_env()
+        .unwrap_or(match *log_level {
+            LevelFilter::OFF => EnvFilter::new("off"),
+            _ => EnvFilter::new(format!(
+                "warn,{crate_name}={log_level},teepot={log_level}",
+                crate_name = env!("CARGO_CRATE_NAME"),
+                log_level = log_level
+            )),
+        });
+    let subscriber = Registry::default()
+        .with(filter)
+        .with(fmt::layer().with_writer(std::io::stderr));
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    Ok(())
+}
+
+fn validate_arguments(args: &Arguments) -> Result<()> {
+    if args.attestation_policy.sgx_mrsigners.is_none()
+        && args.attestation_policy.sgx_mrenclaves.is_none()
+    {
+        error!("Neither `--sgx-mrenclaves` nor `--sgx-mrsigners` specified. Any code could have produced the proof.");
+    }
+
+    Ok(())
+}
+
+/// Verify all TEE proofs for all batches starting from the given batch number up to the specified
+/// batch number, if a range is provided. Otherwise, continue verifying batches until the stop
+/// signal is received.
+async fn verify_batches_proofs(
+    mut stop_receiver: watch::Receiver<bool>,
+    args: Arguments,
+) -> Result<()> {
+    let node_client = MainNodeClient::new(args.rpc_url.clone(), args.chain_id)?;
     let http_client = Client::new();
-    let (start_batch_number, end_batch_number) = args.batch_range;
+    let first_batch_number = match args.batch_range {
+        Some((first_batch_number, _)) => first_batch_number,
+        None => args
+            .continuous
+            .expect("clap::ArgGroup should guarantee batch range or continuous option is set"),
+    };
+    let end_batch_number = args
+        .batch_range
+        .map_or(u32::MAX, |(_, end_batch_number)| end_batch_number.0);
+    let mut unverified_batches_count: u32 = 0;
+    let mut last_processed_batch_number = first_batch_number.0;
 
-    for batch_number in start_batch_number.0..=end_batch_number.0 {
-        let proofs_request = GetProofsRequest {
-            jsonrpc: "2.0".to_string(),
-            id: 1,
-            method: "unstable_getTeeProofs".to_string(),
-            params: (L1BatchNumber(batch_number), "Sgx".to_string()),
-        };
-        let proofs_response = http_client
-            .post(args.rpc_url.clone())
-            .json(&proofs_request)
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<GetProofsResponse>()
-            .await?;
-
-        for proof in proofs_response
-            .result
-            .into_iter()
-            .filter(|proof| proof.tee_type.to_lowercase() == "sgx")
-        {
-            println!(
-                "Verifying batch #{} proved at {}",
-                proof.l1_batch_number, proof.proved_at
-            );
-            let quote_verification_result = verify_attestation_quote(&proof.attestation)?;
-            print_quote_verification_summary(&quote_verification_result);
-            let public_key = PublicKey::from_slice(
-                &quote_verification_result.quote.report_body.reportdata[..PUBLIC_KEY_SIZE],
-            )?;
-            println!("Public key from attestation quote: {}", public_key);
-            let root_hash = node_client
-                .get_root_hash(L1BatchNumber(proof.l1_batch_number))
-                .await?;
-            println!("Root hash: {}", root_hash);
-            verify_signature(&proof.signature, public_key, root_hash)?;
-            println!();
+    for current_batch_number in first_batch_number.0..=end_batch_number {
+        if *stop_receiver.borrow() {
+            tracing::warn!("Stop signal received, shutting down");
+            break;
         }
 
-        sleep(args.rate_limit).await;
+        trace!("Verifying TEE proofs for batch #{}", current_batch_number);
+
+        let all_verified = verify_batch_proofs(
+            &mut stop_receiver,
+            current_batch_number.into(),
+            &args.rpc_url,
+            &http_client,
+            &node_client,
+            &args.attestation_policy,
+        )
+        .await?;
+
+        if !all_verified {
+            unverified_batches_count += 1;
+        }
+
+        if current_batch_number < end_batch_number {
+            tokio::time::timeout(args.rate_limit, stop_receiver.changed())
+                .await
+                .ok();
+        }
+
+        last_processed_batch_number = current_batch_number;
     }
 
-    Ok(())
-}
+    let verified_batches_count =
+        last_processed_batch_number + 1 - first_batch_number.0 - unverified_batches_count;
 
-fn verify_signature(signature: &[u8], public_key: PublicKey, root_hash: H256) -> Result<()> {
-    let signature = Signature::from_compact(signature)?;
-    let root_hash_msg = Message::from_digest_slice(&root_hash.0)?;
-    if signature.verify(&root_hash_msg, &public_key).is_ok() {
-        println!("Signature verified successfully");
+    if unverified_batches_count > 0 {
+        if verified_batches_count == 0 {
+            error!(
+                "All {} batches failed verification!",
+                unverified_batches_count
+            );
+        } else {
+            error!(
+                "Some batches failed verification! Unverified batches: {}. Verified batches: {}.",
+                unverified_batches_count, verified_batches_count
+            );
+        }
     } else {
-        println!("Failed to verify signature");
+        info!(
+            "All {} batches verified successfully!",
+            verified_batches_count
+        );
     }
+
     Ok(())
 }
 
-fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
-    println!(
-        "Verifying quote ({} bytes)...",
-        attestation_quote_bytes.len()
-    );
-    let collateral =
-        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral")?;
-    let unix_time: i64 = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)?
-        .as_secs() as _;
-    verify_quote_with_collateral(attestation_quote_bytes, Some(&collateral), unix_time)
-        .context("Failed to verify quote with collateral")
-}
+/// Verify all TEE proofs for the given batch number. Note that each batch number can potentially
+/// have multiple proofs of the same TEE type.
+async fn verify_batch_proofs(
+    stop_receiver: &mut watch::Receiver<bool>,
+    batch_number: L1BatchNumber,
+    rpc_url: &Url,
+    http_client: &Client,
+    node_client: &MainNodeClient,
+    attestation_policy: &AttestationPolicyArgs,
+) -> Result<bool> {
+    let proofs = get_proofs(stop_receiver, batch_number, http_client, rpc_url).await?;
+    let batch_no = batch_number.0;
+    let mut total_proofs_count: u32 = 0;
+    let mut unverified_proofs_count: u32 = 0;
 
-fn print_quote_verification_summary(quote_verification_result: &QuoteVerificationResult) {
-    let QuoteVerificationResult {
-        collateral_expired,
-        result,
-        quote,
-        advisories,
-        ..
-    } = quote_verification_result;
-    if *collateral_expired {
-        println!("Freshly fetched collateral expired");
+    for proof in proofs
+        .into_iter()
+        // only support SGX proofs for now
+        .filter(|proof| proof.tee_type.eq_ignore_ascii_case("sgx"))
+    {
+        let batch_no = proof.l1_batch_number;
+
+        total_proofs_count += 1;
+        let tee_type = proof.tee_type.to_uppercase();
+
+        trace!(batch_no, tee_type, proof.proved_at, "Verifying proof.");
+
+        debug!(
+            batch_no,
+            "Verifying quote ({} bytes)...",
+            proof.attestation.len()
+        );
+        let quote_verification_result = verify_attestation_quote(&proof.attestation)?;
+        let verified_successfully = verify_batch_proof(
+            &quote_verification_result,
+            attestation_policy,
+            node_client,
+            &proof.signature,
+            L1BatchNumber(proof.l1_batch_number),
+        )
+        .await?;
+
+        log_quote_verification_summary(&quote_verification_result);
+
+        if verified_successfully {
+            info!(
+                batch_no,
+                proof.proved_at, tee_type, "Verification succeeded.",
+            );
+        } else {
+            unverified_proofs_count += 1;
+            warn!(batch_no, proof.proved_at, tee_type, "Verification failed!",);
+        }
     }
-    let tcblevel = TcbLevel::from(*result);
-    for advisory in advisories {
-        println!("\tInfo: Advisory ID: {advisory}");
+
+    let verified_proofs_count = total_proofs_count - unverified_proofs_count;
+    if unverified_proofs_count > 0 {
+        if verified_proofs_count == 0 {
+            error!(
+                batch_no,
+                "All {} proofs failed verification!", unverified_proofs_count
+            );
+        } else {
+            warn!(
+                batch_no,
+                "Some proofs failed verification. Unverified proofs: {}. Verified proofs: {}.",
+                unverified_proofs_count,
+                verified_proofs_count
+            );
+        }
     }
-    println!("Quote verification result: {}", tcblevel);
-    println!("mrsigner: {}", hex::encode(quote.report_body.mrsigner));
-    println!("mrenclave: {}", hex::encode(quote.report_body.mrenclave));
-    println!("reportdata: {}", hex::encode(quote.report_body.reportdata));
+
+    // if at least one proof is verified, consider the batch verified
+    let is_batch_verified = verified_proofs_count > 0;
+
+    Ok(is_batch_verified)
 }
