@@ -10,6 +10,10 @@
 mkShell {
   inputsFrom = [ teepot.teepot ];
 
+  shellHook = ''
+    export OPENSSL_NO_VENDOR="1";
+  '';
+
   packages = [
     dive
     taplo
