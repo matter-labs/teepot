@@ -4829,7 +4829,7 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "tee-key-preexec"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -4843,7 +4843,7 @@ dependencies = [
 
 [[package]]
 name = "tee-ratls-preexec"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -4857,7 +4857,7 @@ dependencies = [
 
 [[package]]
 name = "tee-self-attestation-test"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -4870,7 +4870,7 @@ dependencies = [
 
 [[package]]
 name = "tee-stress-client"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -4884,7 +4884,7 @@ dependencies = [
 
 [[package]]
 name = "tee-vault-admin"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -4904,7 +4904,7 @@ dependencies = [
 
 [[package]]
 name = "tee-vault-unseal"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -4920,7 +4920,7 @@ dependencies = [
 
 [[package]]
 name = "teepot"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-http",
  "actix-web",
@@ -4959,7 +4959,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-read"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -4974,7 +4974,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-tee-quote-verification-rs"
-version = "0.2.3-alpha.1"
+version = "0.3.0"
 dependencies = [
  "intel-tee-quote-verification-sys",
  "serde",
@@ -4982,7 +4982,7 @@ dependencies = [
 
 [[package]]
 name = "teepot-write"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -5576,7 +5576,7 @@ checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 
 [[package]]
 name = "vault-admin"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -5593,7 +5593,7 @@ dependencies = [
 
 [[package]]
 name = "vault-unseal"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -5614,7 +5614,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "verify-attestation"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -5626,7 +5626,7 @@ dependencies = [
 
 [[package]]
 name = "verify-era-proof-attestation"
-version = "0.1.2-alpha.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
