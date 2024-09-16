@@ -1,8 +1,9 @@
 [package]
+name = "verify-era-proof-attestation"
+publish = false
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
-name = "verify-era-proof-attestation"
 repository.workspace = true
 version.workspace = true
 

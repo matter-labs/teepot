@@ -6,6 +6,7 @@
 , dive
 , taplo
 , vault
+, cargo-release
 }:
 mkShell {
   inputsFrom = [ teepot.teepot ];
@@ -18,5 +19,6 @@ mkShell {
     dive
     taplo
     vault
+    cargo-release
   ];
 }

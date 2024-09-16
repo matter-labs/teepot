@@ -1,5 +1,6 @@
 [package]
 name = "tee-key-preexec"
+publish = false
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

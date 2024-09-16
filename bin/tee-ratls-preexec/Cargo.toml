@@ -1,5 +1,6 @@
 [package]
 name = "tee-ratls-preexec"
+publish = false
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
