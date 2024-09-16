@@ -6,8 +6,13 @@ inline_table_expand = false
 compact_arrays = true
 
 [[rule]]
-include = ["**/Cargo.toml"]
-keys = ["dependencies", "dev-dependencies", "build-dependencies"]
+include = ["**/Cargo.toml", "Cargo.toml"]
+keys = [
+  "dependencies",
+  "dev-dependencies",
+  "build-dependencies",
+  "workspace.dependencies",
+]
 
 [rule.formatting]
 reorder_keys = true
