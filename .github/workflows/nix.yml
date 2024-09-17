@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   push:
     branches: [ "main" ]
-    tags: [ "*-sgx-*" ]
+    tags: [ "*" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -120,6 +120,12 @@ jobs:
         run: |
           docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
           docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:latest"
+
+      - name: Tag container with tag
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        run: |
+          docker tag "${{ steps.build.outputs.IMAGE_TAG }}" matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:$GITHUB_REF_NAME"
+          docker push matterlabsrobot/"${{ steps.build.outputs.IMAGE_NAME }}:$GITHUB_REF_NAME"
 
       - name: Generate build ID for Flux Image Automation
         id: flux
