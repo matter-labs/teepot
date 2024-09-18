@@ -15,12 +15,11 @@ use teepot::json::http::{
     SignRequest, SignRequestData, SignResponse, VaultCommandRequest, VaultCommands,
     VaultCommandsResponse, DIGEST_URL,
 };
+use teepot::log::{setup_logging, LogLevelParser};
 use teepot::server::signatures::verify_sig;
 use teepot::sgx::sign::Signature;
+use tracing::level_filters::LevelFilter;
 use tracing::{error, info};
-use tracing_log::LogTracer;
-use tracing_subscriber::Registry;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 #[derive(Args, Debug)]
 struct SendArgs {
@@ -101,18 +100,18 @@ enum SubCommands {
 struct Arguments {
     #[clap(subcommand)]
     cmd: SubCommands,
+    /// Log level for the log output.
+    /// Valid values are: `off`, `error`, `warn`, `info`, `debug`, `trace`
+    #[clap(long, default_value_t = LevelFilter::WARN, value_parser = LogLevelParser)]
+    pub log_level: LevelFilter,
 }
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    LogTracer::init().context("Failed to set logger")?;
-
-    let subscriber = Registry::default()
-        .with(EnvFilter::from_default_env())
-        .with(fmt::layer().with_writer(std::io::stderr));
-    tracing::subscriber::set_global_default(subscriber).unwrap();
-
     let args = Arguments::parse();
+
+    setup_logging(&args.log_level)?;
+
     info!("Quote verified! Connection secure!");
 
     match args.cmd {

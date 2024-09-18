@@ -4,6 +4,7 @@
 use anyhow::{anyhow, Result};
 use clap::{ArgGroup, Args, Parser};
 use std::time::Duration;
+use teepot::log::LogLevelParser;
 use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
 use tracing_subscriber::filter::LevelFilter;
 use url::Url;
@@ -18,6 +19,8 @@ use zksync_types::L2ChainId;
         .args(&["batch_range", "continuous"]),
 ))]
 pub struct Arguments {
+    /// Log level for the log output.
+    /// Valid values are: `off`, `error`, `warn`, `info`, `debug`, `trace`
     #[clap(long, default_value_t = LevelFilter::WARN, value_parser = LogLevelParser)]
     pub log_level: LevelFilter,
     /// The batch number or range of batch numbers to verify the attestation and signature (e.g.,
@@ -89,35 +92,4 @@ fn parse_batch_range(s: &str) -> Result<(L1BatchNumber, L1BatchNumber)> {
 fn parse_duration(s: &str) -> Result<Duration> {
     let millis = s.parse()?;
     Ok(Duration::from_millis(millis))
-}
-
-#[derive(Clone)]
-struct LogLevelParser;
-
-impl clap::builder::TypedValueParser for LogLevelParser {
-    type Value = LevelFilter;
-
-    fn parse_ref(
-        &self,
-        cmd: &clap::Command,
-        arg: Option<&clap::Arg>,
-        value: &std::ffi::OsStr,
-    ) -> Result<Self::Value, clap::Error> {
-        clap::builder::TypedValueParser::parse(self, cmd, arg, value.to_owned())
-    }
-
-    fn parse(
-        &self,
-        cmd: &clap::Command,
-        arg: Option<&clap::Arg>,
-        value: std::ffi::OsString,
-    ) -> std::result::Result<Self::Value, clap::Error> {
-        use std::str::FromStr;
-        let p = clap::builder::PossibleValuesParser::new([
-            "off", "error", "warn", "info", "debug", "trace",
-        ]);
-        let v = p.parse(cmd, arg, value)?;
-
-        Ok(LevelFilter::from_str(&v).unwrap())
-    }
 }

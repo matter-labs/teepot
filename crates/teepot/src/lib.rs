@@ -11,4 +11,5 @@ pub mod json;
 pub mod server;
 pub mod sgx;
 
+pub mod log;
 pub mod quote;
