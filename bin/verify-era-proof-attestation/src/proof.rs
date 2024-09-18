@@ -5,6 +5,7 @@ use anyhow::{bail, Result};
 use jsonrpsee_types::error::ErrorObject;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_with::{hex::Hex, serde_as};
 use std::time::Duration;
 use tokio::sync::watch;
 use tracing::{error, warn};
@@ -146,14 +147,19 @@ pub struct GetProofsResponse {
     pub error: Option<ErrorObject<'static>>,
 }
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Proof {
     pub l1_batch_number: u32,
     pub tee_type: String,
+    #[serde_as(as = "Hex")]
     pub pubkey: Vec<u8>,
+    #[serde_as(as = "Hex")]
     pub signature: Vec<u8>,
+    #[serde_as(as = "Hex")]
     pub proof: Vec<u8>,
     pub proved_at: String,
+    #[serde_as(as = "Hex")]
     pub attestation: Vec<u8>,
 }
