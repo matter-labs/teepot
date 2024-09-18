@@ -4952,6 +4952,8 @@ dependencies = [
  "testaso",
  "thiserror",
  "tracing",
+ "tracing-log 0.2.0",
+ "tracing-subscriber",
  "webpki-roots",
  "x509-cert",
  "zeroize",

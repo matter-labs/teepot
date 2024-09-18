@@ -8,22 +8,20 @@ mod client;
 mod proof;
 mod verification;
 
-use anyhow::{Context, Result};
+use crate::verification::{
+    log_quote_verification_summary, verify_attestation_quote, verify_batch_proof,
+};
+use anyhow::Result;
 use args::{Arguments, AttestationPolicyArgs};
 use clap::Parser;
 use client::MainNodeClient;
 use proof::get_proofs;
 use reqwest::Client;
+use teepot::log::setup_logging;
 use tokio::{signal, sync::watch};
 use tracing::{debug, error, info, trace, warn};
-use tracing_log::LogTracer;
-use tracing_subscriber::{filter::LevelFilter, fmt, prelude::*, EnvFilter, Registry};
 use url::Url;
 use zksync_basic_types::L1BatchNumber;
-
-use crate::verification::{
-    log_quote_verification_summary, verify_attestation_quote, verify_batch_proof,
-};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -41,26 +39,6 @@ async fn main() -> Result<()> {
             process_handle.await??;
         }
     }
-
-    Ok(())
-}
-
-fn setup_logging(log_level: &LevelFilter) -> Result<()> {
-    LogTracer::init().context("Failed to set logger")?;
-    let filter = EnvFilter::builder()
-        .try_from_env()
-        .unwrap_or(match *log_level {
-            LevelFilter::OFF => EnvFilter::new("off"),
-            _ => EnvFilter::new(format!(
-                "warn,{crate_name}={log_level},teepot={log_level}",
-                crate_name = env!("CARGO_CRATE_NAME"),
-                log_level = log_level
-            )),
-        });
-    let subscriber = Registry::default()
-        .with(filter)
-        .with(fmt::layer().with_writer(std::io::stderr));
-    tracing::subscriber::set_global_default(subscriber)?;
 
     Ok(())
 }
