@@ -5636,6 +5636,7 @@ dependencies = [
  "reqwest 0.12.7",
  "secp256k1 0.29.1",
  "serde",
+ "serde_with 3.9.0",
  "teepot",
  "tokio",
  "tracing",
