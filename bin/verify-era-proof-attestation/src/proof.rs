@@ -37,7 +37,12 @@ pub async fn get_proofs(
             .send(stop_receiver, http_client, rpc_url)
             .await?;
 
-        if !proofs.is_empty() {
+        if !proofs.is_empty()
+            && proofs.iter().all(|proof| {
+                !proof.status.eq_ignore_ascii_case("failed")
+                    && !proof.status.eq_ignore_ascii_case("picked_by_prover")
+            })
+        {
             return Ok(proofs);
         }
 
@@ -153,13 +158,14 @@ pub struct GetProofsResponse {
 pub struct Proof {
     pub l1_batch_number: u32,
     pub tee_type: String,
-    #[serde_as(as = "Hex")]
-    pub pubkey: Vec<u8>,
-    #[serde_as(as = "Hex")]
-    pub signature: Vec<u8>,
-    #[serde_as(as = "Hex")]
-    pub proof: Vec<u8>,
+    #[serde_as(as = "Option<Hex>")]
+    pub pubkey: Option<Vec<u8>>,
+    #[serde_as(as = "Option<Hex>")]
+    pub signature: Option<Vec<u8>>,
+    #[serde_as(as = "Option<Hex>")]
+    pub proof: Option<Vec<u8>>,
     pub proved_at: String,
-    #[serde_as(as = "Hex")]
-    pub attestation: Vec<u8>,
+    pub status: String,
+    #[serde_as(as = "Option<Hex>")]
+    pub attestation: Option<Vec<u8>>,
 }
