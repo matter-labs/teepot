@@ -155,19 +155,24 @@ async fn verify_batch_proofs(
         total_proofs_count += 1;
         let tee_type = proof.tee_type.to_uppercase();
 
+        if proof.status.eq_ignore_ascii_case("permanently_ignored") {
+            trace!(
+                batch_no,
+                tee_type,
+                "Proof is marked as permanently ignored. Skipping."
+            );
+            continue;
+        }
         trace!(batch_no, tee_type, proof.proved_at, "Verifying proof.");
 
-        debug!(
-            batch_no,
-            "Verifying quote ({} bytes)...",
-            proof.attestation.len()
-        );
-        let quote_verification_result = verify_attestation_quote(&proof.attestation)?;
+        let attestation = proof.attestation.unwrap_or_default();
+        debug!(batch_no, "Verifying quote ({} bytes)...", attestation.len());
+        let quote_verification_result = verify_attestation_quote(&attestation)?;
         let verified_successfully = verify_batch_proof(
             &quote_verification_result,
             attestation_policy,
             node_client,
-            &proof.signature,
+            &proof.signature.unwrap_or_default(),
             L1BatchNumber(proof.l1_batch_number),
         )
         .await?;
