@@ -16,9 +16,12 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-      - uses: enarx/spdx@master
+      - uses: enarx/spdx@c3e8116ed31c31b3c2e58a26ba5cac407510ca37
         with:
-          licenses: Apache-2.0 BSD-3-Clause MIT
+          licenses: |-
+            Apache-2.0
+            BSD-3-Clause
+            MIT
 
   taplo:
     name: taplo
