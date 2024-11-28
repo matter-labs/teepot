@@ -5,9 +5,11 @@
 
 use anyhow::Context;
 use tracing::level_filters::LevelFilter;
+use tracing::Subscriber;
 use tracing_log::LogTracer;
+use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::Registry;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 /// A log level parser for clap, with "off", "error", "warn", "info", "debug", "trace" as valid values
 #[derive(Clone)]
@@ -42,7 +44,10 @@ impl clap::builder::TypedValueParser for LogLevelParser {
 }
 
 /// Setup standard logging and loglevel for the current crate and the `teepot` crate.
-pub fn setup_logging(log_level: &LevelFilter) -> anyhow::Result<()> {
+pub fn setup_logging(
+    crate_name: &str,
+    log_level: &LevelFilter,
+) -> anyhow::Result<impl Subscriber + Send + Sync + 'static> {
     LogTracer::init().context("Failed to set logger")?;
     let filter = EnvFilter::builder()
         .try_from_env()
@@ -50,14 +55,17 @@ pub fn setup_logging(log_level: &LevelFilter) -> anyhow::Result<()> {
             LevelFilter::OFF => EnvFilter::new("off"),
             _ => EnvFilter::new(format!(
                 "warn,{crate_name}={log_level},teepot={log_level}",
-                crate_name = env!("CARGO_CRATE_NAME"),
                 log_level = log_level
             )),
         });
-    let subscriber = Registry::default()
-        .with(filter)
-        .with(fmt::layer().with_writer(std::io::stderr));
-    tracing::subscriber::set_global_default(subscriber)?;
 
-    Ok(())
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .with_file(false)
+        .with_line_number(false)
+        .with_writer(std::io::stderr);
+
+    let subscriber = Registry::default().with(filter).with(fmt_layer);
+
+    Ok(subscriber)
 }
