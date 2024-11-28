@@ -26,7 +26,11 @@ use zksync_basic_types::L1BatchNumber;
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Arguments::parse();
-    setup_logging(&args.log_level)?;
+    tracing::subscriber::set_global_default(setup_logging(
+        env!("CARGO_CRATE_NAME"),
+        &args.log_level,
+    )?)?;
+
     validate_arguments(&args)?;
     let (stop_sender, stop_receiver) = watch::channel(false);
     let mut process_handle = tokio::spawn(verify_batches_proofs(stop_receiver, args));

@@ -110,7 +110,10 @@ struct Arguments {
 async fn main() -> Result<()> {
     let args = Arguments::parse();
 
-    setup_logging(&args.log_level)?;
+    tracing::subscriber::set_global_default(setup_logging(
+        env!("CARGO_CRATE_NAME"),
+        &args.log_level,
+    )?)?;
 
     info!("Quote verified! Connection secure!");
 
