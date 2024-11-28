@@ -159,7 +159,10 @@ async fn verify_batch_proofs(
         total_proofs_count += 1;
         let tee_type = proof.tee_type.to_uppercase();
 
-        if proof.status.eq_ignore_ascii_case("permanently_ignored") {
+        if proof
+            .status
+            .map_or(false, |s| s.eq_ignore_ascii_case("permanently_ignored"))
+        {
             trace!(
                 batch_no,
                 tee_type,
