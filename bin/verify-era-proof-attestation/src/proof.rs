@@ -39,8 +39,9 @@ pub async fn get_proofs(
 
         if !proofs.is_empty()
             && proofs.iter().all(|proof| {
-                !proof.status.eq_ignore_ascii_case("failed")
-                    && !proof.status.eq_ignore_ascii_case("picked_by_prover")
+                !proof.status.as_ref().map_or(false, |s| {
+                    s.eq_ignore_ascii_case("failed") | s.eq_ignore_ascii_case("picked_by_prover")
+                })
             })
         {
             return Ok(proofs);
@@ -165,7 +166,7 @@ pub struct Proof {
     #[serde_as(as = "Option<Hex>")]
     pub proof: Option<Vec<u8>>,
     pub proved_at: String,
-    pub status: String,
+    pub status: Option<String>,
     #[serde_as(as = "Option<Hex>")]
     pub attestation: Option<Vec<u8>>,
 }
