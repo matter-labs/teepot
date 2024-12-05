@@ -4,11 +4,8 @@
 //! Create a private key and a signed and self-signed certificates
 
 use crate::quote::get_quote;
-use crate::sgx::tee_qv_get_collateral;
-pub use crate::sgx::{
-    parse_tcb_levels, sgx_ql_qv_result_t, verify_quote_with_collateral, EnumSet,
-    QuoteVerificationResult, TcbLevel,
-};
+use crate::quote::tee_qv_get_collateral;
+pub use crate::sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel};
 use anyhow::{Context, Result};
 use const_oid::db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH};
 use const_oid::AssociatedOid;

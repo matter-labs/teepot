@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Intel SGX Enclave error wrapper
 
@@ -8,10 +8,10 @@ use intel_tee_quote_verification_rs::quote3_error_t;
 use std::fmt::Formatter;
 
 /// Wrapper for the quote verification Error
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Quote3Error {
     /// error message
-    pub msg: &'static str,
+    pub msg: String,
     /// raw error code
     pub inner: quote3_error_t,
 }
@@ -33,7 +33,7 @@ impl std::error::Error for Quote3Error {}
 impl From<quote3_error_t> for Quote3Error {
     fn from(inner: quote3_error_t) -> Self {
         Self {
-            msg: "Generic",
+            msg: "Generic".into(),
             inner,
         }
     }

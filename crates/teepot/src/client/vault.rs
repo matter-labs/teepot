@@ -8,11 +8,13 @@
 
 use super::{AttestationArgs, TeeConnection};
 use crate::json::http::{AuthRequest, AuthResponse};
+pub use crate::quote::tee_qv_get_collateral;
+pub use crate::quote::verify_quote_with_collateral;
+pub use crate::quote::QuoteVerificationResult;
 use crate::server::pki::make_self_signed_cert;
 use crate::server::{AnyHowResponseError, HttpResponseError, Status};
 pub use crate::sgx::{
-    parse_tcb_levels, sgx_gramine_get_quote, sgx_ql_qv_result_t, tee_qv_get_collateral,
-    verify_quote_with_collateral, Collateral, EnumSet, QuoteVerificationResult, TcbLevel,
+    parse_tcb_levels, sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral, EnumSet, TcbLevel,
 };
 use actix_http::error::PayloadError;
 use actix_web::http::header;

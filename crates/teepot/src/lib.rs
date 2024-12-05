@@ -13,3 +13,4 @@ pub mod sgx;
 
 pub mod log;
 pub mod quote;
+pub mod tdx;
