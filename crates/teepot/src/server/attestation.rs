@@ -3,16 +3,20 @@
 
 //! Common attestation API for all TEEs
 
-use crate::client::AttestationArgs;
-use crate::json::http::AttestationResponse;
-use crate::quote::Report;
-use crate::quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult};
-use crate::sgx::{parse_tcb_levels, sgx_gramine_get_quote, Collateral, EnumSet, TcbLevel};
+use crate::{
+    client::AttestationArgs,
+    json::http::AttestationResponse,
+    quote::{error::QuoteContext, verify_quote_with_collateral, QuoteVerificationResult, Report},
+    sgx::{parse_tcb_levels, sgx_gramine_get_quote, Collateral, EnumSet, TcbLevel},
+};
 use anyhow::{bail, Context, Result};
 use clap::Args;
+use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
-use std::time::{Duration, UNIX_EPOCH};
+use std::{
+    sync::{Arc, RwLock},
+    time::{Duration, UNIX_EPOCH},
+};
 use tracing::{debug, error, info, trace, warn};
 
 struct Attestation {

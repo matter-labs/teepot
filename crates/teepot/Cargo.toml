@@ -50,5 +50,5 @@ zeroize.workspace = true
 anyhow.workspace = true
 base64.workspace = true
 testaso.workspace = true
-tracing-test.workspace = true
 tokio.workspace = true
+tracing-test.workspace = true

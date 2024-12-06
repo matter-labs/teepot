@@ -3,14 +3,13 @@
 
 //! Intel TDX helper functions.
 
-use crate::quote::GetQuoteError;
 pub use crate::sgx::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
+use crate::sgx::QuoteError;
 pub use intel_tee_quote_verification_rs::Collateral;
-use std::io;
 use tdx_attest_rs::{tdx_att_get_quote, tdx_attest_error_t, tdx_report_data_t};
 
 /// Get a TDX quote
-pub fn tgx_get_quote(report_data_bytes: &[u8; 64]) -> Result<Box<[u8]>, GetQuoteError> {
+pub fn tgx_get_quote(report_data_bytes: &[u8; 64]) -> Result<Box<[u8]>, QuoteError> {
     let mut tdx_report_data = tdx_report_data_t { d: [0; 64usize] };
     tdx_report_data.d.copy_from_slice(report_data_bytes);
 
@@ -20,18 +19,12 @@ pub fn tgx_get_quote(report_data_bytes: &[u8; 64]) -> Result<Box<[u8]>, GetQuote
         if let Some(quote) = quote {
             Ok(quote.into())
         } else {
-            Err(GetQuoteError {
+            Err(QuoteError::TdxAttGetQuote {
                 msg: "tdx_att_get_quote: No quote returned".into(),
-                source: io::Error::new(
-                    io::ErrorKind::Other,
-                    "tdx_att_get_quote: No quote returned",
-                ),
+                inner: error,
             })
         }
     } else {
-        Err(GetQuoteError {
-            msg: format!("tdx_att_get_quote error: {}", error as u32).into_boxed_str(),
-            source: io::Error::new(io::ErrorKind::Other, "tdx_att_get_quote"),
-        })
+        Err(error.into())
     }
 }

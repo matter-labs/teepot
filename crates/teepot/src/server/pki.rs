@@ -3,36 +3,38 @@
 
 //! Create a private key and a signed and self-signed certificates
 
-use crate::quote::get_quote;
-use crate::quote::tee_qv_get_collateral;
+use crate::quote::{error::QuoteContext, get_quote};
 pub use crate::sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel};
 use anyhow::{Context, Result};
-use const_oid::db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH};
-use const_oid::AssociatedOid;
+use const_oid::{
+    db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH},
+    AssociatedOid,
+};
 use getrandom::getrandom;
-use p256::ecdsa::DerSignature;
-use p256::pkcs8::EncodePrivateKey;
+use intel_tee_quote_verification_rs::tee_qv_get_collateral;
+use p256::{ecdsa::DerSignature, pkcs8::EncodePrivateKey};
 use pkcs8::der;
 use rustls::pki_types::PrivatePkcs8KeyDer;
 use sha2::{Digest, Sha256};
 use signature::Signer;
-use std::str::FromStr;
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 use tracing::debug;
-use x509_cert::builder::{Builder, CertificateBuilder, Profile};
-use x509_cert::der::pem::LineEnding;
-use x509_cert::der::{asn1::OctetString, Encode as _, EncodePem as _, Length};
-use x509_cert::ext::pkix::name::GeneralNames;
-use x509_cert::ext::pkix::{ExtendedKeyUsage, SubjectAltName};
-use x509_cert::ext::{AsExtension, Extension};
-use x509_cert::name::{Name, RdnSequence};
-use x509_cert::serial_number::SerialNumber;
-use x509_cert::spki::{
-    DynSignatureAlgorithmIdentifier, EncodePublicKey, ObjectIdentifier, SignatureBitStringEncoding,
-    SubjectPublicKeyInfoOwned,
+use x509_cert::{
+    builder::{Builder, CertificateBuilder, Profile},
+    der::{asn1::OctetString, pem::LineEnding, Encode as _, EncodePem as _, Length},
+    ext::{
+        pkix::{name::GeneralNames, ExtendedKeyUsage, SubjectAltName},
+        AsExtension, Extension,
+    },
+    name::{Name, RdnSequence},
+    serial_number::SerialNumber,
+    spki::{
+        DynSignatureAlgorithmIdentifier, EncodePublicKey, ObjectIdentifier,
+        SignatureBitStringEncoding, SubjectPublicKeyInfoOwned,
+    },
+    time::Validity,
+    Certificate,
 };
-use x509_cert::time::Validity;
-use x509_cert::Certificate;
 use zeroize::Zeroizing;
 
 /// The OID for the `gramine-ra-tls` quote extension

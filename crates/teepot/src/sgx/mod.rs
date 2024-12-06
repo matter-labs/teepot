@@ -8,8 +8,8 @@
 pub mod sign;
 pub mod tcblevel;
 
+use crate::quote::error::QuoteContext;
 pub use crate::quote::error::QuoteError;
-use crate::quote::GetQuoteError;
 use bytemuck::{try_from_bytes, AnyBitPattern, PodCastError};
 pub use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
 use std::{
@@ -93,34 +93,25 @@ pub struct ReportBody {
 }
 
 /// Get the attestation report in a Gramine enclave
-pub fn sgx_gramine_get_quote(report_data: &[u8; 64]) -> Result<Box<[u8]>, GetQuoteError> {
+pub fn sgx_gramine_get_quote(report_data: &[u8; 64]) -> Result<Box<[u8]>, QuoteError> {
     let mut file = OpenOptions::new()
         .write(true)
         .open("/dev/attestation/user_report_data")
-        .map_err(|e| GetQuoteError {
-            msg: "Failed to open `/dev/attestation/user_report_data`".into(),
-            source: e,
-        })?;
+        .context("opening `/dev/attestation/user_report_data`")?;
 
-    file.write(report_data).map_err(|e| GetQuoteError {
-        msg: "Failed to write `/dev/attestation/user_report_data`".into(),
-        source: e,
-    })?;
+    file.write(report_data)
+        .context("writing `/dev/attestation/user_report_data`")?;
 
     drop(file);
 
     let mut file = OpenOptions::new()
         .read(true)
         .open("/dev/attestation/quote")
-        .map_err(|e| GetQuoteError {
-            msg: "Failed to open `/dev/attestation/quote`".into(),
-            source: e,
-        })?;
+        .context("opening `/dev/attestation/quote`")?;
 
     let mut quote = Vec::new();
-    file.read_to_end(&mut quote).map_err(|e| GetQuoteError {
-        msg: "Failed to read `/dev/attestation/quote`".into(),
-        source: e,
-    })?;
+    file.read_to_end(&mut quote)
+        .context("reading `/dev/attestation/quote`")?;
+
     Ok(quote.into_boxed_slice())
 }

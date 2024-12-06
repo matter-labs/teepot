@@ -5,15 +5,19 @@
 
 pub mod error;
 
-use crate::{quote::error::QuoteError, sgx::sgx_gramine_get_quote, tdx::tgx_get_quote};
+use crate::{
+    quote::error::{QuoteContext as _, QuoteError},
+    sgx::sgx_gramine_get_quote,
+    tdx::tgx_get_quote,
+};
 use bytemuck::{cast_slice, AnyBitPattern};
 use intel_tee_quote_verification_rs::{
     sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t, tee_get_supplemental_data_version_and_size,
     tee_supp_data_descriptor_t, tee_verify_quote, Collateral,
 };
 use serde::{Deserialize, Serialize};
-use std::{ffi::CStr, io, io::Read, mem};
-use tracing::{error, trace, warn};
+use std::{ffi::CStr, io::Read, mem};
+use tracing::{trace, warn};
 
 #[allow(missing_docs)]
 pub const TEE_TYPE_SGX: u32 = 0x00000000;
@@ -80,14 +84,15 @@ pub trait Decode: Sized {
 
 impl<T: AnyBitPattern> Decode for T {
     fn decode<I: Read>(input: &mut I) -> Result<Self, error::QuoteError> {
-        let mut bytes = Vec::with_capacity(size_of::<T>());
-        input.read(&mut bytes)?;
+        let mut bytes = vec![0u8; size_of::<T>()];
+        input.read(&mut bytes).context("parsing bytes")?;
         bytemuck::try_pod_read_unaligned(&bytes).map_err(Into::into)
     }
 }
 
 #[derive(Debug, Clone)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub struct Data<T> {
     pub data: Vec<u8>,
     _marker: core::marker::PhantomData<T>,
@@ -110,10 +115,10 @@ impl<'de, T> Deserialize<'de> for Data<T> {
 }
 
 impl<T: Decode + Into<u64>> Decode for Data<T> {
-    fn decode<I: Read>(input: &mut I) -> Result<Self, error::QuoteError> {
+    fn decode<I: Read>(input: &mut I) -> Result<Self, QuoteError> {
         let len = T::decode(input)?;
         let mut data = vec![0u8; len.into() as usize];
-        input.read(&mut data)?;
+        input.read(&mut data).context("reading bytes")?;
         Ok(Data {
             data,
             _marker: core::marker::PhantomData,
@@ -123,6 +128,7 @@ impl<T: Decode + Into<u64>> Decode for Data<T> {
 
 #[allow(missing_docs)]
 #[derive(AnyBitPattern, Debug, Serialize, Deserialize, Copy, Clone)]
+#[repr(C, packed)]
 pub struct Header {
     pub version: u16,
     pub attestation_key_type: u16,
@@ -137,6 +143,7 @@ pub struct Header {
 
 #[derive(AnyBitPattern, Debug, Copy, Clone)]
 #[allow(missing_docs)]
+#[repr(C, packed)]
 pub struct Body {
     pub body_type: u16,
     pub size: u32,
@@ -144,6 +151,7 @@ pub struct Body {
 
 #[derive(Serialize, Deserialize, AnyBitPattern, Debug, Clone, Copy)]
 #[allow(missing_docs)]
+#[repr(C, packed)]
 pub struct EnclaveReport {
     #[serde(with = "serde_bytes")]
     pub cpu_svn: [u8; 16],
@@ -170,6 +178,7 @@ pub struct EnclaveReport {
 
 #[derive(AnyBitPattern, Debug, Copy, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C, packed)]
 pub struct TDReport10 {
     #[serde(with = "serde_bytes")]
     pub tee_tcb_svn: [u8; 16],
@@ -205,6 +214,7 @@ pub struct TDReport10 {
 
 #[derive(AnyBitPattern, Debug, Copy, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C, packed)]
 pub struct TDReport15 {
     pub base: TDReport10,
     #[serde(with = "serde_bytes")]
@@ -215,6 +225,7 @@ pub struct TDReport15 {
 
 #[allow(missing_docs)]
 #[derive(Serialize, Deserialize, Clone)]
+#[repr(C)]
 pub struct CertificationData {
     pub cert_type: u16,
     pub body: Data<u32>,
@@ -241,6 +252,7 @@ impl core::fmt::Debug for CertificationData {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub struct QEReportCertificationData {
     #[serde(with = "serde_bytes")]
     pub qe_report: [u8; ENCLAVE_REPORT_BYTE_LEN],
@@ -263,6 +275,7 @@ impl Decode for QEReportCertificationData {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub struct AuthDataV3 {
     #[serde(with = "serde_bytes")]
     pub ecdsa_signature: [u8; ECDSA_SIGNATURE_BYTE_LEN],
@@ -291,6 +304,7 @@ impl Decode for AuthDataV3 {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub struct AuthDataV4 {
     #[serde(with = "serde_bytes")]
     pub ecdsa_signature: [u8; ECDSA_SIGNATURE_BYTE_LEN],
@@ -332,6 +346,7 @@ impl Decode for AuthDataV4 {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub enum AuthData {
     V3(AuthDataV3),
     V4(AuthDataV4),
@@ -363,6 +378,7 @@ fn decode_auth_data(ver: u16, input: &mut &[u8]) -> Result<AuthData, error::Quot
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub enum Report {
     SgxEnclave(EnclaveReport),
     TD10(TDReport10),
@@ -403,6 +419,7 @@ impl Report {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[repr(C)]
 pub struct Quote {
     pub header: Header,
     pub report: Report,
@@ -412,6 +429,7 @@ pub struct Quote {
 impl Decode for Quote {
     fn decode<I: Read>(input: &mut I) -> Result<Self, error::QuoteError> {
         let header = Header::decode(input)?;
+        trace!(?header);
         let report;
         match header.version {
             3 => {
@@ -474,24 +492,12 @@ impl Quote {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-#[allow(missing_docs)]
-#[error("{msg}")]
-pub struct GetQuoteError {
-    pub(crate) msg: Box<str>,
-    #[source] // optional if field name is `source`
-    pub(crate) source: io::Error,
-}
-
 /// Get the attestation quote from a TEE
-pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, GetQuoteError> {
+pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, QuoteError> {
     // check, if we are running in a TEE
     if std::fs::metadata("/dev/attestation").is_ok() {
         if report_data.len() > 64 {
-            return Err(GetQuoteError {
-                msg: "Report data too long".into(),
-                source: io::Error::new(io::ErrorKind::Other, "Report data too long"),
-            });
+            return Err(QuoteError::ReportDataSize);
         }
 
         let mut report_data_fixed = [0u8; 64];
@@ -500,10 +506,7 @@ pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, GetQuoteError> {
         sgx_gramine_get_quote(&report_data_fixed)
     } else if std::fs::metadata("/dev/tdx_guest").is_ok() {
         if report_data.len() > 64 {
-            return Err(GetQuoteError {
-                msg: "Report data too long".into(),
-                source: io::Error::new(io::ErrorKind::Other, "Report data too long"),
-            });
+            return Err(QuoteError::ReportDataSize);
         }
 
         let mut report_data_fixed = [0u8; 64];
@@ -512,17 +515,8 @@ pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, GetQuoteError> {
         tgx_get_quote(&report_data_fixed)
     } else {
         // if not, return an error
-        Err(GetQuoteError {
-            msg: "Not running in a TEE".into(),
-            source: io::Error::new(io::ErrorKind::Other, "Not running in a TEE"),
-        })
+        Err(QuoteError::UnknownTee)
     }
-}
-
-/// Wrapper func for error
-/// TODO: move to intel_tee_quote_verification_rs
-pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, QuoteError> {
-    intel_tee_quote_verification_rs::tee_qv_get_collateral(quote).map_err(Into::into)
 }
 
 /// The result of the quote verification
@@ -590,12 +584,10 @@ pub fn verify_quote_with_collateral(
     trace!("tee_verify_quote");
 
     let (collateral_expiration_status, result) =
-        tee_verify_quote(quote, collateral, current_time, None, p_supplemental_data).map_err(
-            |e| QuoteError::Quote3Error {
-                msg: "tee_verify_quote".into(),
-                inner: e,
-            },
-        )?;
+        tee_verify_quote(quote, collateral, current_time, None, p_supplemental_data)
+            .context("tee_verify_quote")?;
+
+    trace!("tee_verify_quote end");
 
     // check supplemental data if necessary
     let (advisories, earliest_expiration_date, tcb_level_date_tag) = if has_sup {
@@ -619,6 +611,7 @@ pub fn verify_quote_with_collateral(
         (vec![], 0, 0)
     };
 
+    trace!("Quote::parse");
     let quote = Quote::parse(quote)?;
 
     let res = QuoteVerificationResult {

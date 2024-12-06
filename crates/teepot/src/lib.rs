@@ -5,11 +5,11 @@
 
 #![deny(missing_docs)]
 #![deny(clippy::all)]
+
 pub mod client;
 pub mod json;
-pub mod server;
-pub mod sgx;
-
 pub mod log;
 pub mod quote;
+pub mod server;
+pub mod sgx;
 pub mod tdx;
