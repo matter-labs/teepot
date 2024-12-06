@@ -9,7 +9,9 @@ use secp256k1::{ecdsa::Signature, Message, PublicKey};
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
 use teepot::{
     client::TcbLevel,
-    quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report},
+    quote::{
+        error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report,
+    },
 };
 use zksync_basic_types::H256;
 
@@ -103,7 +105,7 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         "Verifying quote ({} bytes)...",
         attestation_quote_bytes.len()
     );
-    let collateral = teepot::quote::error::QuoteContext::context(
+    let collateral = error::QuoteContext::context(
         tee_qv_get_collateral(attestation_quote_bytes),
         "Failed to get collateral",
     )?;

@@ -7,7 +7,10 @@ use hex::encode;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use teepot::{
     client::TcbLevel,
-    quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report},
+    quote::{
+        error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
+        QuoteVerificationResult, Report,
+    },
 };
 use tracing::{debug, info, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
@@ -43,7 +46,7 @@ pub async fn verify_batch_proof(
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
-    let collateral = teepot::quote::error::QuoteContext::context(
+    let collateral = QuoteContext::context(
         tee_qv_get_collateral(attestation_quote_bytes),
         "Failed to get collateral!",
     )?;
