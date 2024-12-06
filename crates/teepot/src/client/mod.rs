@@ -10,6 +10,7 @@ pub mod vault;
 
 pub use crate::quote::verify_quote_with_collateral;
 pub use crate::quote::QuoteVerificationResult;
+use crate::quote::Report;
 use crate::server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension};
 use crate::sgx::Quote;
 pub use crate::sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel};
@@ -18,7 +19,6 @@ use anyhow::Result;
 use awc::{Client, Connector};
 use clap::Args;
 use const_oid::AssociatedOid;
-use dcap_qvl::quote::Report;
 use intel_tee_quote_verification_rs::Collateral;
 use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerifier};
 use rustls::client::WebPkiServerVerifier;

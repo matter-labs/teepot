@@ -7,7 +7,6 @@ use anyhow::{Context, Result};
 use hex::encode;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use teepot::client::TcbLevel;
-use teepot::quote::GetReportData;
 use teepot::quote::Report;
 use teepot::quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult};
 use tracing::{debug, info, warn};

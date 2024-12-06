@@ -3,10 +3,9 @@
 
 mod sgx {
     use anyhow::{Context, Result};
-    use dcap_qvl::quote::Report;
     use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
     use std::time::{Duration, UNIX_EPOCH};
-    use teepot::quote::{verify_quote_with_collateral, QuoteVerificationResult};
+    use teepot::quote::{verify_quote_with_collateral, QuoteVerificationResult, Report};
     use tracing_test::traced_test;
 
     fn check_quote(

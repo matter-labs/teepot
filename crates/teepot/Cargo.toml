@@ -19,7 +19,6 @@ bytemuck.workspace = true
 bytes.workspace = true
 clap.workspace = true
 const-oid.workspace = true
-dcap-qvl.workspace = true
 enumset.workspace = true
 futures-core.workspace = true
 getrandom.workspace = true

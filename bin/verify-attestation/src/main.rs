@@ -8,7 +8,6 @@ use clap::{Args, Parser, Subcommand};
 use secp256k1::{ecdsa::Signature, Message, PublicKey};
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
 use teepot::client::TcbLevel;
-use teepot::quote::GetReportData;
 use teepot::quote::Report;
 use teepot::quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult};
 use zksync_basic_types::H256;

@@ -6,6 +6,8 @@
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 
+#[macro_use]
+extern crate alloc;
 pub mod client;
 pub mod json;
 pub mod server;
