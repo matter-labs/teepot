@@ -9,9 +9,22 @@
 , cargo-release
 , nixsgx
 , stdenv
+, teepotCrate
+, pkg-config
 }:
+let
+  toolchain_with_src = (teepotCrate.rustVersion.override {
+    extensions = [ "rustfmt" "clippy" "rust-src" ];
+  });
+in
 mkShell {
   inputsFrom = [ teepot.teepot ];
+
+  nativeBuildInputs = [
+    toolchain_with_src
+    pkg-config
+    teepotCrate.rustPlatform.bindgenHook
+  ];
 
   packages = [
     dive
@@ -28,6 +41,7 @@ mkShell {
 
   QCNL_CONF_PATH = "${nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf";
   OPENSSL_NO_VENDOR = "1";
+  RUST_SRC_PATH = "${toolchain_with_src}/lib/rustlib/src/rust/library";
 
   shellHook = ''
     if [ "x$NIX_LD" = "x" ]; then

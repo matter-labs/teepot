@@ -28,6 +28,7 @@ let
       nixsgx.sgx-sdk
       nixsgx.sgx-dcap
       nixsgx.sgx-dcap.quote_verify
+      nixsgx.sgx-dcap.libtdx_attest
     ];
 
     strictDeps = true;

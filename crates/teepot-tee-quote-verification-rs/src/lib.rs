@@ -68,15 +68,15 @@ pub use qvl_sys::tee_supp_data_descriptor_t;
 ///
 /// # Param
 /// - **policy**\
-/// Set the requested enclave loading policy to either *SGX_QL_PERSISTENT*, *SGX_QL_EPHEMERAL* or *SGX_QL_DEFAULT*.
+///   Set the requested enclave loading policy to either *SGX_QL_PERSISTENT*, *SGX_QL_EPHEMERAL* or *SGX_QL_DEFAULT*.
 ///
 /// # Return
 /// - ***SGX_QL_SUCCESS***\
-/// Successfully set the enclave loading policy for the quoting library's enclaves.\
+///   Successfully set the enclave loading policy for the quoting library's enclaves.\
 /// - ***SGX_QL_UNSUPPORTED_LOADING_POLICY***\
-/// The selected policy is not support by the quoting library.\
+///   The selected policy is not support by the quoting library.\
 /// - ***SGX_QL_ERROR_UNEXPECTED***\
-/// Unexpected internal error.
+///   Unexpected internal error.
 ///
 /// # Examples
 /// ```
@@ -123,19 +123,19 @@ pub fn sgx_qv_get_quote_supplemental_data_size() -> Result<u32, quote3_error_t> 
 ///
 /// # Param
 /// - **quote**\
-/// SGX Quote, presented as u8 vector.
+///   SGX Quote, presented as u8 vector.
 /// - **quote_collateral**\
-/// Quote Certification Collateral provided by the caller.
+///   Quote Certification Collateral provided by the caller.
 /// - **expiration_check_date**\
-/// This is the date that the QvE will use to determine if any of the inputted collateral have expired.
+///   This is the date that the QvE will use to determine if any of the inputted collateral have expired.
 /// - **qve_report_info**\
-/// This parameter can be used in 2 ways.\
+///   This parameter can be used in 2 ways.\
 ///     - If qve_report_info is NOT None, the API will use Intel QvE to perform quote verification, and QvE will generate a report using the target_info in sgx_ql_qe_report_info_t structure.\
 ///     - if qve_report_info is None, the API will use QVL library to perform quote verification, note that the results can not be cryptographically authenticated in this mode.
 /// - **supplemental_data_size**\
-/// Size of the supplemental data (in bytes).
+///   Size of the supplemental data (in bytes).
 /// - **supplemental_data**\
-/// The parameter is optional. If it is None, supplemental_data_size must be 0.
+///   The parameter is optional. If it is None, supplemental_data_size must be 0.
 ///
 /// # Return
 /// Result type of (collateral_expiration_status, verification_result).
@@ -223,19 +223,19 @@ pub fn tdx_qv_get_quote_supplemental_data_size() -> Result<u32, quote3_error_t> 
 ///
 /// # Param
 /// - **quote**\
-/// TDX Quote, presented as u8 vector.
+///   TDX Quote, presented as u8 vector.
 /// - **quote_collateral**\
-/// Quote Certification Collateral provided by the caller.
+///   Quote Certification Collateral provided by the caller.
 /// - **expiration_check_date**\
-/// This is the date that the QvE will use to determine if any of the inputted collateral have expired.
+///   This is the date that the QvE will use to determine if any of the inputted collateral have expired.
 /// - **qve_report_info**\
-/// This parameter can be used in 2 ways.\
+///   This parameter can be used in 2 ways.\
 ///     - If qve_report_info is NOT None, the API will use Intel QvE to perform quote verification, and QvE will generate a report using the target_info in sgx_ql_qe_report_info_t structure.\
 ///     - if qve_report_info is None, the API will use QVL library to perform quote verification, note that the results can not be cryptographically authenticated in this mode.
 /// - **supplemental_data_size**\
-/// Size of the supplemental data (in bytes).
+///   Size of the supplemental data (in bytes).
 /// - **supplemental_data**\
-/// The parameter is optional. If it is None, supplemental_data_size must be 0.
+///   The parameter is optional. If it is None, supplemental_data_size must be 0.
 ///
 /// # Return
 /// Result type of (collateral_expiration_status, verification_result).
@@ -296,15 +296,15 @@ pub fn tdx_qv_verify_quote(
 ///
 /// # Param
 /// - **path_type**\
-/// The type of binary being passed in.
+///   The type of binary being passed in.
 /// - **path**\
-/// It should be a valid full path.
+///   It should be a valid full path.
 ///
 /// # Return
 /// - ***SGX_QL_SUCCESS***\
-/// Successfully set the full path.
+///   Successfully set the full path.
 /// - ***SGX_QL_ERROR_INVALID_PARAMETER***\
-/// Path is not a valid full path or the path is too long.
+///   Path is not a valid full path or the path is too long.
 ///
 #[cfg(target_os = "linux")]
 pub fn sgx_qv_set_path(path_type: sgx_qv_path_type_t, path: &str) -> quote3_error_t {
@@ -401,7 +401,7 @@ impl<'a> From<&'a Collateral> for SgxQlQveCollateralT<'a> {
     }
 }
 
-impl<'a> Deref for SgxQlQveCollateralT<'a> {
+impl Deref for SgxQlQveCollateralT<'_> {
     type Target = sgx_ql_qve_collateral_t;
 
     fn deref(&self) -> &Self::Target {
@@ -413,13 +413,13 @@ impl<'a> Deref for SgxQlQveCollateralT<'a> {
 ///
 /// # Param
 /// - **quote**\
-/// SGX/TDX Quote, presented as u8 vector.
+///   SGX/TDX Quote, presented as u8 vector.
 ///
 /// # Return
 /// Result type of quote_collateral.
 ///
 /// - **quote_collateral**\
-/// This is the Quote Certification Collateral retrieved based on Quote.
+///   This is the Quote Certification Collateral retrieved based on Quote.
 ///
 /// Status code of the operation, one of:
 /// - *SGX_QL_ERROR_INVALID_PARAMETER*
@@ -457,15 +457,15 @@ pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, quote3_error_t>
 ///
 /// # Param
 /// - **quote**\
-/// SGX/TDX Quote, presented as u8 vector.
+///   SGX/TDX Quote, presented as u8 vector.
 ///
 /// # Return
 /// Result type of (version, data_size) tuple.
 ///
 /// - **version**\
-/// Latest version of the supplemental data.
+///   Latest version of the supplemental data.
 /// - **data_size**\
-/// The size of the buffer in bytes required to contain all of the supplemental data.
+///   The size of the buffer in bytes required to contain all of the supplemental data.
 ///
 pub fn tee_get_supplemental_data_version_and_size(
     quote: &[u8],
@@ -491,22 +491,22 @@ pub fn tee_get_supplemental_data_version_and_size(
 ///
 /// # Param
 /// - **quote**\
-/// SGX/TDX Quote, presented as u8 vector.
+///   SGX/TDX Quote, presented as u8 vector.
 /// - **quote_collateral**\
-/// Quote Certification Collateral provided by the caller.
+///   Quote Certification Collateral provided by the caller.
 /// - **expiration_check_date**\
-/// This is the date that the QvE will use to determine if any of the inputted collateral have expired.
+///   This is the date that the QvE will use to determine if any of the inputted collateral have expired.
 /// - **qve_report_info**\
-/// This parameter can be used in 2 ways.\
+///   This parameter can be used in 2 ways.\
 ///     - If qve_report_info is NOT None, the API will use Intel QvE to perform quote verification, and QvE will generate a report using the target_info in sgx_ql_qe_report_info_t structure.\
 ///     - if qve_report_info is None, the API will use QVL library to perform quote verification, note that the results can not be cryptographically authenticated in this mode.
 /// - **supp_datal_descriptor**\
-/// *tee_supp_data_descriptor_t* structure.\
-/// You can specify the major version of supplemental data by setting supp_datal_descriptor.major_version.\
-/// If supp_datal_descriptor is None, no supplemental data is returned.\
-/// If supp_datal_descriptor.major_version == 0, then return the latest version of the *sgx_ql_qv_supplemental_t* structure.\
-/// If supp_datal_descriptor.major_version <= latest supported version, return the latest minor version associated with that major version.\
-/// If supp_datal_descriptor.major_version > latest supported version, return an error *SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED*.
+///   *tee_supp_data_descriptor_t* structure.\
+///   You can specify the major version of supplemental data by setting supp_datal_descriptor.major_version.\
+///   If supp_datal_descriptor is None, no supplemental data is returned.\
+///   If supp_datal_descriptor.major_version == 0, then return the latest version of the *sgx_ql_qv_supplemental_t* structure.\
+///   If supp_datal_descriptor.major_version <= latest supported version, return the latest minor version associated with that major version.\
+///   If supp_datal_descriptor.major_version > latest supported version, return an error *SGX_QL_SUPPLEMENTAL_DATA_VERSION_NOT_SUPPORTED*.
 ///
 /// # Return
 /// Result type of (collateral_expiration_status, verification_result).
