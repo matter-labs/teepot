@@ -103,8 +103,10 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         "Verifying quote ({} bytes)...",
         attestation_quote_bytes.len()
     );
-    let collateral =
-        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral")?;
+    let collateral = teepot::quote::error::QuoteContext::context(
+        tee_qv_get_collateral(attestation_quote_bytes),
+        "Failed to get collateral",
+    )?;
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;

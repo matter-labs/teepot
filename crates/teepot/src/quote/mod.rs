@@ -19,6 +19,8 @@ use serde::{Deserialize, Serialize};
 use std::{ffi::CStr, io::Read, mem};
 use tracing::{trace, warn};
 
+pub use intel_tee_quote_verification_rs::tee_qv_get_collateral;
+
 #[allow(missing_docs)]
 pub const TEE_TYPE_SGX: u32 = 0x00000000;
 #[allow(missing_docs)]
