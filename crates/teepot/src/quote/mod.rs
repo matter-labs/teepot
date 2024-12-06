@@ -5,23 +5,14 @@
 
 pub mod error;
 
-use crate::sgx::{sgx_gramine_get_quote, Quote3Error};
-use crate::tdx::tgx_get_quote;
-use std::io::Read;
-
-use crate::quote::error::QuoteError;
-use alloc::string::String;
-use alloc::vec::Vec;
-use anyhow::Result;
+use crate::{quote::error::QuoteError, sgx::sgx_gramine_get_quote, tdx::tgx_get_quote};
 use bytemuck::{cast_slice, AnyBitPattern};
 use intel_tee_quote_verification_rs::{
-    quote3_error_t, sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t,
-    tee_get_supplemental_data_version_and_size, tee_supp_data_descriptor_t, tee_verify_quote,
-    Collateral,
+    sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t, tee_get_supplemental_data_version_and_size,
+    tee_supp_data_descriptor_t, tee_verify_quote, Collateral,
 };
 use serde::{Deserialize, Serialize};
-use std::ffi::CStr;
-use std::{io, mem};
+use std::{ffi::CStr, io, io::Read, mem};
 use tracing::{error, trace, warn};
 
 #[allow(missing_docs)]
@@ -91,8 +82,7 @@ impl<T: AnyBitPattern> Decode for T {
     fn decode<I: Read>(input: &mut I) -> Result<Self, error::QuoteError> {
         let mut bytes = Vec::with_capacity(size_of::<T>());
         input.read(&mut bytes)?;
-        let res = bytemuck::try_pod_read_unaligned(&bytes)?;
-        Ok(res)
+        bytemuck::try_pod_read_unaligned(&bytes).map_err(Into::into)
     }
 }
 
@@ -468,7 +458,7 @@ impl Decode for Quote {
 
 impl Quote {
     /// Parse a TEE quote from a byte slice.
-    pub fn parse(quote: &[u8]) -> Result<Self> {
+    pub fn parse(quote: &[u8]) -> Result<Self, QuoteError> {
         let mut input = quote;
         let quote = Quote::decode(&mut input)?;
         Ok(quote)
@@ -531,7 +521,7 @@ pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, GetQuoteError> {
 
 /// Wrapper func for error
 /// TODO: move to intel_tee_quote_verification_rs
-pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, Quote3Error> {
+pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, QuoteError> {
     intel_tee_quote_verification_rs::tee_qv_get_collateral(quote).map_err(Into::into)
 }
 
@@ -556,7 +546,7 @@ pub fn verify_quote_with_collateral(
     quote: &[u8],
     collateral: Option<&Collateral>,
     current_time: i64,
-) -> Result<QuoteVerificationResult, Quote3Error> {
+) -> Result<QuoteVerificationResult, QuoteError> {
     let mut supp_data: mem::MaybeUninit<sgx_ql_qv_supplemental_t> = mem::MaybeUninit::zeroed();
     let mut supp_data_desc = tee_supp_data_descriptor_t {
         major_version: 0,
@@ -565,7 +555,7 @@ pub fn verify_quote_with_collateral(
     };
     trace!("tee_get_supplemental_data_version_and_size");
     let (_, supp_size) =
-        tee_get_supplemental_data_version_and_size(quote).map_err(|e| Quote3Error {
+        tee_get_supplemental_data_version_and_size(quote).map_err(|e| QuoteError::Quote3Error {
             msg: "tee_get_supplemental_data_version_and_size".into(),
             inner: e,
         })?;
@@ -601,7 +591,7 @@ pub fn verify_quote_with_collateral(
 
     let (collateral_expiration_status, result) =
         tee_verify_quote(quote, collateral, current_time, None, p_supplemental_data).map_err(
-            |e| Quote3Error {
+            |e| QuoteError::Quote3Error {
                 msg: "tee_verify_quote".into(),
                 inner: e,
             },
@@ -629,10 +619,7 @@ pub fn verify_quote_with_collateral(
         (vec![], 0, 0)
     };
 
-    let quote = Quote::parse(quote).map_err(|e| Quote3Error {
-        msg: format!("quote::Quote::parse: {e:?}"),
-        inner: quote3_error_t::SGX_QL_QUOTE_FORMAT_UNSUPPORTED,
-    })?;
+    let quote = Quote::parse(quote)?;
 
     let res = QuoteVerificationResult {
         collateral_expired: collateral_expiration_status != 0,

@@ -3,6 +3,7 @@
 
 //! Quote Error type
 
+use intel_tee_quote_verification_rs::quote3_error_t;
 use std::io;
 use thiserror::Error;
 
@@ -20,6 +21,17 @@ pub enum QuoteError {
     InvalidTeeType,
     #[error("unsupported body type")]
     UnsupportedBodyType,
-    #[error("unknown error")]
-    Unknown,
+    #[error("quote verification error {msg}: {inner:?}")]
+    Quote3Error { inner: quote3_error_t, msg: String },
+    #[error("invalid version")]
+    InvalidVersion,
+}
+
+impl From<quote3_error_t> for QuoteError {
+    fn from(code: quote3_error_t) -> Self {
+        Self::Quote3Error {
+            inner: code,
+            msg: "code".to_string(),
+        }
+    }
 }

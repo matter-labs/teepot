@@ -4,7 +4,6 @@
 //! Intel TDX helper functions.
 
 use crate::quote::GetQuoteError;
-pub use crate::sgx::error::{Quote3Error, QuoteFromError};
 pub use crate::sgx::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 pub use intel_tee_quote_verification_rs::Collateral;
 use std::io;

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2023-2024 Matter Labs
 
-use crate::args::AttestationPolicyArgs;
-use crate::client::JsonRpcClient;
+use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{Context, Result};
 use hex::encode;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
-use teepot::client::TcbLevel;
-use teepot::quote::Report;
-use teepot::quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult};
+use teepot::{
+    client::TcbLevel,
+    quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report},
+};
 use tracing::{debug, info, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
 

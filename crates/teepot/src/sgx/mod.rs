@@ -5,17 +5,18 @@
 
 //! Intel SGX Enclave report structures.
 
-pub mod error;
 pub mod sign;
 pub mod tcblevel;
 
+pub use crate::quote::error::QuoteError;
 use crate::quote::GetQuoteError;
 use bytemuck::{try_from_bytes, AnyBitPattern, PodCastError};
-pub use error::{Quote3Error, QuoteFromError};
 pub use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
-use std::fs::OpenOptions;
-use std::io::{Read, Write};
-use std::mem;
+use std::{
+    fs::OpenOptions,
+    io::{Read, Write},
+    mem,
+};
 pub use tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 
 /// Structure of a quote
@@ -36,13 +37,13 @@ pub struct Quote {
 
 impl Quote {
     /// Creates a quote from a byte slice
-    pub fn try_from_bytes(bytes: &[u8]) -> Result<&Self, QuoteFromError> {
+    pub fn try_from_bytes(bytes: &[u8]) -> Result<&Self, QuoteError> {
         if bytes.len() < mem::size_of::<Self>() {
             return Err(PodCastError::SizeMismatch.into());
         }
         let this: &Self = try_from_bytes(&bytes[..mem::size_of::<Self>()])?;
         if this.version() != 3 {
-            return Err(QuoteFromError::InvalidVersion);
+            return Err(QuoteError::InvalidVersion);
         }
         Ok(this)
     }
