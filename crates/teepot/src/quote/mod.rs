@@ -3,10 +3,8 @@
 
 //! Get a quote from a TEE
 
-pub mod constants;
 pub mod error;
 
-use crate::quote::constants::*;
 use crate::sgx::{sgx_gramine_get_quote, Quote3Error};
 use crate::tdx::tgx_get_quote;
 use std::io::Read;
@@ -25,6 +23,27 @@ use serde::{Deserialize, Serialize};
 use std::ffi::CStr;
 use std::{io, mem};
 use tracing::{error, trace, warn};
+
+#[allow(missing_docs)]
+pub const TEE_TYPE_SGX: u32 = 0x00000000;
+#[allow(missing_docs)]
+pub const TEE_TYPE_TDX: u32 = 0x00000081;
+
+#[allow(missing_docs)]
+pub const BODY_SGX_ENCLAVE_REPORT_TYPE: u16 = 1;
+#[allow(missing_docs)]
+pub const BODY_TD_REPORT10_TYPE: u16 = 2;
+#[allow(missing_docs)]
+pub const BODY_TD_REPORT15_TYPE: u16 = 3;
+#[allow(missing_docs)]
+pub const ENCLAVE_REPORT_BYTE_LEN: usize = 384;
+
+#[allow(missing_docs)]
+pub const ECDSA_SIGNATURE_BYTE_LEN: usize = 64;
+#[allow(missing_docs)]
+pub const ECDSA_PUBKEY_BYTE_LEN: usize = 64;
+#[allow(missing_docs)]
+pub const QE_REPORT_SIG_BYTE_LEN: usize = ECDSA_SIGNATURE_BYTE_LEN;
 
 mod serde_bytes {
     use serde::Deserialize;
@@ -453,27 +472,6 @@ impl Quote {
         let mut input = quote;
         let quote = Quote::decode(&mut input)?;
         Ok(quote)
-    }
-
-    /// Get the raw certificate chain from the quote.
-    pub fn raw_cert_chain(&self) -> &[u8] {
-        match &self.auth_data {
-            AuthData::V3(data) => &data.certification_data.body.data,
-            AuthData::V4(data) => &data.qe_report_data.certification_data.body.data,
-        }
-    }
-
-    /// Get the the length of signed data in the quote.
-    pub fn signed_length(&self) -> usize {
-        let mut len = match self.report {
-            Report::SgxEnclave(_) => HEADER_BYTE_LEN + ENCLAVE_REPORT_BYTE_LEN,
-            Report::TD10(_) => HEADER_BYTE_LEN + TD_REPORT10_BYTE_LEN,
-            Report::TD15(_) => HEADER_BYTE_LEN + TD_REPORT15_BYTE_LEN,
-        };
-        if self.header.version == 5 {
-            len += BODY_BYTE_SIZE;
-        }
-        len
     }
 
     /// Get the report data
