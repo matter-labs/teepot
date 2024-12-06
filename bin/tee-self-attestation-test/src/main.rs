@@ -11,6 +11,7 @@ use base64::{engine::general_purpose, Engine as _};
 use teepot::server::attestation::get_quote_and_collateral;
 use tracing_log::LogTracer;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
+
 #[actix_web::main]
 async fn main() -> Result<()> {
     LogTracer::init().context("Failed to set logger")?;

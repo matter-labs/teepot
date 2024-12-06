@@ -7,9 +7,10 @@ use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand};
 use secp256k1::{ecdsa::Signature, Message, PublicKey};
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
-use teepot::client::TcbLevel;
-use teepot::quote::Report;
-use teepot::quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult};
+use teepot::{
+    client::TcbLevel,
+    quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report},
+};
 use zksync_basic_types::H256;
 
 #[derive(Parser, Debug)]
