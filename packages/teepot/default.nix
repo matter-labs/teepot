@@ -5,14 +5,6 @@
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts;
 
-    passthru = {
-      inherit (teepotCrate) rustPlatform
-        rustVersion
-        commonArgs
-        craneLib
-        cargoArtifacts;
-    };
-
     outputs = [
       "out"
       "tee_key_preexec"
@@ -38,6 +30,7 @@
         binname=''${i//_/-}
         mv "$out/bin/$binname" "''${!i}/bin/"
       done
+      rmdir "$out/bin"
     '';
   }
 )
