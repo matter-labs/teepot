@@ -7,26 +7,34 @@
 #![deny(clippy::all)]
 
 use super::{AttestationArgs, TeeConnection};
-use crate::json::http::{AuthRequest, AuthResponse};
-use crate::server::pki::make_self_signed_cert;
-use crate::server::{AnyHowResponseError, HttpResponseError, Status};
-pub use crate::sgx::{
-    parse_tcb_levels, sgx_gramine_get_quote, sgx_ql_qv_result_t, tee_qv_get_collateral,
-    verify_quote_with_collateral, Collateral, EnumSet, QuoteVerificationResult, TcbLevel,
+use crate::{
+    json::http::{AuthRequest, AuthResponse},
+    quote::error::QuoteContext,
+    server::{pki::make_self_signed_cert, AnyHowResponseError, HttpResponseError, Status},
+};
+pub use crate::{
+    quote::{verify_quote_with_collateral, QuoteVerificationResult},
+    sgx::{
+        parse_tcb_levels, sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral, EnumSet, TcbLevel,
+    },
 };
 use actix_http::error::PayloadError;
-use actix_web::http::header;
-use actix_web::ResponseError;
+use actix_web::{http::header, ResponseError};
 use anyhow::{anyhow, bail, Context, Result};
-use awc::error::{SendRequestError, StatusCode};
-use awc::{Client, ClientResponse, Connector};
+use awc::{
+    error::{SendRequestError, StatusCode},
+    Client, ClientResponse, Connector,
+};
 use bytes::Bytes;
 use futures_core::Stream;
+use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use rustls::ClientConfig;
 use serde_json::{json, Value};
-use std::fmt::{Display, Formatter};
-use std::sync::Arc;
-use std::time;
+use std::{
+    fmt::{Display, Formatter},
+    sync::Arc,
+    time,
+};
 use tracing::{debug, error, info, trace};
 
 const VAULT_TOKEN_HEADER: &str = "X-Vault-Token";

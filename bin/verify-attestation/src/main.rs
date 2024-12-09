@@ -9,7 +9,9 @@ use secp256k1::{ecdsa::Signature, Message, PublicKey};
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
 use teepot::{
     client::TcbLevel,
-    sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
+    quote::{
+        error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report,
+    },
 };
 use zksync_basic_types::H256;
 
@@ -84,7 +86,7 @@ fn verify_signature(
     quote_verification_result: &QuoteVerificationResult,
     signature_args: &SignatureArgs,
 ) -> Result<()> {
-    let reportdata = &quote_verification_result.quote.report_body.reportdata;
+    let reportdata = &quote_verification_result.quote.get_report_data();
     let public_key = PublicKey::from_slice(reportdata)?;
     println!("Public key from attestation quote: {}", public_key);
     let signature_bytes = fs::read(&signature_args.signature_file)?;
@@ -103,8 +105,10 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         "Verifying quote ({} bytes)...",
         attestation_quote_bytes.len()
     );
-    let collateral =
-        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral")?;
+    let collateral = error::QuoteContext::context(
+        tee_qv_get_collateral(attestation_quote_bytes),
+        "Failed to get collateral",
+    )?;
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
@@ -128,7 +132,27 @@ fn print_quote_verification_summary(quote_verification_result: &QuoteVerificatio
         println!("\tInfo: Advisory ID: {advisory}");
     }
     println!("Quote verification result: {}", tcblevel);
-    println!("mrsigner: {}", hex::encode(quote.report_body.mrsigner));
-    println!("mrenclave: {}", hex::encode(quote.report_body.mrenclave));
-    println!("reportdata: {}", hex::encode(quote.report_body.reportdata));
+
+    match &quote.report {
+        Report::SgxEnclave(report_body) => {
+            println!("mrsigner: {}", hex::encode(report_body.mr_signer));
+            println!("mrenclave: {}", hex::encode(report_body.mr_enclave));
+        }
+        Report::TD10(report_body) => {
+            println!("mrtd: {}", hex::encode(report_body.mr_td));
+            println!("rtmr0: {}", hex::encode(report_body.rt_mr0));
+            println!("rtmr1: {}", hex::encode(report_body.rt_mr1));
+            println!("rtmr2: {}", hex::encode(report_body.rt_mr2));
+            println!("rtmr3: {}", hex::encode(report_body.rt_mr3));
+        }
+        Report::TD15(report_body) => {
+            let report_body = &report_body.base;
+            println!("mrtd: {}", hex::encode(report_body.mr_td));
+            println!("rtmr0: {}", hex::encode(report_body.rt_mr0));
+            println!("rtmr1: {}", hex::encode(report_body.rt_mr1));
+            println!("rtmr2: {}", hex::encode(report_body.rt_mr2));
+            println!("rtmr3: {}", hex::encode(report_body.rt_mr3));
+        }
+    }
+    println!("reportdata: {}", hex::encode(quote.get_report_data()));
 }

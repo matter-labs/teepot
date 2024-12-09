@@ -5,14 +5,6 @@
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts;
 
-    passthru = {
-      inherit (teepotCrate) rustPlatform
-        rustVersion
-        commonArgs
-        craneLib
-        cargoArtifacts;
-    };
-
     outputs = [
       "out"
       "tee_key_preexec"
@@ -30,14 +22,16 @@
     ];
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
+      removeReferencesToVendoredSources "$out" "${teepotCrate.rustVersion}/lib/rustlib/"
       mkdir -p $out/nix-support
       for i in $outputs; do
         [[ $i == "out" ]] && continue
         mkdir -p "''${!i}/bin"
-        echo "''${!i}" >> $out/nix-support/propagated-user-env-packages
+        echo -n "''${!i} " >> $out/nix-support/propagated-user-env-packages
         binname=''${i//_/-}
         mv "$out/bin/$binname" "''${!i}/bin/"
       done
+      rmdir "$out/bin"
     '';
   }
 )
