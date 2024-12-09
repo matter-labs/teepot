@@ -16,7 +16,7 @@ use intel_tee_quote_verification_rs::{
     tee_supp_data_descriptor_t, tee_verify_quote, Collateral,
 };
 use serde::{Deserialize, Serialize};
-use std::{ffi::CStr, io::Read, mem};
+use std::{ffi::CStr, fmt::Display, io::Read, mem, str::FromStr};
 use tracing::{trace, warn};
 
 pub use intel_tee_quote_verification_rs::tee_qv_get_collateral;
@@ -494,8 +494,42 @@ impl Quote {
     }
 }
 
+/// TEE type
+#[non_exhaustive]
+pub enum TEEType {
+    /// Intel SGX
+    SGX,
+    /// Intel TDX
+    TDX,
+    /// AMD SEV-SNP
+    SNP,
+}
+
+impl Display for TEEType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            TEEType::SGX => "sgx",
+            TEEType::TDX => "tdx",
+            TEEType::SNP => "snp",
+        };
+        write!(f, "{}", str)
+    }
+}
+
+impl FromStr for TEEType {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, String> {
+        match s.to_lowercase().as_str() {
+            "sgx" => Ok(TEEType::SGX),
+            "tdx" => Ok(TEEType::TDX),
+            "snp" => Ok(TEEType::SNP),
+            _ => Err("Invalid TEE type".to_string()),
+        }
+    }
+}
+
 /// Get the attestation quote from a TEE
-pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, QuoteError> {
+pub fn get_quote(report_data: &[u8]) -> Result<(TEEType, Box<[u8]>), QuoteError> {
     // check, if we are running in a TEE
     if std::fs::metadata("/dev/attestation").is_ok() {
         if report_data.len() > 64 {
@@ -505,7 +539,7 @@ pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, QuoteError> {
         let mut report_data_fixed = [0u8; 64];
         report_data_fixed[..report_data.len()].copy_from_slice(report_data);
 
-        sgx_gramine_get_quote(&report_data_fixed)
+        Ok((TEEType::SGX, sgx_gramine_get_quote(&report_data_fixed)?))
     } else if std::fs::metadata("/dev/tdx_guest").is_ok() {
         if report_data.len() > 64 {
             return Err(QuoteError::ReportDataSize);
@@ -514,7 +548,7 @@ pub fn get_quote(report_data: &[u8]) -> Result<Box<[u8]>, QuoteError> {
         let mut report_data_fixed = [0u8; 64];
         report_data_fixed[..report_data.len()].copy_from_slice(report_data);
 
-        tgx_get_quote(&report_data_fixed)
+        Ok((TEEType::TDX, tgx_get_quote(&report_data_fixed)?))
     } else {
         // if not, return an error
         Err(QuoteError::UnknownTee)

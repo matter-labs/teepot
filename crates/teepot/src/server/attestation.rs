@@ -6,8 +6,11 @@
 use crate::{
     client::AttestationArgs,
     json::http::AttestationResponse,
-    quote::{error::QuoteContext, verify_quote_with_collateral, QuoteVerificationResult, Report},
-    sgx::{parse_tcb_levels, sgx_gramine_get_quote, Collateral, EnumSet, TcbLevel},
+    quote::{
+        error::QuoteContext, get_quote, verify_quote_with_collateral, QuoteVerificationResult,
+        Report,
+    },
+    sgx::{parse_tcb_levels, Collateral, EnumSet, TcbLevel},
 };
 use anyhow::{bail, Context, Result};
 use clap::Args;
@@ -56,7 +59,7 @@ pub fn get_quote_and_collateral(
         }
     }
 
-    let myquote = sgx_gramine_get_quote(report_data).context("Failed to get own quote")?;
+    let (_tee_type, myquote) = get_quote(report_data).context("Failed to get own quote")?;
     let collateral = tee_qv_get_collateral(&myquote).context("Failed to get own collateral")?;
 
     let QuoteVerificationResult {

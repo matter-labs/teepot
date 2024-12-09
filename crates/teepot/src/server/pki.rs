@@ -147,7 +147,7 @@ pub fn make_self_signed_cert(
     let hash = Sha256::digest(verifying_key_der.as_bytes());
     key_hash[..32].copy_from_slice(&hash);
 
-    let quote = get_quote(&key_hash)?;
+    let (_tee_type, quote) = get_quote(&key_hash)?;
     debug!("quote.len: {:?}", quote.len());
     // Create a relative distinguished name.
     let rdns = RdnSequence::from_str(dn)?;
@@ -184,6 +184,7 @@ pub fn make_self_signed_cert(
             .context("failed to add SubjectAltName")?;
     }
 
+    // FIXME: OID for tee_type
     builder
         .add_extension(&RaTlsQuoteExtension {
             quote: quote.to_vec(),
@@ -233,7 +234,7 @@ where
     let hash = Sha256::digest(verifying_key_der.as_bytes());
     key_hash[..32].copy_from_slice(&hash);
 
-    let quote = get_quote(&key_hash).context("Failed to get own quote")?;
+    let (_tee_type, quote) = get_quote(&key_hash).context("Failed to get own quote")?;
 
     // Create a relative distinguished name.
     let subject = Name::from_str(dn)?;
@@ -268,6 +269,7 @@ where
             .context("failed to add SubjectAltName")?;
     }
 
+    // FIXME: oid according to tee_type
     builder
         .add_extension(&RaTlsQuoteExtension {
             quote: quote.to_vec(),
