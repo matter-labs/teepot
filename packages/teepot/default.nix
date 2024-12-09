@@ -34,7 +34,7 @@
       for i in $outputs; do
         [[ $i == "out" ]] && continue
         mkdir -p "''${!i}/bin"
-        echo "''${!i}" >> $out/nix-support/propagated-user-env-packages
+        echo -n "''${!i} " >> $out/nix-support/propagated-user-env-packages
         binname=''${i//_/-}
         mv "$out/bin/$binname" "''${!i}/bin/"
       done
