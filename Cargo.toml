@@ -29,6 +29,7 @@ ctrlc = "3.4"
 enumset = { version = "1.1", features = ["serde"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.14"
+gpt = "4.0.0"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
 intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.3.0" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
@@ -36,6 +37,7 @@ jsonrpsee-types = { version = "0.23", default-features = false }
 num-integer = "0.1.46"
 num-traits = "0.2.18"
 p256 = "0.13.2"
+pe-sign = "0.1.10"
 pgp = "0.14.2"
 pkcs8 = { version = "0.10" }
 rand = "0.8"

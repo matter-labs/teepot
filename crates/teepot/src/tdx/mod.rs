@@ -3,6 +3,8 @@
 
 //! Intel TDX helper functions.
 
+pub mod rtmr;
+
 pub use crate::sgx::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 use crate::sgx::QuoteError;
 pub use intel_tee_quote_verification_rs::Collateral;

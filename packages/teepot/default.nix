@@ -17,6 +17,9 @@
 
     outputs = [
       "out"
+      "rtmr_calc"
+      "sha384_extend"
+      "tdx_extend"
       "tee_key_preexec"
       "tee_ratls_preexec"
       "tee_self_attestation_test"
