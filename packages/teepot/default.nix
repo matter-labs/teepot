@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ teepotCrate }: teepotCrate.craneLib.buildPackage (
+{ lib, pkgs, makeWrapper, teepotCrate }: teepotCrate.craneLib.buildPackage (
   teepotCrate.commonArgs // {
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts;
 
+    nativeBuildInputs = teepotCrate.commonArgs.nativeBuildInputs ++ [ makeWrapper ];
+
     outputs = [
       "out"
+      "tdx_extend"
       "tee_key_preexec"
       "tee_ratls_preexec"
       "tee_self_attestation_test"
@@ -20,6 +23,7 @@
       "verify_attestation"
       "verify_era_proof_attestation"
     ];
+
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
       removeReferencesToVendoredSources "$out" "${teepotCrate.rustVersion}/lib/rustlib/"
@@ -30,6 +34,11 @@
         echo -n "''${!i} " >> $out/nix-support/propagated-user-env-packages
         binname=''${i//_/-}
         mv "$out/bin/$binname" "''${!i}/bin/"
+
+        makeWrapper "''${!i}/bin/$binname" "''${!i}/bin/$binname-dcap" \
+          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ pkgs.nixsgx.sgx-dcap.quote_verify pkgs.nixsgx.sgx-dcap.default_qpl pkgs.curl ]}" \
+          --set-default QCNL_CONF_PATH "${pkgs.nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf"
+
       done
       rmdir "$out/bin"
     '';

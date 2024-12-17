@@ -4936,6 +4936,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tdx-extend"
+version = "0.3.0"
+dependencies = [
+ "anyhow",
+ "clap 4.5.17",
+ "hex",
+ "teepot",
+ "tracing",
+]
+
+[[package]]
 name = "tee-key-preexec"
 version = "0.3.0"
 dependencies = [
