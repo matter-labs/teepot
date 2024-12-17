@@ -34,7 +34,7 @@ impl Default for TdxRtmrEvent {
         Self {
             extend_data: [0; 48],
             version: 1,
-            rtmr_index: 2,
+            rtmr_index: 3,
             event_type: 0,
             event_data_size: 0,
             event_data: Vec::new(),

@@ -21,6 +21,8 @@ struct Arguments {
     /// digest in hex
     #[arg(long)]
     digest: String,
+    #[arg(long, default_value = "2")]
+    rtmr: u64,
     /// Log level for the log output.
     /// Valid values are: `off`, `error`, `warn`, `info`, `debug`, `trace`
     #[clap(long, default_value_t = LevelFilter::WARN, value_parser = LogLevelParser)]
@@ -41,6 +43,7 @@ fn main_with_error() -> Result<()> {
     // Extend the TDX measurement with the extend data
     TdxRtmrEvent::default()
         .with_extend_data(extend_data)
+        .with_rtmr_index(args.rtmr)
         .extend()?;
 
     Ok(())
