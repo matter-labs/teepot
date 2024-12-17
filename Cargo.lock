@@ -4657,6 +4657,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha384-extend"
+version = "0.3.0"
+dependencies = [
+ "anyhow",
+ "clap 4.5.17",
+ "hex",
+ "sha2",
+]
+
+[[package]]
 name = "sha3_ce"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"

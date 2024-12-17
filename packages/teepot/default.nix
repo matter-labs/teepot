@@ -9,6 +9,7 @@
 
     outputs = [
       "out"
+      "sha384_extend"
       "tdx_extend"
       "tee_key_preexec"
       "tee_ratls_preexec"
