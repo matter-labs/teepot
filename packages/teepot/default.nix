@@ -9,6 +9,7 @@
 
     outputs = [
       "out"
+      "rtmr_calc"
       "sha384_extend"
       "tdx_extend"
       "tee_key_preexec"

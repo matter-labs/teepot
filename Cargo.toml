@@ -65,3 +65,5 @@ zeroize = { version = "1.7.0", features = ["serde"] }
 zksync_basic_types = "=0.1.0"
 zksync_types = "=0.1.0"
 zksync_web3_decl = "=0.1.0"
+pe-sign = "0.1.10"
+gpt = "4.0.0"
