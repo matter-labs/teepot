@@ -223,8 +223,8 @@ fn main() -> Result<()> {
     rtmr1.extend(&hex::decode("0a2e01c85deae718a530ad8c6d20a84009babe6c8989269e950d8cf440c6e997695e64d455c4174a652cd080f6230b74")?);
 
     println!("{{");
-    println!("\t\"RTMR1\": \"{rtmr1}\",");
-    println!("\t\"RTMR2\": \"{rtmr2}\"");
+    println!("\t\"rtmr1\": \"{rtmr1}\",");
+    println!("\t\"rtmr2\": \"{rtmr2}\"");
     println!("}}");
 
     Ok(())
