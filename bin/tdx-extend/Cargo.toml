@@ -1,0 +1,16 @@
+[package]
+name = "tdx-extend"
+publish = false
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+hex.workspace = true
+teepot.workspace = true
+tracing.workspace = true
