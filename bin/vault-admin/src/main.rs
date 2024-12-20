@@ -3,23 +3,25 @@
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
-use pgp::types::KeyTrait;
-use pgp::{Deserializable, SignedPublicKey};
+use pgp::{types::PublicKeyTrait, Deserializable, SignedPublicKey};
 use serde_json::Value;
-use std::default::Default;
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-use teepot::client::{AttestationArgs, TeeConnection};
-use teepot::json::http::{
-    SignRequest, SignRequestData, SignResponse, VaultCommandRequest, VaultCommands,
-    VaultCommandsResponse, DIGEST_URL,
+use std::{
+    default::Default,
+    fs::{File, OpenOptions},
+    io::{Read, Write},
+    path::{Path, PathBuf},
 };
-use teepot::log::{setup_logging, LogLevelParser};
-use teepot::server::signatures::verify_sig;
-use teepot::sgx::sign::Signature;
-use tracing::level_filters::LevelFilter;
-use tracing::{error, info};
+use teepot::{
+    client::{AttestationArgs, TeeConnection},
+    json::http::{
+        SignRequest, SignRequestData, SignResponse, VaultCommandRequest, VaultCommands,
+        VaultCommandsResponse, DIGEST_URL,
+    },
+    log::{setup_logging, LogLevelParser},
+    server::signatures::verify_sig,
+    sgx::sign::Signature,
+};
+use tracing::{error, info, level_filters::LevelFilter};
 
 #[derive(Args, Debug)]
 struct SendArgs {
@@ -190,7 +192,7 @@ fn verify(
         let ident_pos = verify_sig(&sig, &cmd_buf, &idents)?;
         println!(
             "Verified signature for `{}`",
-            hex::encode_upper(idents.get(ident_pos).unwrap().fingerprint())
+            hex::encode_upper(idents.get(ident_pos).unwrap().fingerprint().as_bytes())
         );
         // Remove the identity from the list of identities to verify
         idents.remove(ident_pos);

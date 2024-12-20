@@ -186,7 +186,7 @@ async fn main() -> Result<()> {
             .service(web::resource(Init::URL).route(web::post().to(post_init)))
             .service(web::resource(Unseal::URL).route(web::post().to(post_unseal)))
     })
-    .bind_rustls_0_22((Ipv6Addr::UNSPECIFIED, args.port), config)
+    .bind_rustls_0_23((Ipv6Addr::UNSPECIFIED, args.port), config)
     {
         Ok(c) => c,
         Err(e) => {
