@@ -1,15 +1,15 @@
+[graph]
 targets = []
 all-features = false
 no-default-features = false
+
+[output]
 feature-depth = 1
 
 [advisories]
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
-vulnerability = "deny"
-unmaintained = "warn"
 yanked = "warn"
-notice = "warn"
 ignore = [
   # Sidechannel attack to get the private key https://rustsec.org/advisories/RUSTSEC-2023-0071
   # currently no rsa private key is used in the codebase,
@@ -20,8 +20,6 @@ ignore = [
 ]
 
 [licenses]
-unlicensed = "deny"
-copyleft = "deny"
 allow = [
   "MIT",
   "Apache-2.0",
@@ -35,9 +33,6 @@ allow = [
   "OpenSSL",
   "CC0-1.0",
 ]
-deny = []
-allow-osi-fsf-free = "neither"
-default = "deny"
 confidence-threshold = 0.8
 exceptions = []
 
