@@ -909,9 +909,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.17"
+version = "4.5.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e5a21b8495e732f1b3c364c9949b201ca7bae518c502c80256c96ad79eaf6ac"
+checksum = "3135e7ec2ef7b10c6ed8950f0f792ed96ee093fa088608f1c76e569722700c84"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -919,9 +919,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.17"
+version = "4.5.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cf2dd12af7a047ad9d6da2b6b249759a22a7abc0f474c1dae1777afa4b21a73"
+checksum = "30582fc632330df2bd26877bde0c1f4470d57c582bbc070376afcd04d8cb4838"
 dependencies = [
  "anstyle",
  "clap_lex",
@@ -930,9 +930,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.5.13"
+version = "4.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "501d359d5f3dcaf6ecdeee48833ae73ec6e42723a1e52419c79abf9507eec0a0"
+checksum = "4ac6a0c7b1a9e9a5186361f67dfa1b88213572f427fb9ab038efb2bd8c582dab"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -942,9 +942,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.7.2"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1462739cb27611015575c0c11df5df7601141071f07518d56fcc1be504cbec97"
+checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "cmac"
@@ -3718,7 +3718,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
 dependencies = [
  "bytes",
- "heck 0.5.0",
+ "heck 0.4.1",
  "itertools 0.12.1",
  "log",
  "multimap",
@@ -4940,7 +4940,7 @@ name = "tee-key-preexec"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.17",
+ "clap 4.5.23",
  "rand",
  "secp256k1 0.29.1",
  "teepot",
@@ -4954,7 +4954,7 @@ name = "tee-ratls-preexec"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.17",
+ "clap 4.5.23",
  "rsa",
  "teepot",
  "tracing",
@@ -4982,7 +4982,7 @@ version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "clap 4.5.17",
+ "clap 4.5.23",
  "serde",
  "teepot",
  "tracing",
@@ -4998,7 +4998,7 @@ dependencies = [
  "anyhow",
  "awc",
  "bytemuck",
- "clap 4.5.17",
+ "clap 4.5.23",
  "hex",
  "rustls 0.22.4",
  "serde_json",
@@ -5017,7 +5017,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.17",
+ "clap 4.5.23",
  "rustls 0.22.4",
  "serde_json",
  "teepot",
@@ -5037,7 +5037,7 @@ dependencies = [
  "base64 0.22.1",
  "bytemuck",
  "bytes",
- "clap 4.5.17",
+ "clap 4.5.23",
  "const-oid",
  "enumset",
  "futures-core",
@@ -5077,7 +5077,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.17",
+ "clap 4.5.23",
  "serde_json",
  "teepot",
  "tracing",
@@ -5100,7 +5100,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.17",
+ "clap 4.5.23",
  "serde_json",
  "teepot",
  "tracing",
@@ -5132,12 +5132,12 @@ dependencies = [
 
 [[package]]
 name = "terminal_size"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21bebf2b7c9e0a515f6e0f8c51dc0f8e4696391e6f1ff30379559f8365fb0df7"
+checksum = "5352447f921fda68cf61b4101566c0bdb5104eff6804d0678e5227580ab6a4e9"
 dependencies = [
  "rustix",
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5733,7 +5733,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "bytemuck",
- "clap 4.5.17",
+ "clap 4.5.23",
  "hex",
  "pgp",
  "serde_json",
@@ -5750,7 +5750,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "base64 0.22.1",
- "clap 4.5.17",
+ "clap 4.5.23",
  "serde_json",
  "teepot",
  "tracing",
@@ -5775,7 +5775,7 @@ name = "verify-attestation"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.17",
+ "clap 4.5.23",
  "hex",
  "secp256k1 0.29.1",
  "teepot",
@@ -5787,7 +5787,7 @@ name = "verify-era-proof-attestation"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.17",
+ "clap 4.5.23",
  "ctrlc",
  "hex",
  "jsonrpsee-types",
