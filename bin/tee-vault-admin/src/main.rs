@@ -95,7 +95,7 @@ async fn main() -> Result<()> {
             .service(web::resource(SignRequest::URL).route(web::post().to(post_sign)))
             .service(web::resource(DIGEST_URL).route(web::get().to(get_digest)))
     })
-    .bind_rustls_0_22((Ipv6Addr::UNSPECIFIED, args.port), config)
+    .bind_rustls_0_23((Ipv6Addr::UNSPECIFIED, args.port), config)
     {
         Ok(c) => c,
         Err(e) => {

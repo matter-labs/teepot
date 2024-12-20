@@ -107,7 +107,7 @@ impl VaultConnection {
         let client = Client::builder()
             .add_default_header((header::USER_AGENT, "teepot/1.0"))
             // a "connector" wraps the stream into an encrypted connection
-            .connector(Connector::new().rustls_0_22(tls_config))
+            .connector(Connector::new().rustls_0_23(tls_config))
             .timeout(time::Duration::from_secs(12000))
             .finish();
 

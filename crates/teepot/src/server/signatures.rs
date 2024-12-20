@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023 Matter Labs
+// Copyright (c) 2023-2024 Matter Labs
 
 //! Signature checking utilities
 
@@ -7,7 +7,7 @@ use crate::json::secrets::AdminConfig;
 use crate::server::{HttpResponseError, Status as _};
 use actix_web::http::StatusCode;
 use anyhow::{anyhow, bail, Context, Result};
-use pgp::types::KeyTrait;
+use pgp::types::PublicKeyTrait;
 use pgp::{Deserializable, SignedPublicKey, StandaloneSignature};
 use tracing::debug;
 
