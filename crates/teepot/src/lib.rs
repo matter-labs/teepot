@@ -7,8 +7,10 @@
 #![deny(clippy::all)]
 
 pub mod client;
+pub mod ethereum;
 pub mod json;
 pub mod log;
+pub mod prover;
 pub mod quote;
 pub mod server;
 pub mod sgx;

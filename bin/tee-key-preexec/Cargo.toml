@@ -12,6 +12,7 @@ repository.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+hex.workspace = true
 rand.workspace = true
 secp256k1.workspace = true
 teepot.workspace = true
