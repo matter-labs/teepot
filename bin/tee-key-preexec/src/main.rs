@@ -9,9 +9,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use secp256k1::{rand, Keypair, PublicKey, Secp256k1, SecretKey};
-use std::ffi::OsString;
-use std::os::unix::process::CommandExt;
-use std::process::Command;
+use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
 use teepot::quote::get_quote;
 use tracing::error;
 use tracing_log::LogTracer;
@@ -47,15 +45,15 @@ fn main_with_error() -> Result<()> {
     let verifying_key = PublicKey::from_keypair(&keypair);
     let verifying_key_bytes = verifying_key.serialize();
     let tee_type = match get_quote(verifying_key_bytes.as_ref()) {
-        Ok(quote) => {
+        Ok((tee_type, quote)) => {
             // save quote to file
             std::fs::write(TEE_QUOTE_FILE, quote)?;
-            "sgx"
+            tee_type.to_string()
         }
         Err(e) => {
             error!("Failed to get quote: {}", e);
             std::fs::write(TEE_QUOTE_FILE, [])?;
-            "none"
+            "none".to_string()
         }
     };
 

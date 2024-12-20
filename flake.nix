@@ -21,9 +21,7 @@
       inputs.nixpkgs.follows = "nixsgx-flake/nixpkgs";
     };
 
-    crane = {
-      url = "github:ipetkov/crane?tag=v0.17.3";
-    };
+    crane.url = "github:ipetkov/crane?ref=8ff9c457d60951bdd37a05ae903423de7ff55c6e"; #  v0.19.3
   };
 
   outputs = inputs:

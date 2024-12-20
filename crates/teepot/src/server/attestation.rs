@@ -3,17 +3,22 @@
 
 //! Common attestation API for all TEEs
 
-use crate::client::AttestationArgs;
-use crate::json::http::AttestationResponse;
-use crate::sgx::{
-    parse_tcb_levels, sgx_gramine_get_quote, tee_qv_get_collateral, verify_quote_with_collateral,
-    Collateral, EnumSet, QuoteVerificationResult, TcbLevel,
+use crate::{
+    client::AttestationArgs,
+    json::http::AttestationResponse,
+    quote::{
+        error::QuoteContext, get_quote, verify_quote_with_collateral, QuoteVerificationResult,
+    },
+    sgx::{parse_tcb_levels, Collateral, EnumSet, TcbLevel},
 };
 use anyhow::{bail, Context, Result};
 use clap::Args;
+use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
-use std::time::{Duration, UNIX_EPOCH};
+use std::{
+    sync::{Arc, RwLock},
+    time::{Duration, UNIX_EPOCH},
+};
 use tracing::{debug, error, info, trace, warn};
 
 struct Attestation {
@@ -53,7 +58,7 @@ pub fn get_quote_and_collateral(
         }
     }
 
-    let myquote = sgx_gramine_get_quote(report_data).context("Failed to get own quote")?;
+    let (_tee_type, myquote) = get_quote(report_data).context("Failed to get own quote")?;
     let collateral = tee_qv_get_collateral(&myquote).context("Failed to get own collateral")?;
 
     let QuoteVerificationResult {
@@ -89,8 +94,8 @@ pub fn get_quote_and_collateral(
         "Earliest expiration in {:?}",
         Duration::from_secs((earliest_expiration_date - unix_time) as _)
     );
-    info!("mrsigner: {}", hex::encode(quote.report_body.mrsigner));
-    info!("mrenclave: {}", hex::encode(quote.report_body.mrenclave));
+
+    info!("{:#}", quote.report);
 
     let quote: Arc<[u8]> = Arc::from(myquote);
     let collateral = Arc::from(collateral);

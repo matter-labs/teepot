@@ -8,12 +8,12 @@
 
 pub mod vault;
 
+pub use crate::quote::verify_quote_with_collateral;
+pub use crate::quote::QuoteVerificationResult;
+use crate::quote::Report;
 use crate::server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension};
 use crate::sgx::Quote;
-pub use crate::sgx::{
-    parse_tcb_levels, sgx_ql_qv_result_t, verify_quote_with_collateral, EnumSet,
-    QuoteVerificationResult, TcbLevel,
-};
+pub use crate::sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel};
 use actix_web::http::header;
 use anyhow::Result;
 use awc::{Client, Connector};
@@ -195,6 +195,10 @@ impl TeeConnection {
                 } = verify_quote_with_collateral(quote_bytes, collateral.as_ref(), current_time)
                     .unwrap();
 
+                let Report::SgxEnclave(report_body) = quote.report else {
+                    return Err(Error::General("TDX quote and not SGX quote".into()));
+                };
+
                 if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
                     if collateral_expired {
                         error!(
@@ -230,10 +234,10 @@ impl TeeConnection {
                 if let Some(mrsigner) = &self.args.sgx_mrsigner {
                     let mrsigner_bytes = hex::decode(mrsigner)
                         .map_err(|e| Error::General(format!("Failed to decode mrsigner: {}", e)))?;
-                    if quote.report_body.mrsigner[..] != mrsigner_bytes {
+                    if report_body.mr_signer[..] != mrsigner_bytes {
                         return Err(Error::General(format!(
                             "mrsigner mismatch: got {}, expected {}",
-                            hex::encode(quote.report_body.mrsigner),
+                            hex::encode(report_body.mr_signer),
                             &mrsigner
                         )));
                     } else {
@@ -245,10 +249,10 @@ impl TeeConnection {
                     let mrenclave_bytes = hex::decode(mrenclave).map_err(|e| {
                         Error::General(format!("Failed to decode mrenclave: {}", e))
                     })?;
-                    if quote.report_body.mrenclave[..] != mrenclave_bytes {
+                    if report_body.mr_enclave[..] != mrenclave_bytes {
                         return Err(Error::General(format!(
                             "mrenclave mismatch: got {}, expected {}",
-                            hex::encode(quote.report_body.mrenclave),
+                            hex::encode(report_body.mr_enclave),
                             &mrenclave
                         )));
                     } else {
