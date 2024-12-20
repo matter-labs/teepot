@@ -5214,8 +5214,10 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap 4.5.23",
+ "hex",
  "rand",
  "secp256k1 0.29.1",
+ "sha3",
  "teepot",
  "tracing",
  "tracing-log 0.2.0",
