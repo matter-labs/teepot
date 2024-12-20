@@ -8,7 +8,8 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use secp256k1::{rand, Keypair, PublicKey, Secp256k1, SecretKey};
+use secp256k1::{rand, PublicKey, Secp256k1, SecretKey};
+use sha3::{Digest, Keccak256};
 use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
 use teepot::quote::get_quote;
 use tracing::error;
@@ -28,6 +29,19 @@ struct Args {
     cmd_args: Vec<OsString>,
 }
 
+/// Converts a public key into an Ethereum address by hashing the encoded public key with Keccak256.
+pub fn public_key_to_address(public: &PublicKey) -> [u8; 20] {
+    let public_key_bytes = public.serialize_uncompressed();
+
+    // Skip the first byte (0x04) which indicates uncompressed key
+    let hash: [u8; 32] = Keccak256::digest(&public_key_bytes[1..]).into();
+
+    // Take the last 20 bytes of the hash to get the Ethereum address
+    let mut address = [0u8; 20];
+    address.copy_from_slice(&hash[12..]);
+    address
+}
+
 fn main_with_error() -> Result<()> {
     LogTracer::init().context("Failed to set logger")?;
 
@@ -37,14 +51,11 @@ fn main_with_error() -> Result<()> {
     tracing::subscriber::set_global_default(subscriber).context("Failed to set logger")?;
 
     let args = Args::parse();
-
     let mut rng = rand::thread_rng();
     let secp = Secp256k1::new();
-    let keypair = Keypair::new(&secp, &mut rng);
-    let signing_key = SecretKey::from_keypair(&keypair);
-    let verifying_key = PublicKey::from_keypair(&keypair);
-    let verifying_key_bytes = verifying_key.serialize();
-    let tee_type = match get_quote(verifying_key_bytes.as_ref()) {
+    let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
+    let ethereum_address = public_key_to_address(&verifying_key);
+    let tee_type = match get_quote(ethereum_address.as_ref()) {
         Ok((tee_type, quote)) => {
             // save quote to file
             std::fs::write(TEE_QUOTE_FILE, quote)?;
@@ -84,4 +95,23 @@ fn main() -> Result<()> {
         error!("Error: {}", e);
     }
     ret
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_public_key_to_address() {
+        let secp = Secp256k1::new();
+        let secret_key_bytes =
+            hex::decode("c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3")
+                .unwrap();
+        let secret_key = SecretKey::from_slice(&secret_key_bytes).unwrap();
+        let public_key = PublicKey::from_secret_key(&secp, &secret_key);
+        let expected_address = hex::decode("627306090abaB3A6e1400e9345bC60c78a8BEf57").unwrap();
+        let address = public_key_to_address(&public_key);
+
+        assert_eq!(address, expected_address.as_slice());
+    }
 }

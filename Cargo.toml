@@ -49,6 +49,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 serde_with = { version = "3.8", features = ["base64", "hex"] }
 sha2 = "0.10.8"
+sha3 = "0.10.8"
 signature = "2.2.0"
 tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
 teepot = { path = "crates/teepot" }
