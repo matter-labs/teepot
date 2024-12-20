@@ -30,6 +30,7 @@
     ];
     postInstall = ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
+      removeReferencesToVendoredSources "$out" "${teepotCrate.rustVersion}/lib/rustlib/"
       mkdir -p $out/nix-support
       for i in $outputs; do
         [[ $i == "out" ]] && continue
