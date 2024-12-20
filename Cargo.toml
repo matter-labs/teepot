@@ -17,18 +17,15 @@ homepage = "https://github.com/matter-labs/teepot"
 
 [workspace.dependencies]
 actix-http = "3"
-actix-tls = "3"
 actix-web = { version = "4.5", features = ["rustls-0_22"] }
 anyhow = "1.0.82"
 awc = { version = "3.4", features = ["rustls-0_22-webpki-roots"] }
 base64 = "0.22.0"
-bitflags = "2.5"
 bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
 clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
 const-oid = { version = "0.9", default-features = false }
 ctrlc = "3.4"
-der = "0.7.9"
 enumset = { version = "1.1", features = ["serde"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = "0.2.14"
@@ -36,7 +33,6 @@ hex = { version = "0.4.3", features = ["std"], default-features = false }
 intel-tee-quote-verification-rs = { package = "teepot-tee-quote-verification-rs", path = "crates/teepot-tee-quote-verification-rs", version = "0.3.0" }
 intel-tee-quote-verification-sys = { version = "0.2.1" }
 jsonrpsee-types = { version = "0.23", default-features = false }
-log = "0.4"
 num-integer = "0.1.46"
 num-traits = "0.2.18"
 p256 = "0.13.2"
@@ -44,17 +40,15 @@ pgp = "0.13"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
 reqwest = { version = "0.12", features = ["json"] }
-ring = { version = "0.17.8", features = ["std"], default-features = false }
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
 rustls = { version = "0.22" }
-rustls-pemfile = "2"
-sec1 = { version = "0.7.3", features = ["der"], default-features = false }
 secp256k1 = { version = "0.29", features = ["rand-std", "global-context"] }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 serde_with = { version = "3.8", features = ["base64", "hex"] }
 sha2 = "0.10.8"
 signature = "2.2.0"
+tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
 teepot = { path = "crates/teepot" }
 testaso = "0.1.0"
 thiserror = "1.0.59"
@@ -63,6 +57,7 @@ tracing = "0.1"
 tracing-actix-web = "0.7"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-test = { version = "0.2.5", features = ["no-env-filter"] }
 url = "2.5.2"
 webpki-roots = "0.26.1"
 x509-cert = { version = "0.2", features = ["builder", "signature"] }

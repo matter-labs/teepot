@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2023-2024 Matter Labs
 
+use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{Context, Result};
 use hex::encode;
 use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use teepot::{
     client::TcbLevel,
-    sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
+    quote::{
+        error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
+        QuoteVerificationResult, Report,
+    },
 };
 use tracing::{debug, info, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
 
-use crate::args::AttestationPolicyArgs;
-use crate::client::JsonRpcClient;
-
 pub async fn verify_batch_proof(
-    quote_verification_result: &QuoteVerificationResult<'_>,
+    quote_verification_result: &QuoteVerificationResult,
     attestation_policy: &AttestationPolicyArgs,
     node_client: &impl JsonRpcClient,
     signature: &[u8],
@@ -28,7 +29,7 @@ pub async fn verify_batch_proof(
     let batch_no = batch_number.0;
 
     let public_key = PublicKey::from_slice(
-        &quote_verification_result.quote.report_body.reportdata[..PUBLIC_KEY_SIZE],
+        &quote_verification_result.quote.get_report_data()[..PUBLIC_KEY_SIZE],
     )?;
     debug!(batch_no, "public key: {}", public_key);
 
@@ -45,8 +46,10 @@ pub async fn verify_batch_proof(
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
-    let collateral =
-        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral!")?;
+    let collateral = QuoteContext::context(
+        tee_qv_get_collateral(attestation_quote_bytes),
+        "Failed to get collateral!",
+    )?;
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)?
         .as_secs() as _;
@@ -66,17 +69,19 @@ pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificat
         warn!("Freshly fetched collateral expired!");
     }
     let tcblevel = TcbLevel::from(*result);
+    let advisories = if advisories.is_empty() {
+        "None".to_string()
+    } else {
+        advisories
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+
     info!(
-        "Quote verification result: {}. mrsigner: {}, mrenclave: {}, reportdata: {}. Advisory IDs: {}.",
-        tcblevel,
-        hex::encode(quote.report_body.mrsigner),
-        hex::encode(quote.report_body.mrenclave),
-        hex::encode(quote.report_body.reportdata),
-        if advisories.is_empty() {
-            "None".to_string()
-        } else {
-            advisories.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ")
-        }
+        "Quote verification result: {tcblevel}. {report}. Advisory IDs: {advisories}.",
+        report = &quote.report
     );
 }
 
@@ -88,7 +93,7 @@ fn verify_signature(signature: &[u8], public_key: PublicKey, root_hash: H256) ->
 
 fn is_quote_matching_policy(
     attestation_policy: &AttestationPolicyArgs,
-    quote_verification_result: &QuoteVerificationResult<'_>,
+    quote_verification_result: &QuoteVerificationResult,
 ) -> bool {
     let quote = &quote_verification_result.quote;
     let tcblevel = TcbLevel::from(quote_verification_result.result);
@@ -100,16 +105,20 @@ fn is_quote_matching_policy(
         );
         return false;
     }
-
-    check_policy(
-        attestation_policy.sgx_mrsigners.as_deref(),
-        &quote.report_body.mrsigner,
-        "mrsigner",
-    ) && check_policy(
-        attestation_policy.sgx_mrenclaves.as_deref(),
-        &quote.report_body.mrenclave,
-        "mrenclave",
-    )
+    match &quote.report {
+        Report::SgxEnclave(report_body) => {
+            check_policy(
+                attestation_policy.sgx_mrsigners.as_deref(),
+                &report_body.mr_signer,
+                "mrsigner",
+            ) && check_policy(
+                attestation_policy.sgx_mrenclaves.as_deref(),
+                &report_body.mr_enclave,
+                "mrenclave",
+            )
+        }
+        _ => false,
+    }
 }
 
 fn check_policy(policy: Option<&str>, actual_value: &[u8], field_name: &str) -> bool {

@@ -9,7 +9,7 @@ use secp256k1::{ecdsa::Signature, Message, PublicKey};
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
 use teepot::{
     client::TcbLevel,
-    sgx::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
+    quote::{error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
 };
 use zksync_basic_types::H256;
 
@@ -84,7 +84,7 @@ fn verify_signature(
     quote_verification_result: &QuoteVerificationResult,
     signature_args: &SignatureArgs,
 ) -> Result<()> {
-    let reportdata = &quote_verification_result.quote.report_body.reportdata;
+    let reportdata = &quote_verification_result.quote.get_report_data();
     let public_key = PublicKey::from_slice(reportdata)?;
     println!("Public key from attestation quote: {}", public_key);
     let signature_bytes = fs::read(&signature_args.signature_file)?;
@@ -103,8 +103,10 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         "Verifying quote ({} bytes)...",
         attestation_quote_bytes.len()
     );
-    let collateral =
-        tee_qv_get_collateral(attestation_quote_bytes).context("Failed to get collateral")?;
+    let collateral = error::QuoteContext::context(
+        tee_qv_get_collateral(attestation_quote_bytes),
+        "Failed to get collateral",
+    )?;
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
@@ -128,7 +130,6 @@ fn print_quote_verification_summary(quote_verification_result: &QuoteVerificatio
         println!("\tInfo: Advisory ID: {advisory}");
     }
     println!("Quote verification result: {}", tcblevel);
-    println!("mrsigner: {}", hex::encode(quote.report_body.mrsigner));
-    println!("mrenclave: {}", hex::encode(quote.report_body.mrenclave));
-    println!("reportdata: {}", hex::encode(quote.report_body.reportdata));
+
+    println!("{:#}", &quote.report);
 }
