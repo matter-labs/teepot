@@ -4,16 +4,17 @@
 use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{Context, Result};
 use hex::encode;
-use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
+use secp256k1::Message;
 use teepot::{
     client::TcbLevel,
+    ethereum::recover_signer,
     quote::{
         error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
         QuoteVerificationResult, Report,
     },
 };
 use tracing::{debug, info, warn};
-use zksync_basic_types::{L1BatchNumber, H256};
+use zksync_basic_types::L1BatchNumber;
 
 pub async fn verify_batch_proof(
     quote_verification_result: &QuoteVerificationResult,
@@ -27,22 +28,38 @@ pub async fn verify_batch_proof(
     }
 
     let batch_no = batch_number.0;
-
-    let public_key = PublicKey::from_slice(
-        &quote_verification_result.quote.get_report_data()[..PUBLIC_KEY_SIZE],
-    )?;
-    debug!(batch_no, "public key: {}", public_key);
-
     let root_hash = node_client.get_root_hash(batch_number).await?;
-    debug!(batch_no, "root hash: {}", root_hash);
+    let ethereum_address_from_quote = &quote_verification_result.quote.get_report_data()[..20];
+    let signature_bytes: &[u8; 65] = signature.try_into()?;
+    let root_hash_bytes = root_hash.as_bytes();
+    let root_hash_msg = Message::from_digest_slice(root_hash_bytes)?;
+    let ethereum_address_from_signature = recover_signer(signature_bytes, &root_hash_msg)?;
+    let verification_successful = ethereum_address_from_signature == ethereum_address_from_quote;
+    debug!(
+        batch_no,
+        "Root hash: {}. Ethereum address from the attestation quote: {}. Ethereum address from the signature: {}.",
+        root_hash,
+        encode(ethereum_address_from_quote),
+        encode(ethereum_address_from_signature),
+    );
 
-    let is_verified = verify_signature(signature, public_key, root_hash)?;
-    if is_verified {
-        info!(batch_no, signature = %encode(signature), "Signature verified successfully.");
+    if verification_successful {
+        info!(
+            batch_no,
+            signature = encode(signature),
+            ethereum_address = encode(ethereum_address_from_quote),
+            "Signature verified successfully."
+        );
     } else {
-        warn!(batch_no, signature = %encode(signature), "Failed to verify signature!");
+        warn!(
+            batch_no,
+            signature = encode(signature),
+            ethereum_address_from_signature = encode(ethereum_address_from_signature),
+            ethereum_address_from_quote = encode(ethereum_address_from_quote),
+            "Failed to verify signature!"
+        );
     }
-    Ok(is_verified)
+    Ok(verification_successful)
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
@@ -83,12 +100,6 @@ pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificat
         "Quote verification result: {tcblevel}. {report}. Advisory IDs: {advisories}.",
         report = &quote.report
     );
-}
-
-fn verify_signature(signature: &[u8], public_key: PublicKey, root_hash: H256) -> Result<bool> {
-    let signature = Signature::from_compact(signature)?;
-    let root_hash_msg = Message::from_digest_slice(&root_hash.0)?;
-    Ok(signature.verify(&root_hash_msg, &public_key).is_ok())
 }
 
 fn is_quote_matching_policy(

@@ -5217,7 +5217,6 @@ dependencies = [
  "hex",
  "rand",
  "secp256k1 0.29.1",
- "sha3",
  "teepot",
  "tracing",
  "tracing-log 0.2.0",
@@ -5326,10 +5325,12 @@ dependencies = [
  "rand",
  "rsa",
  "rustls",
+ "secp256k1 0.29.1",
  "serde",
  "serde_json",
  "serde_with 3.11.0",
  "sha2",
+ "sha3",
  "signature 2.2.0",
  "tdx-attest-rs",
  "teepot-tee-quote-verification-rs",
@@ -5343,6 +5344,7 @@ dependencies = [
  "webpki-roots",
  "x509-cert",
  "zeroize",
+ "zksync_basic_types",
 ]
 
 [[package]]
@@ -6033,6 +6035,7 @@ dependencies = [
  "clap 4.5.23",
  "hex",
  "secp256k1 0.29.1",
+ "sha3",
  "teepot",
  "zksync_basic_types",
 ]
