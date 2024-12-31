@@ -8,9 +8,9 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use secp256k1::{rand, PublicKey, Secp256k1, SecretKey};
-use sha3::{Digest, Keccak256};
+use secp256k1::{rand, Secp256k1};
 use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
+use teepot::ethereum::public_key_to_ethereum_address;
 use teepot::quote::get_quote;
 use tracing::error;
 use tracing_log::LogTracer;
@@ -29,19 +29,6 @@ struct Args {
     cmd_args: Vec<OsString>,
 }
 
-/// Converts a public key into an Ethereum address by hashing the encoded public key with Keccak256.
-pub fn public_key_to_address(public: &PublicKey) -> [u8; 20] {
-    let public_key_bytes = public.serialize_uncompressed();
-
-    // Skip the first byte (0x04) which indicates uncompressed key
-    let hash: [u8; 32] = Keccak256::digest(&public_key_bytes[1..]).into();
-
-    // Take the last 20 bytes of the hash to get the Ethereum address
-    let mut address = [0u8; 20];
-    address.copy_from_slice(&hash[12..]);
-    address
-}
-
 fn main_with_error() -> Result<()> {
     LogTracer::init().context("Failed to set logger")?;
 
@@ -54,7 +41,7 @@ fn main_with_error() -> Result<()> {
     let mut rng = rand::thread_rng();
     let secp = Secp256k1::new();
     let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
-    let ethereum_address = public_key_to_address(&verifying_key);
+    let ethereum_address = public_key_to_ethereum_address(&verifying_key);
     let tee_type = match get_quote(ethereum_address.as_ref()) {
         Ok((tee_type, quote)) => {
             // save quote to file
@@ -99,6 +86,8 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use secp256k1::{PublicKey, Secp256k1, SecretKey};
+
     use super::*;
 
     #[test]
@@ -110,7 +99,7 @@ mod tests {
         let secret_key = SecretKey::from_slice(&secret_key_bytes).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
         let expected_address = hex::decode("627306090abaB3A6e1400e9345bC60c78a8BEf57").unwrap();
-        let address = public_key_to_address(&public_key);
+        let address = public_key_to_ethereum_address(&public_key);
 
         assert_eq!(address, expected_address.as_slice());
     }
