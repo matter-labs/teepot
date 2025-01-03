@@ -379,6 +379,6 @@ mod test {
                 .unwrap()
         );
         assert!(!body.can_set_debug());
-        assert_eq!(body.misc_select, 0);
+        assert_eq!(body.misc_select, 1);
     }
 }
