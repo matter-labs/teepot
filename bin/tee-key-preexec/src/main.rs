@@ -42,7 +42,7 @@ fn main_with_error() -> Result<()> {
     let secp = Secp256k1::new();
     let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
     let ethereum_address = public_key_to_ethereum_address(&verifying_key);
-    let tee_type = match get_quote(ethereum_address.as_ref()) {
+    let quote = match get_quote(ethereum_address.as_ref()) {
         Ok((tee_type, quote)) => {
             // save quote to file
             std::fs::write(TEE_QUOTE_FILE, quote)?;
@@ -65,7 +65,7 @@ fn main_with_error() -> Result<()> {
             format!("{}ATTESTATION_QUOTE_FILE_PATH", args.env_prefix),
             TEE_QUOTE_FILE,
         )
-        .env(format!("{}TEE_TYPE", args.env_prefix), tee_type)
+        .env(format!("{}TEE_TYPE", args.env_prefix), quote)
         .exec();
 
     Err(err).with_context(|| {
