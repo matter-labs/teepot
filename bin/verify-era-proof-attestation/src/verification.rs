@@ -4,17 +4,39 @@
 use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{Context, Result};
 use hex::encode;
-use secp256k1::Message;
+use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
 use teepot::{
     client::TcbLevel,
     ethereum::recover_signer,
     quote::{
-        error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
+        error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral, Quote,
         QuoteVerificationResult, Report,
     },
 };
 use tracing::{debug, info, warn};
-use zksync_basic_types::L1BatchNumber;
+use zksync_basic_types::{L1BatchNumber, H256};
+
+fn verify_batch_proof_new_format(quote: &Quote, root_hash: H256, signature: &[u8]) -> Result<bool> {
+    let ethereum_address_from_quote = &quote.get_report_data()[..20];
+    let signature_bytes: &[u8; 65] = signature.try_into()?;
+    let root_hash_bytes = root_hash.as_bytes();
+    let root_hash_msg = Message::from_digest_slice(root_hash_bytes)?;
+    let ethereum_address_from_signature = recover_signer(signature_bytes, &root_hash_msg)?;
+    debug!(
+        "Root hash: {}. Ethereum address from the attestation quote: {}. Ethereum address from the signature: {}.",
+        root_hash,
+        encode(ethereum_address_from_quote),
+        encode(ethereum_address_from_signature),
+    );
+    Ok(ethereum_address_from_signature == ethereum_address_from_quote)
+}
+
+fn verify_batch_proof_old_format(quote: &Quote, root_hash: H256, signature: &[u8]) -> Result<bool> {
+    let public_key = PublicKey::from_slice(&quote.get_report_data()[..PUBLIC_KEY_SIZE])?;
+    let signature = Signature::from_compact(signature)?;
+    let root_hash_msg = Message::from_digest_slice(&root_hash.0)?;
+    Ok(signature.verify(&root_hash_msg, &public_key).is_ok())
+}
 
 pub async fn verify_batch_proof(
     quote_verification_result: &QuoteVerificationResult,
@@ -27,38 +49,11 @@ pub async fn verify_batch_proof(
         return Ok(false);
     }
 
-    let batch_no = batch_number.0;
     let root_hash = node_client.get_root_hash(batch_number).await?;
-    let ethereum_address_from_quote = &quote_verification_result.quote.get_report_data()[..20];
-    let signature_bytes: &[u8; 65] = signature.try_into()?;
-    let root_hash_bytes = root_hash.as_bytes();
-    let root_hash_msg = Message::from_digest_slice(root_hash_bytes)?;
-    let ethereum_address_from_signature = recover_signer(signature_bytes, &root_hash_msg)?;
-    let verification_successful = ethereum_address_from_signature == ethereum_address_from_quote;
-    debug!(
-        batch_no,
-        "Root hash: {}. Ethereum address from the attestation quote: {}. Ethereum address from the signature: {}.",
-        root_hash,
-        encode(ethereum_address_from_quote),
-        encode(ethereum_address_from_signature),
-    );
+    let quote = &quote_verification_result.quote;
+    let verification_successful = verify_batch_proof_old_format(&quote, root_hash, signature)?
+        || verify_batch_proof_new_format(&quote, root_hash, signature)?;
 
-    if verification_successful {
-        info!(
-            batch_no,
-            signature = encode(signature),
-            ethereum_address = encode(ethereum_address_from_quote),
-            "Signature verified successfully."
-        );
-    } else {
-        warn!(
-            batch_no,
-            signature = encode(signature),
-            ethereum_address_from_signature = encode(ethereum_address_from_signature),
-            ethereum_address_from_quote = encode(ethereum_address_from_quote),
-            "Failed to verify signature!"
-        );
-    }
     Ok(verification_successful)
 }
 
