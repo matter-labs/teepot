@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 // SPDX-License-Identifier: BSD-3-Clause
 /*
@@ -39,22 +39,14 @@
 //! This is a safe wrapper for **sgx-dcap-quoteverify-sys**.
 
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
-use std::mem;
-use std::ops::Deref;
-use std::slice;
+use std::{marker::PhantomData, mem, ops::Deref, slice};
 
 use intel_tee_quote_verification_sys as qvl_sys;
-
-pub use qvl_sys::quote3_error_t;
-pub use qvl_sys::sgx_ql_qe_report_info_t;
-pub use qvl_sys::sgx_ql_qv_result_t;
-pub use qvl_sys::sgx_ql_qv_supplemental_t;
-pub use qvl_sys::sgx_ql_qve_collateral_t;
-pub use qvl_sys::sgx_ql_request_policy_t;
-pub use qvl_sys::sgx_qv_path_type_t;
-pub use qvl_sys::tdx_ql_qve_collateral_t;
-pub use qvl_sys::tee_supp_data_descriptor_t;
+pub use qvl_sys::{
+    quote3_error_t, sgx_ql_qe_report_info_t, sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t,
+    sgx_ql_qve_collateral_t, sgx_ql_request_policy_t, sgx_qv_path_type_t, tdx_ql_qve_collateral_t,
+    tee_qv_free_collateral, tee_supp_data_descriptor_t,
+};
 
 /// When the Quoting Verification Library is linked to a process, it needs to know the proper enclave loading policy.
 /// The library may be linked with a long lived process, such as a service, where it can load the enclaves and leave
@@ -447,7 +439,13 @@ pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, quote3_error_t>
             );
             // SAFETY: buf is not null, buf_len is not zero, and buf is aligned.
             let orig_collateral = &unsafe { *(buf as *const sgx_ql_qve_collateral_t) };
-            Collateral::try_from(orig_collateral).map_err(|_| quote3_error_t::SGX_QL_ERROR_MAX)
+            let collateral =
+                Collateral::try_from(orig_collateral).map_err(|_| quote3_error_t::SGX_QL_ERROR_MAX);
+
+            match unsafe { tee_qv_free_collateral(buf) } {
+                quote3_error_t::SGX_QL_SUCCESS => collateral,
+                error_code => Err(error_code),
+            }
         }
         error_code => Err(error_code),
     }
