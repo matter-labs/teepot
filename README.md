@@ -1,13 +1,5 @@
 # teepot
 
-Key Value store in a TEE with Remote Attestation for Authentication
-
-## Introduction
-
-This project is a key-value store that runs in a Trusted Execution Environment (TEE) and uses Remote Attestation for
-Authentication.
-The key-value store is implemented using Hashicorp Vault running in an Intel SGX enclave via the Gramine runtime.
-
 ## Parts of this project
 
 - `teepot`: The main rust crate that abstracts TEEs and key-value stores.
@@ -22,6 +14,18 @@ The key-value store is implemented using Hashicorp Vault running in an Intel SGX
 - `verify-attestation`: A client utility that verifies the attestation of an enclave.
 - `tee-key-preexec`: A pre-exec utility that generates a p256 secret key and passes it as an environment variable to the
   enclave along with the attestation quote containing the hash of the public key.
+- `tdx_google`: A base VM running on Google Cloud TDX. It receives a container URL via the instance metadata,
+  measures the sha384 of the URL to RTMR3 and launches the container.
+- `tdx-extend`: A utility to extend an RTMR register with a hash value.
+- `rtmr-calc`: A utility to calculate RTMR1 and RTMR2 from a GPT disk, the linux kernel, the linux initrd
+  and a UKI (unified kernel image).
+- `sha384-extend`: A utility to calculate RTMR registers after extending them with a digest.
+
+## Vault
+
+Part of this project is a key-value store that runs in a Trusted Execution Environment (TEE) and uses Remote Attestation
+for Authentication. The key-value store is implemented using Hashicorp Vault running in an Intel SGX enclave via the
+Gramine runtime.
 
 ## Development
 
@@ -95,4 +99,10 @@ Attributes:
     isv_prod_id: 0
     isv_svn: 0
     debug_enclave: False
+```
+
+### TDX VM testing
+
+```shell
+nixos-rebuild  -L --flake .#tdxtest build-vm && ./result/bin/run-tdxtest-vm
 ```
