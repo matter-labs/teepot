@@ -25,7 +25,9 @@
   };
 
   outputs = inputs:
-    let src = ./.; in
+    let
+      src = ./.;
+    in
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       inherit src;
