@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 // SPDX-License-Identifier: BSD-3-Clause
 /*
@@ -39,22 +39,14 @@
 //! This is a safe wrapper for **sgx-dcap-quoteverify-sys**.
 
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
-use std::mem;
-use std::ops::Deref;
-use std::slice;
+use std::{marker::PhantomData, ops::Deref, slice};
 
 use intel_tee_quote_verification_sys as qvl_sys;
-
-pub use qvl_sys::quote3_error_t;
-pub use qvl_sys::sgx_ql_qe_report_info_t;
-pub use qvl_sys::sgx_ql_qv_result_t;
-pub use qvl_sys::sgx_ql_qv_supplemental_t;
-pub use qvl_sys::sgx_ql_qve_collateral_t;
-pub use qvl_sys::sgx_ql_request_policy_t;
-pub use qvl_sys::sgx_qv_path_type_t;
-pub use qvl_sys::tdx_ql_qve_collateral_t;
-pub use qvl_sys::tee_supp_data_descriptor_t;
+pub use qvl_sys::{
+    quote3_error_t, sgx_ql_qe_report_info_t, sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t,
+    sgx_ql_qve_collateral_t, sgx_ql_request_policy_t, sgx_qv_path_type_t, tdx_ql_qve_collateral_t,
+    tee_qv_free_collateral, tee_supp_data_descriptor_t,
+};
 
 /// When the Quoting Verification Library is linked to a process, it needs to know the proper enclave loading policy.
 /// The library may be linked with a long lived process, such as a service, where it can load the enclaves and leave
@@ -328,43 +320,6 @@ pub struct Collateral {
     pub qe_identity: Box<[u8]>,
 }
 
-impl TryFrom<&sgx_ql_qve_collateral_t> for Collateral {
-    type Error = ();
-
-    fn try_from(value: &sgx_ql_qve_collateral_t) -> Result<Self, Self::Error> {
-        fn to_boxed_slice(p: *mut ::std::os::raw::c_char, size: u32) -> Result<Box<[u8]>, ()> {
-            if p.is_null() {
-                return Err(());
-            }
-            Ok(Box::from(unsafe {
-                slice::from_raw_parts(p as _, size as _)
-            }))
-        }
-
-        Ok(Collateral {
-            major_version: unsafe { value.__bindgen_anon_1.__bindgen_anon_1.major_version },
-            minor_version: unsafe { value.__bindgen_anon_1.__bindgen_anon_1.minor_version },
-            tee_type: value.tee_type,
-            pck_crl_issuer_chain: to_boxed_slice(
-                value.pck_crl_issuer_chain,
-                value.pck_crl_issuer_chain_size,
-            )?,
-            root_ca_crl: to_boxed_slice(value.root_ca_crl, value.root_ca_crl_size)?,
-            pck_crl: to_boxed_slice(value.pck_crl, value.pck_crl_size)?,
-            tcb_info_issuer_chain: to_boxed_slice(
-                value.tcb_info_issuer_chain,
-                value.tcb_info_issuer_chain_size,
-            )?,
-            tcb_info: to_boxed_slice(value.tcb_info, value.tcb_info_size)?,
-            qe_identity_issuer_chain: to_boxed_slice(
-                value.qe_identity_issuer_chain,
-                value.qe_identity_issuer_chain_size,
-            )?,
-            qe_identity: to_boxed_slice(value.qe_identity, value.qe_identity_size)?,
-        })
-    }
-}
-
 // referential struct
 struct SgxQlQveCollateralT<'a> {
     inner: sgx_ql_qve_collateral_t,
@@ -432,6 +387,55 @@ impl Deref for SgxQlQveCollateralT<'_> {
 /// - *SGX_QL_ERROR_UNEXPECTED*
 ///
 pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, quote3_error_t> {
+    fn try_into_collateral(
+        buf: *const sgx_ql_qve_collateral_t,
+        buf_len: u32,
+    ) -> Result<Collateral, quote3_error_t> {
+        fn try_into_boxed_slice(
+            p: *mut ::std::os::raw::c_char,
+            size: u32,
+        ) -> Result<Box<[u8]>, quote3_error_t> {
+            if p.is_null() || !p.is_aligned() {
+                return Err(quote3_error_t::SGX_QL_ERROR_MAX);
+            }
+            Ok(Box::from(unsafe {
+                slice::from_raw_parts(p as _, size as _)
+            }))
+        }
+
+        if buf.is_null()
+            || (buf_len as usize) < size_of::<sgx_ql_qve_collateral_t>()
+            || !buf.is_aligned()
+        {
+            return Err(quote3_error_t::SGX_QL_ERROR_MAX);
+        }
+
+        // SAFETY: buf is not null, buf_len is not zero, and buf is aligned.
+        let collateral = unsafe { *buf };
+
+        Ok(Collateral {
+            major_version: unsafe { collateral.__bindgen_anon_1.__bindgen_anon_1.major_version },
+            minor_version: unsafe { collateral.__bindgen_anon_1.__bindgen_anon_1.minor_version },
+            tee_type: collateral.tee_type,
+            pck_crl_issuer_chain: try_into_boxed_slice(
+                collateral.pck_crl_issuer_chain,
+                collateral.pck_crl_issuer_chain_size,
+            )?,
+            root_ca_crl: try_into_boxed_slice(collateral.root_ca_crl, collateral.root_ca_crl_size)?,
+            pck_crl: try_into_boxed_slice(collateral.pck_crl, collateral.pck_crl_size)?,
+            tcb_info_issuer_chain: try_into_boxed_slice(
+                collateral.tcb_info_issuer_chain,
+                collateral.tcb_info_issuer_chain_size,
+            )?,
+            tcb_info: try_into_boxed_slice(collateral.tcb_info, collateral.tcb_info_size)?,
+            qe_identity_issuer_chain: try_into_boxed_slice(
+                collateral.qe_identity_issuer_chain,
+                collateral.qe_identity_issuer_chain_size,
+            )?,
+            qe_identity: try_into_boxed_slice(collateral.qe_identity, collateral.qe_identity_size)?,
+        })
+    }
+
     let mut buf = std::ptr::null_mut();
     let mut buf_len = 0u32;
 
@@ -439,15 +443,12 @@ pub fn tee_qv_get_collateral(quote: &[u8]) -> Result<Collateral, quote3_error_t>
         qvl_sys::tee_qv_get_collateral(quote.as_ptr(), quote.len() as u32, &mut buf, &mut buf_len)
     } {
         quote3_error_t::SGX_QL_SUCCESS => {
-            assert!(!buf.is_null());
-            assert!(buf_len > 0);
-            assert_eq!(
-                (buf as usize) % mem::align_of::<sgx_ql_qve_collateral_t>(),
-                0
-            );
-            // SAFETY: buf is not null, buf_len is not zero, and buf is aligned.
-            let orig_collateral = &unsafe { *(buf as *const sgx_ql_qve_collateral_t) };
-            Collateral::try_from(orig_collateral).map_err(|_| quote3_error_t::SGX_QL_ERROR_MAX)
+            let collateral = try_into_collateral(buf as _, buf_len);
+
+            match unsafe { tee_qv_free_collateral(buf) } {
+                quote3_error_t::SGX_QL_SUCCESS => collateral,
+                error_code => Err(error_code),
+            }
         }
         error_code => Err(error_code),
     }
