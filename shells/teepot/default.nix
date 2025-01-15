@@ -1,16 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
 { lib
+, pkgs
 , mkShell
 , teepot
-, dive
-, taplo
-, vault
-, cargo-release
 , nixsgx
 , stdenv
 , teepotCrate
-, pkg-config
 }:
 let
   toolchain_with_src = (teepotCrate.rustVersion.override {
@@ -20,20 +16,26 @@ in
 mkShell {
   inputsFrom = [ teepot.teepot ];
 
-  nativeBuildInputs = [
+  nativeBuildInputs = with pkgs; [
     toolchain_with_src
     pkg-config
     teepotCrate.rustPlatform.bindgenHook
   ];
 
-  packages = [
+  packages = with pkgs; [
     dive
     taplo
     vault
     cargo-release
+    google-cloud-sdk-gce
+    azure-cli
+    kubectl
+    kubectx
+    k9s
   ];
 
   TEE_LD_LIBRARY_PATH = lib.makeLibraryPath [
+    pkgs.curl
     nixsgx.sgx-dcap
     nixsgx.sgx-dcap.quote_verify
     nixsgx.sgx-dcap.default_qpl
