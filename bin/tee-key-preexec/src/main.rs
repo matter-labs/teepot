@@ -40,7 +40,15 @@ fn main_with_error() -> Result<()> {
     let args = Args::parse();
     let mut rng = rand::thread_rng();
     let secp = Secp256k1::new();
-    let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
+    ////////////////////////
+    // let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
+    let private_key_hex = "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3";
+    let private_key_bytes = hex::decode(private_key_hex).expect("Invalid hex string");
+    let signing_key = SecretKey::from_slice(&private_key_bytes).expect("Invalid private key");
+
+    // Generate the corresponding public key
+    let verifying_key = PublicKey::from_secret_key(&secp, &signing_key);
+    ////////////////////////
     let ethereum_address = public_key_to_ethereum_address(&verifying_key);
     let tee_type = match get_quote(ethereum_address.as_ref()) {
         Ok((tee_type, quote)) => {
