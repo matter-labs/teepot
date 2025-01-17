@@ -2,11 +2,13 @@
 // Copyright (c) 2023-2024 Matter Labs
 
 use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use hex::encode;
-use secp256k1::{constants::PUBLIC_KEY_SIZE, ecdsa::Signature, Message, PublicKey};
+use secp256k1::{ecdsa::Signature, Message};
 use teepot::{
     client::TcbLevel,
+    ethereum::recover_signer,
+    prover::reportdata::ReportData,
     quote::{
         error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
         QuoteVerificationResult, Report,
@@ -14,6 +16,51 @@ use teepot::{
 };
 use tracing::{debug, info, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
+
+struct TeeProof {
+    report: ReportData,
+    root_hash: H256,
+    signature: Vec<u8>,
+}
+
+impl TeeProof {
+    pub fn new(report: ReportData, root_hash: H256, signature: Vec<u8>) -> Self {
+        Self {
+            report,
+            root_hash,
+            signature,
+        }
+    }
+
+    pub fn verify(&self) -> Result<bool> {
+        match &self.report {
+            ReportData::V0(report) => {
+                let signature = Signature::from_compact(&self.signature)?;
+                let root_hash_msg = Message::from_digest_slice(&self.root_hash.0)?;
+                Ok(signature.verify(&root_hash_msg, &report.pubkey).is_ok())
+            }
+            ReportData::V1(report) => {
+                let ethereum_address_from_report = report.ethereum_address;
+                let root_hash_msg = Message::from_digest_slice(self.root_hash.as_bytes())?;
+                let signature_bytes: [u8; 65] = self
+                    .signature
+                    .clone()
+                    .try_into()
+                    .map_err(|e| anyhow!("{:?}", e))?;
+                let ethereum_address_from_signature =
+                    recover_signer(&signature_bytes, &root_hash_msg)?;
+                debug!(
+                    "Root hash: {}. Ethereum address from the attestation quote: {}. Ethereum address from the signature: {}.",
+                    self.root_hash,
+                    encode(ethereum_address_from_report),
+                    encode(ethereum_address_from_signature),
+                );
+                Ok(ethereum_address_from_signature == ethereum_address_from_report)
+            }
+            ReportData::Unknown(_) => Ok(false),
+        }
+    }
+}
 
 pub async fn verify_batch_proof(
     quote_verification_result: &QuoteVerificationResult,
@@ -26,23 +73,12 @@ pub async fn verify_batch_proof(
         return Ok(false);
     }
 
-    let batch_no = batch_number.0;
-
-    let public_key = PublicKey::from_slice(
-        &quote_verification_result.quote.get_report_data()[..PUBLIC_KEY_SIZE],
-    )?;
-    debug!(batch_no, "public key: {}", public_key);
-
     let root_hash = node_client.get_root_hash(batch_number).await?;
-    debug!(batch_no, "root hash: {}", root_hash);
-
-    let is_verified = verify_signature(signature, public_key, root_hash)?;
-    if is_verified {
-        info!(batch_no, signature = %encode(signature), "Signature verified successfully.");
-    } else {
-        warn!(batch_no, signature = %encode(signature), "Failed to verify signature!");
-    }
-    Ok(is_verified)
+    let report_data_bytes = quote_verification_result.quote.get_report_data();
+    let report_data = ReportData::try_from(report_data_bytes)?;
+    let tee_proof = TeeProof::new(report_data, root_hash, signature.to_vec());
+    let verification_successful = tee_proof.verify().is_ok();
+    Ok(verification_successful)
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
@@ -83,12 +119,6 @@ pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificat
         "Quote verification result: {tcblevel}. {report}. Advisory IDs: {advisories}.",
         report = &quote.report
     );
-}
-
-fn verify_signature(signature: &[u8], public_key: PublicKey, root_hash: H256) -> Result<bool> {
-    let signature = Signature::from_compact(signature)?;
-    let root_hash_msg = Message::from_digest_slice(&root_hash.0)?;
-    Ok(signature.verify(&root_hash_msg, &public_key).is_ok())
 }
 
 fn is_quote_matching_policy(
