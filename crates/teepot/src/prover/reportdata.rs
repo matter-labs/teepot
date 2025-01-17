@@ -35,6 +35,11 @@ pub enum ReportData {
 }
 
 fn report_data_to_bytes(data: &[u8], version: u8) -> [u8; REPORT_DATA_LENGTH] {
+    debug_assert!(
+        data.len() < REPORT_DATA_LENGTH, // Ensure there is space for the version byte
+        "Data length exceeds maximum of {} bytes",
+        REPORT_DATA_LENGTH
+    );
     let mut bytes = [0u8; REPORT_DATA_LENGTH];
     bytes[..data.len()].copy_from_slice(data);
     bytes[REPORT_DATA_LENGTH - 1] = version;

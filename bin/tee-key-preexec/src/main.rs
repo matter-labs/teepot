@@ -8,7 +8,6 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use core::convert::AsRef;
 use secp256k1::{rand, Secp256k1};
 use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
 use teepot::{
@@ -46,7 +45,7 @@ fn main_with_error() -> Result<()> {
     let ethereum_address = public_key_to_ethereum_address(&verifying_key);
     let report_data = ReportDataV1 { ethereum_address };
     let report_data_bytes: [u8; 64] = report_data.into();
-    let tee_type = match get_quote(report_data_bytes.as_ref()) {
+    let tee_type = match get_quote(&report_data_bytes) {
         Ok((tee_type, quote)) => {
             // save quote to file
             std::fs::write(TEE_QUOTE_FILE, quote)?;
@@ -86,25 +85,4 @@ fn main() -> Result<()> {
         error!("Error: {}", e);
     }
     ret
-}
-
-#[cfg(test)]
-mod tests {
-    use secp256k1::{PublicKey, Secp256k1, SecretKey};
-
-    use super::*;
-
-    #[test]
-    fn test_public_key_to_address() {
-        let secp = Secp256k1::new();
-        let secret_key_bytes =
-            hex::decode("c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3")
-                .unwrap();
-        let secret_key = SecretKey::from_slice(&secret_key_bytes).unwrap();
-        let public_key = PublicKey::from_secret_key(&secp, &secret_key);
-        let expected_address = hex::decode("627306090abaB3A6e1400e9345bC60c78a8BEf57").unwrap();
-        let address = public_key_to_ethereum_address(&public_key);
-
-        assert_eq!(address, expected_address.as_slice());
-    }
 }

@@ -3,15 +3,16 @@
 
 //! Tool for SGX attestation and batch signature verification
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use core::convert::TryInto;
 use hex::encode;
-use secp256k1::{Message, PublicKey};
+use secp256k1::Message;
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
 use teepot::{
     client::TcbLevel,
     ethereum::recover_signer,
+    prover::reportdata::ReportData,
     quote::{error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
 };
 use zksync_basic_types::H256;
@@ -87,15 +88,14 @@ fn verify_signature(
     quote_verification_result: &QuoteVerificationResult,
     signature_args: &SignatureArgs,
 ) -> Result<()> {
-    let reportdata = &quote_verification_result.quote.get_report_data();
-    let public_key = PublicKey::from_slice(reportdata)?;
-    println!("Public key from attestation quote: {}", public_key);
+    let report_data = ReportData::try_from(quote_verification_result.quote.get_report_data())?;
+    let ethereum_address_from_quote = match report_data {
+        ReportData::V1(report_data_v1) => report_data_v1.ethereum_address,
+        _ => return Err(anyhow!("Unsupported report data version")),
+    };
     let signature_bytes: &[u8] = &fs::read(&signature_args.signature_file)?;
-    let ethereum_address_from_quote = &quote_verification_result.quote.get_report_data()[..20];
-    let root_hash_bytes = signature_args.root_hash.as_bytes();
-    let root_hash_msg = Message::from_digest_slice(root_hash_bytes)?;
-    let ethereum_address_from_signature =
-        recover_signer(&signature_bytes.try_into()?, &root_hash_msg)?;
+    let root_hash = Message::from_digest_slice(signature_args.root_hash.as_bytes())?;
+    let ethereum_address_from_signature = recover_signer(&signature_bytes.try_into()?, &root_hash)?;
     let verification_successful = ethereum_address_from_signature == ethereum_address_from_quote;
 
     println!(
