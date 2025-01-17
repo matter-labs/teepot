@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: enarx/spdx@c3e8116ed31c31b3c2e58a26ba5cac407510ca37
         with:
           licenses: |-
@@ -27,6 +27,6 @@ jobs:
     name: taplo
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: cachix/install-nix-action@v30
       - run: nix run nixpkgs#taplo -- fmt --check
