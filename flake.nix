@@ -25,12 +25,9 @@
   };
 
   outputs = inputs:
-    let
-      src = ./.;
-    in
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
-      inherit src;
+      src = ./.;
 
       snowfall.namespace = "teepot";
 
@@ -42,8 +39,6 @@
         nixsgx-flake.overlays.default
         vault-auth-tee-flake.overlays.default
         rust-overlay.overlays.default
-        # somehow the original `src` is not available anymore
-        (final: prev: { teepotCrate = prev.pkgs.callPackage ./teepot-crate.nix { inherit inputs; inherit src; }; })
       ];
 
       alias = {
@@ -59,16 +54,7 @@
       };
 
       outputs-builder = channels: {
-        formatter = channels.nixpkgs.nixpkgs-fmt;
-
-        checks = {
-          inherit
-            (channels.nixpkgs.teepot) cargoFmt;
-          inherit
-            (channels.nixpkgs.teepot) cargoClippy;
-          inherit
-            (channels.nixpkgs.teepot) cargoDeny;
-        };
+        formatter = channels.nixpkgs.nixfmt-rfc-style;
       };
     };
 }

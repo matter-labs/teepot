@@ -7,7 +7,11 @@
 
 set -ex
 
+BASE_DIR=${0%/*}
+
 NO=${NO:-1}
+
+ZONE=${ZONE:-us-central1-c}
 
 nix build -L .#tdx_google
 
@@ -21,8 +25,8 @@ gcloud migration vms image-imports create \
          --source-file=gs://tdx_vms/tdx_base_1.vmdk \
          tdx-img-pre-"${NO}"
 
-gcloud compute instances stop tdx-pilot --zone us-central1-c --project tdx-pilot || :
-gcloud compute instances delete tdx-pilot --zone us-central1-c --project tdx-pilot || :
+gcloud compute instances stop tdx-pilot --zone ${ZONE} --project tdx-pilot || :
+gcloud compute instances delete tdx-pilot --zone ${ZONE} --project tdx-pilot || :
 
 while gcloud migration vms image-imports list --location=us-central1 --project=tdx-pilot | grep -F RUNNING; do
     sleep 1
@@ -36,10 +40,11 @@ gcloud compute images create \
          tdx-img-f-"${NO}"
 
 gcloud compute instances create tdx-pilot \
-         --machine-type c3-standard-4 --zone us-central1-c \
+         --machine-type c3-standard-4 --zone ${ZONE} \
          --confidential-compute-type=TDX \
          --maintenance-policy=TERMINATE \
          --image-project=tdx-pilot \
          --project tdx-pilot \
-         --metadata=container_hub="docker.io",container_image="amd64/hello-world@sha256:e2fc4e5012d16e7fe466f5291c476431beaa1f9b90a5c2125b493ed28e2aba57" \
+         --metadata=container_hub="docker.io",container_image="matterlabsrobot/test-tdx:117p5y281limw0w7b03v802ij00c5gzw" \
+         --metadata-from-file=container_config=$BASE_DIR/config.json \
          --image tdx-img-f-"${NO}"

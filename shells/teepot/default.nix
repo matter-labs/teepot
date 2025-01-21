@@ -6,10 +6,9 @@
 , teepot
 , nixsgx
 , stdenv
-, teepotCrate
 }:
 let
-  toolchain_with_src = (teepotCrate.rustVersion.override {
+  toolchain_with_src = (teepot.teepot.passthru.rustVersion.override {
     extensions = [ "rustfmt" "clippy" "rust-src" ];
   });
 in
@@ -19,7 +18,7 @@ mkShell {
   nativeBuildInputs = with pkgs; [
     toolchain_with_src
     pkg-config
-    teepotCrate.rustPlatform.bindgenHook
+    teepot.teepot.passthru.rustPlatform.bindgenHook
   ];
 
   packages = with pkgs; [

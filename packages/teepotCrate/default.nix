@@ -7,11 +7,10 @@
 , pkg-config
 , rust-bin
 , pkgs
-, src
 , openssl
 }:
 let
-  rustVersion = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+  rustVersion = rust-bin.fromRustupToolchainFile (inputs.src + "/rust-toolchain.toml");
   rustPlatform = makeRustPlatform {
     cargo = rustVersion;
     rustc = rustVersion;
@@ -34,15 +33,15 @@ let
     strictDeps = true;
 
     src = with lib.fileset; toSource {
-      root = src;
+      root = inputs.src;
       fileset = unions [
-        ./Cargo.lock
-        ./Cargo.toml
-        ./bin
-        ./crates
-        ./rust-toolchain.toml
-        ./deny.toml
-        ./taplo.toml
+        # Default files from crane (Rust and cargo files)
+        (craneLib.fileset.commonCargoSources inputs.src)
+        (fileFilter (file: file.hasExt "hcl") (inputs.src + "/bin"))
+        # deny.toml and friends
+        (fileFilter (file: file.hasExt "toml") inputs.src)
+        # Custom test data files
+        (maybeMissing (inputs.src + "/crates/teepot/tests/data"))
       ];
     };
 
