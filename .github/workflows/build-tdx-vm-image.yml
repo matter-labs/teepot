@@ -54,5 +54,14 @@ jobs:
         run: nix build -L .#tdx_google
 
       - name: Upload image to GCS
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        #if: ${{ github.event_name == 'workflow_dispatch' }}
         run: gsutil cp result/tdx_base_1.vmdk gs://matterlabs-tdx-image-build/tdx_base_latest.vmdk
+
+  creat-gcloud-image:
+    needs: build-image
+    runs-on: [ matterlabs-default-infra-runners ]
+    steps:
+      - name: Run image migration
+        run: |
+          gcloud migration vms image-imports create --location=us-central1 --skip-os-adaptation \
+          --source-file=gs://matterlabs-tdx-image-build/tdx_base_latest.vmdk tdx-img-latest
