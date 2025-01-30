@@ -1,0 +1,58 @@
+name: Build TDX image
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tee-pot:SS6HcrpG87S1M6HZGPsfo7d1xJccCGev7/tXc5+I4jg=
+            substituters = https://cache.nixos.org/ https://attic.teepot.org/tee-pot
+            sandbox = true
+      - name: Setup Attic cache
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: https://attic.teepot.org/
+          cache: tee-pot
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      - run: nix flake check -L --show-trace --keep-going
+
+  build-image:
+    needs: check
+    runs-on: [ matterlabs-default-infra-runners ]
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tee-pot:SS6HcrpG87S1M6HZGPsfo7d1xJccCGev7/tXc5+I4jg=
+            substituters = https://cache.nixos.org/ https://attic.teepot.org/tee-pot
+            sandbox = true
+      - name: Setup Attic cache
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: https://attic.teepot.org/
+          cache: tee-pot
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      - name: nix build
+        run: nix build -L .#tdx_google
+
+      - name: Upload image to GCS
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: gsutil cp result/tdx_base_1.vmdk gs://matterlabs-tdx-image-build/tdx_base_latest.vmdk
