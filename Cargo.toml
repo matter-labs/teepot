@@ -56,7 +56,7 @@ signature = "2.2.0"
 tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
 teepot = { path = "crates/teepot" }
 testaso = "0.1.0"
-thiserror = "1.0.59"
+thiserror = "2.0.0"
 tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
 tracing = "0.1"
 tracing-actix-web = "0.7"
