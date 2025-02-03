@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib, pkgs, makeWrapper, teepotCrate }: teepotCrate.craneLib.buildPackage (
+{ lib, pkgs, makeWrapper, teepot }:
+let teepotCrate = teepot.teepotCrate; in
+teepotCrate.craneLib.buildPackage (
   teepotCrate.commonArgs // {
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts;
@@ -17,6 +19,7 @@
 
     outputs = [
       "out"
+      "google_metadata"
       "rtmr_calc"
       "sha384_extend"
       "tdx_extend"

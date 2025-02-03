@@ -73,6 +73,7 @@ jobs:
           - { nixpackage: 'container-self-attestation-test-sgx-azure' }
           - { nixpackage: 'container-verify-attestation-sgx' }
           - { nixpackage: 'container-verify-era-proof-attestation-sgx' }
+          - { nixpackage: 'container-test-tdx' }
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30

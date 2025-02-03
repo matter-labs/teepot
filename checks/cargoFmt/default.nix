@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ teepotCrate }: teepotCrate.craneLib.cargoFmt (
-  teepotCrate.commonArgs // {
+{ teepot }: teepot.teepot.passthru.craneLib.cargoFmt (
+  teepot.teepot.passthru.commonArgs // {
     pname = "teepot";
   }
 )

@@ -42,6 +42,8 @@ pgp = "0.14.2"
 pkcs8 = { version = "0.10" }
 rand = "0.8"
 reqwest = { version = "0.12", features = ["json"] }
+reqwest-middleware = "0.4.0"
+reqwest-retry = "0.7.0"
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
 rustls = { version = "0.23.20" }
 secp256k1 = { version = "0.29", features = ["rand-std", "global-context"] }
