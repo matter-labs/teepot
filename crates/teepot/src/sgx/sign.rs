@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 // Copyright (c) The Enarx Project Developers https://github.com/enarx/sgx
 
@@ -12,14 +12,12 @@
 use bytemuck::{bytes_of, Pod, Zeroable};
 use num_integer::Integer;
 use num_traits::ToPrimitive;
-use rand::thread_rng;
 use rsa::{
     pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey, LineEnding},
     traits::PublicKeyParts,
     BigUint, Pkcs1v15Sign, RsaPrivateKey,
 };
-use sha2::Digest as _;
-use sha2::Sha256;
+use sha2::{Digest as _, Sha256};
 pub use zeroize::Zeroizing;
 
 /// Enclave CPU attributes
@@ -270,7 +268,7 @@ impl PrivateKey for RS256PrivateKey {
     type Error = rsa::errors::Error;
 
     fn generate(exponent: u8) -> Result<Self, Self::Error> {
-        let mut rng = thread_rng();
+        let mut rng = rand::rngs::OsRng;
         let exp = BigUint::from(exponent);
         let key = RsaPrivateKey::new_with_exp(&mut rng, 384 * 8, &exp)?;
         Ok(Self::new(key))

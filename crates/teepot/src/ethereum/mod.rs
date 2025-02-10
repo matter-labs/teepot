@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Ethereum-specific helper functions for on-chain verification of Intel SGX attestation.
 
@@ -15,7 +15,7 @@ use sha3::{Digest, Keccak256};
 pub fn recover_signer(sig: &[u8; 65], root_hash: &Message) -> Result<[u8; 20]> {
     let sig = RecoverableSignature::from_compact(
         &sig[0..64],
-        RecoveryId::from_i32(sig[64] as i32 - 27)?,
+        RecoveryId::try_from(sig[64] as i32 - 27)?,
     )?;
     let public = SECP256K1.recover_ecdsa(root_hash, &sig)?;
     Ok(public_key_to_ethereum_address(&public))
@@ -50,7 +50,7 @@ mod tests {
         signature[..64].copy_from_slice(&data);
         // as defined in the Ethereum Yellow Paper (Appendix F)
         // https://ethereum.github.io/yellowpaper/paper.pdf
-        signature[64] = 27 + rec_id.to_i32() as u8;
+        signature[64] = 27 + i32::from(rec_id) as u8;
 
         Ok(signature)
     }
@@ -63,7 +63,8 @@ mod tests {
         let secret_key_bytes =
             hex::decode("c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3")
                 .unwrap();
-        let secret_key = SecretKey::from_slice(&secret_key_bytes).unwrap();
+        let secret_key =
+            SecretKey::from_byte_array(secret_key_bytes.as_slice().try_into().unwrap()).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
         let expected_address = hex::decode("627306090abaB3A6e1400e9345bC60c78a8BEf57").unwrap();
         let address = public_key_to_ethereum_address(&public_key);
@@ -74,7 +75,7 @@ mod tests {
         // the secret key
         let root_hash = H256::random();
         let root_hash_bytes = root_hash.as_bytes();
-        let msg_to_sign = Message::from_digest_slice(root_hash_bytes).unwrap();
+        let msg_to_sign = Message::from_digest(root_hash_bytes.try_into().unwrap());
         let signature = sign_message(&secret_key, msg_to_sign).unwrap();
 
         // Recover the signer's Ethereum address from the signature and the message, and verify it
