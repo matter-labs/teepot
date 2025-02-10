@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: enarx/spdx@c3e8116ed31c31b3c2e58a26ba5cac407510ca37
+      - uses: enarx/spdx@b5bfdd4410071bf058c8333d0e70020001524b6b
         with:
           licenses: |-
             Apache-2.0
