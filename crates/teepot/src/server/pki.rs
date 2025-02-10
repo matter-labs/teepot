@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Create a private key and a signed and self-signed certificates
 
@@ -10,10 +10,10 @@ use const_oid::{
     db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH},
     AssociatedOid,
 };
-use getrandom::getrandom;
 use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use p256::{ecdsa::DerSignature, pkcs8::EncodePrivateKey};
 use pkcs8::der;
+use rand::rngs::OsRng;
 use rustls::pki_types::PrivatePkcs8KeyDer;
 use sha2::{Digest, Sha256};
 use signature::Signer;
@@ -136,7 +136,7 @@ pub fn make_self_signed_cert(
     rustls::pki_types::PrivateKeyDer<'static>,
 )> {
     // Generate a keypair.
-    let mut rng = rand::thread_rng();
+    let mut rng = OsRng;
     let signing_key = p256::ecdsa::SigningKey::random(&mut rng);
     let verifying_key = signing_key.verifying_key();
     let verifying_key_der = verifying_key
@@ -154,7 +154,7 @@ pub fn make_self_signed_cert(
     let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
 
     let mut serial = [0u8; 16];
-    getrandom(&mut serial)?;
+    getrandom::fill(&mut serial)?;
 
     let mut builder = CertificateBuilder::new(
         Profile::Leaf {
@@ -223,7 +223,7 @@ where
     S::VerifyingKey: EncodePublicKey,
 {
     // Generate a keypair.
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rngs::OsRng;
     let signing_key = p256::ecdsa::SigningKey::random(&mut rng);
     let verifying_key = signing_key.verifying_key();
     let verifying_key_der = verifying_key
@@ -240,7 +240,7 @@ where
     let subject = Name::from_str(dn)?;
 
     let mut serial = [0u8; 16];
-    getrandom(&mut serial)?;
+    getrandom::fill(&mut serial)?;
 
     let mut builder = CertificateBuilder::new(
         Profile::Leaf {
