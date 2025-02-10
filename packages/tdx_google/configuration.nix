@@ -8,19 +8,6 @@
     "${toString modulesPath}/profiles/qemu-guest.nix"
   ];
 
-  /*
-    # SSH login for debugging
-    services.sshd.enable = true;
-    networking.firewall.allowedTCPPorts = [ 22 ];
-    services.openssh.settings.PermitRootLogin = lib.mkOverride 999 "yes";
-    users.users.root.openssh.authorizedKeys.keys = [
-    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIDsb/Tr69YN5MQLweWPuJaRGm+h2kOyxfD6sqKEDTIwoAAAABHNzaDo="
-    "sk-ecdsa-sha2-nistp256@openssh.com AAAAInNrLWVjZHNhLXNoYTItbmlzdHAyNTZAb3BlbnNzaC5jb20AAAAIbmlzdHAyNTYAAABBBACLgT81iB1iWWVuXq6PdQ5GAAGhaZhSKnveQCvcNnAOZ5WKH80bZShKHyAYzrzbp8IGwLWJcZQ7TqRK+qZdfagAAAAEc3NoOg=="
-    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAYbUTKpy4QR3s944/hjJ1UK05asFEs/SmWeUbtS0cdA660sT4xHnRfals73FicOoz+uIucJCwn/SCM804j+wtM="
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMNsmP15vH8BVKo7bdvIiiEjiQboPGcRPqJK0+bH4jKD"
-    ];
-  */
-
   # the container might want to listen on ports
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPortRanges = [{ from = 1024; to = 65535; }];
