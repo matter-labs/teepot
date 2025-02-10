@@ -34,6 +34,11 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMNsmP15vH8BVKo7bdvIiiEjiQboPGcRPqJK0+bH4jKD"
   ];
 
+  environment.systemPackages = with pkgs; [
+    strace
+    tcpdump
+  ];
+
 
   fileSystems = {
     "/" = {
