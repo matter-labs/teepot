@@ -26,6 +26,13 @@
   networking.firewall.allowedTCPPortRanges = [{ from = 1024; to = 65535; }];
   networking.firewall.allowedUDPPortRanges = [{ from = 1024; to = 65535; }];
 
+  services.resolved.enable = true;
+  services.resolved.llmnr = "false";
+  services.resolved.extraConfig = ''
+    [Resolve]
+    MulticastDNS=no
+  '';
+
   networking.useNetworkd = lib.mkDefault true;
 
   # don't fill up the logs
@@ -80,8 +87,6 @@
     disabledCollectors = [
       "textfile"
     ];
-    #openFirewall = true;
-    #firewallFilter = "-i br0 -p tcp -m tcp --dport 9100";
   };
 
   environment.systemPackages = with pkgs; [
