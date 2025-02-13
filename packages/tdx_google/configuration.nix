@@ -8,23 +8,72 @@
     "${toString modulesPath}/profiles/qemu-guest.nix"
   ];
 
-  /*
-    # SSH login for debugging
-    services.sshd.enable = true;
-    networking.firewall.allowedTCPPorts = [ 22 ];
-    services.openssh.settings.PermitRootLogin = lib.mkOverride 999 "yes";
-    users.users.root.openssh.authorizedKeys.keys = [
-    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIDsb/Tr69YN5MQLweWPuJaRGm+h2kOyxfD6sqKEDTIwoAAAABHNzaDo="
-    "sk-ecdsa-sha2-nistp256@openssh.com AAAAInNrLWVjZHNhLXNoYTItbmlzdHAyNTZAb3BlbnNzaC5jb20AAAAIbmlzdHAyNTYAAABBBACLgT81iB1iWWVuXq6PdQ5GAAGhaZhSKnveQCvcNnAOZ5WKH80bZShKHyAYzrzbp8IGwLWJcZQ7TqRK+qZdfagAAAAEc3NoOg=="
-    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAYbUTKpy4QR3s944/hjJ1UK05asFEs/SmWeUbtS0cdA660sT4xHnRfals73FicOoz+uIucJCwn/SCM804j+wtM="
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMNsmP15vH8BVKo7bdvIiiEjiQboPGcRPqJK0+bH4jKD"
-    ];
-  */
+  services.vector.enable = true;
+  services.vector.settings = {
+    api.enabled = false;
+    sources = {
+      otlp = {
+        type = "opentelemetry";
+        grpc = { address = "127.0.0.1:4317"; };
+        http = {
+          address = "127.0.0.1:4318";
+          keepalive = {
+            max_connection_age_jitter_factor = 0.1;
+            max_connection_age_secs = 300;
+          };
+        };
+      };
+    };
+    sinks = {
+      console = {
+        inputs = [ "otlp.logs" ];
+        target = "stdout";
+        type = "console";
+        encoding = { codec = "json"; };
+      };
+      kafka = {
+        type = "kafka";
+        inputs = [ "otlp.logs" ];
+        bootstrap_servers = "\${KAFKA_URLS:-127.0.0.1:0}";
+        topic = "\${KAFKA_TOPIC:-tdx-google}";
+        encoding = {
+          codec = "json";
+          compression = "lz4";
+        };
+      };
+    };
+  };
+  systemd.services.vector.path = [ pkgs.curl pkgs.coreutils ];
+  # `-` means, that the file can be missing, so that `ExecStartPre` can execute and create it
+  systemd.services.vector.serviceConfig.EnvironmentFile = "-/run/vector/env";
+  # `+` means, that the process has access to all files, to be able to write to `/run`
+  systemd.services.vector.serviceConfig.ExecStartPre = "+" + toString (
+    pkgs.writeShellScript "vector-start-pre" ''
+      set -eu -o pipefail
+      : "''${KAFKA_URLS:=$(curl --silent --fail "http://metadata.google.internal/computeMetadata/v1/instance/attributes/kafka_urls" -H "Metadata-Flavor: Google")}"
+      : "''${KAFKA_TOPIC:=$(curl --silent --fail "http://metadata.google.internal/computeMetadata/v1/instance/attributes/kafka_topic" -H "Metadata-Flavor: Google")}"
+
+      KAFKA_TOPIC="''${KAFKA_TOPIC:-tdx-google}"
+
+      mkdir -p /run/vector
+      cat >/run/vector/env <<EOF
+      KAFKA_URLS="''${KAFKA_URLS}"
+      KAFKA_TOPIC="''${KAFKA_TOPIC}"
+      EOF
+    ''
+  );
 
   # the container might want to listen on ports
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPortRanges = [{ from = 1024; to = 65535; }];
   networking.firewall.allowedUDPPortRanges = [{ from = 1024; to = 65535; }];
+
+  services.resolved.enable = true;
+  services.resolved.llmnr = "false";
+  services.resolved.extraConfig = ''
+    [Resolve]
+    MulticastDNS=no
+  '';
 
   networking.useNetworkd = lib.mkDefault true;
 
@@ -62,7 +111,7 @@
       DIGEST=''${DIGEST#sha256:}
       echo "Measuring $DIGEST" >&2
       test -c /dev/tdx_guest && tdx-extend --digest "$DIGEST" --rtmr 3
-      exec docker run --init --privileged "sha256:$DIGEST"
+      exec docker run --network=host --init --privileged "sha256:$DIGEST"
     '';
 
     postStop = lib.mkDefault ''
@@ -80,8 +129,6 @@
     disabledCollectors = [
       "textfile"
     ];
-    #openFirewall = true;
-    #firewallFilter = "-i br0 -p tcp -m tcp --dport 9100";
   };
 
   environment.systemPackages = with pkgs; [
