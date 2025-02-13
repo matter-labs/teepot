@@ -5492,7 +5492,6 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap 4.5.28",
- "hex",
  "rand",
  "secp256k1 0.30.0",
  "teepot",
@@ -6376,8 +6375,6 @@ dependencies = [
  "serde_json",
  "teepot",
  "tracing",
- "tracing-log 0.2.0",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -6415,7 +6412,6 @@ dependencies = [
  "clap 4.5.28",
  "hex",
  "secp256k1 0.30.0",
- "sha3",
  "teepot",
  "zksync_basic_types",
 ]
