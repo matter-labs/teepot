@@ -170,27 +170,35 @@ fn protocol_from_string(protocol: &str) -> Result<opentelemetry_otlp::Protocol, 
 pub async fn load_config_with_telemetry<
     S: Default + Serialize + for<'a> Deserialize<'a> + Send + 'static,
 >(
+    env_prefix: String,
     get_telemetry_config: fn(&S) -> &TelemetryConfig,
 ) -> Result<S, Box<dyn std::error::Error + Send + Sync>> {
     with_console_logging(async move {
         trace!("Loading config");
         // Load configuration
-        let config = ConfigBuilder::<AsyncState>::default()
-            .add_source(Config::try_from(&S::default())?)
-            .add_source(File::with_name("config/default").required(false))
-            .add_source(
-                config::Environment::with_prefix("APP")
-                    .try_parsing(true)
-                    .separator("_"),
-            )
-            .add_async_source(HttpSource {
-                uri: DEFAULT_INSTANCE_METADATA_BASE_URL.into(),
-                format: FileFormat::Json,
-                required: false,
-            })
-            .build()
-            .await?
-            .try_deserialize::<S>()?;
+        let config = {
+            let c = ConfigBuilder::<AsyncState>::default()
+                .add_source(Config::try_from(&S::default())?)
+                .add_source(File::with_name("config/default").required(false))
+                .add_source(
+                    config::Environment::with_prefix(&env_prefix)
+                        .try_parsing(true)
+                        .separator("_"),
+                );
+
+            if std::env::var_os("GOOGLE_METADATA").is_some() {
+                c.add_async_source(HttpSource {
+                    uri: DEFAULT_INSTANCE_METADATA_BASE_URL.into(),
+                    format: FileFormat::Json,
+                    required: false,
+                })
+                .build()
+                .await?
+                .try_deserialize::<S>()?
+            } else {
+                c.build().await?.try_deserialize::<S>()?
+            }
+        };
 
         // Initialize telemetry
         init_telemetry(get_telemetry_config(&config))?;

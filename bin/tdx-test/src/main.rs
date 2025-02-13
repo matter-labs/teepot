@@ -46,7 +46,8 @@ enum AppError {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let config = load_config_with_telemetry(|config: &AppConfig| &config.telemetry).await?;
+    let config =
+        load_config_with_telemetry("APP".into(), |config: &AppConfig| &config.telemetry).await?;
 
     loop {
         error!(?config, "error test!");
