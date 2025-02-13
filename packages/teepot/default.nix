@@ -19,7 +19,7 @@ teepotCrate.craneLib.buildPackage (
 
     outputs = [
       "out"
-      "google_metadata"
+      "tdx_test"
       "rtmr_calc"
       "sha384_extend"
       "tdx_extend"
