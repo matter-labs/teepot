@@ -927,9 +927,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.28"
+version = "4.5.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e77c3243bd94243c03672cb5154667347c457ca271254724f9f393aee1c05ff"
+checksum = "8acebd8ad879283633b343856142139f2da2317c96b05b4dd6181c61e2480184"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -937,9 +937,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.27"
+version = "4.5.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b26884eb4b57140e4d2d93652abfa49498b938b3c9179f9fc487b0acc3edad7"
+checksum = "f6ba32cbda51c7e1dfd49acc1457ba1a7dec5b64fe360e828acb13ca8dc9c2f9"
 dependencies = [
  "anstyle",
  "clap_lex",
@@ -1645,7 +1645,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2953,7 +2953,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -4022,7 +4022,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
 dependencies = [
  "bytes",
- "heck 0.5.0",
+ "heck 0.4.1",
  "itertools 0.12.1",
  "log",
  "multimap",
@@ -4448,7 +4448,7 @@ name = "rtmr-calc"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "gpt",
  "hex",
  "pe-sign",
@@ -4494,7 +4494,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5022,7 +5022,7 @@ name = "sha384-extend"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "sha2",
 ]
@@ -5328,7 +5328,7 @@ name = "tdx-extend"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "teepot",
  "tracing",
@@ -5339,7 +5339,7 @@ name = "tee-key-preexec"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "rand",
  "secp256k1 0.30.0",
@@ -5354,7 +5354,7 @@ name = "tee-ratls-preexec"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "rsa",
  "teepot",
  "tracing",
@@ -5382,7 +5382,7 @@ version = "0.3.0"
 dependencies = [
  "actix-web",
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "serde",
  "teepot",
  "tracing",
@@ -5398,7 +5398,7 @@ dependencies = [
  "anyhow",
  "awc",
  "bytemuck",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "rustls",
  "serde_json",
@@ -5417,7 +5417,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.28",
+ "clap 4.5.29",
  "rustls",
  "serde_json",
  "teepot",
@@ -5437,7 +5437,7 @@ dependencies = [
  "base64 0.22.1",
  "bytemuck",
  "bytes",
- "clap 4.5.28",
+ "clap 4.5.29",
  "const-oid",
  "enumset",
  "futures-core",
@@ -5480,7 +5480,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.28",
+ "clap 4.5.29",
  "serde_json",
  "teepot",
  "tracing",
@@ -5503,7 +5503,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "awc",
- "clap 4.5.28",
+ "clap 4.5.29",
  "serde_json",
  "teepot",
  "tracing",
@@ -5522,7 +5522,7 @@ dependencies = [
  "getrandom 0.3.1",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6152,7 +6152,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "bytemuck",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "pgp",
  "serde_json",
@@ -6169,7 +6169,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "base64 0.22.1",
- "clap 4.5.28",
+ "clap 4.5.29",
  "serde_json",
  "teepot",
  "tracing",
@@ -6194,7 +6194,7 @@ name = "verify-attestation"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "secp256k1 0.30.0",
  "sha3",
@@ -6207,7 +6207,7 @@ name = "verify-era-proof-attestation"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "clap 4.5.28",
+ "clap 4.5.29",
  "hex",
  "jsonrpsee-types 0.24.8",
  "reqwest 0.12.12",
@@ -6441,7 +6441,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
