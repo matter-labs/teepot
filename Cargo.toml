@@ -39,7 +39,7 @@ p256 = "0.13.2"
 pe-sign = "0.1.10"
 pgp = "0.15"
 pkcs8 = { version = "0.10" }
-rand = { version = "0.8", features = ["std", "std_rng"] }
+rand = { version = "0.9", features = ["std", "std_rng"] }
 reqwest = { version = "0.12", features = ["json"] }
 reqwest-middleware = "0.4.0"
 reqwest-retry = "0.7.0"
