@@ -1,5 +1,5 @@
 [package]
-name = "google-metadata"
+name = "tdx-test"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,8 +9,8 @@ homepage.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-reqwest.workspace = true
-reqwest-middleware.workspace = true
-reqwest-retry.workspace = true
-serde_json.workspace = true
+serde.workspace = true
+teepot.workspace = true
+thiserror.workspace = true
 tokio.workspace = true
+tracing.workspace = true

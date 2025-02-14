@@ -1,0 +1,21 @@
+{
+    "server": {
+        "port": 8080,
+        "timeout_seconds": 30
+    },
+    "metrics": {
+        "port": 9000
+    },
+    "telemetry": {
+        "otlp": {
+            "enable": true,
+            "endpoint": "http://127.0.0.1:4317",
+            "protocol": "grpc"
+        },
+        "logging": {
+            "level": "trace",
+            "console": true,
+            "json": false
+        }
+    }
+}

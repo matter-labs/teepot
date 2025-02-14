@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Helper functions to verify Intel SGX enclaves and other TEEs.
 
@@ -7,6 +7,7 @@
 #![deny(clippy::all)]
 
 pub mod client;
+pub mod config;
 pub mod ethereum;
 pub mod json;
 pub mod log;
