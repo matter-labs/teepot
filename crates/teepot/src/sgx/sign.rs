@@ -14,6 +14,7 @@ use num_integer::Integer;
 use num_traits::ToPrimitive;
 use rsa::{
     pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey, LineEnding},
+    rand_core::OsRng,
     traits::PublicKeyParts,
     BigUint, Pkcs1v15Sign, RsaPrivateKey,
 };
@@ -268,7 +269,7 @@ impl PrivateKey for RS256PrivateKey {
     type Error = rsa::errors::Error;
 
     fn generate(exponent: u8) -> Result<Self, Self::Error> {
-        let mut rng = rand::rngs::OsRng;
+        let mut rng = OsRng;
         let exp = BigUint::from(exponent);
         let key = RsaPrivateKey::new_with_exp(&mut rng, 384 * 8, &exp)?;
         Ok(Self::new(key))
