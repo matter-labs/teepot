@@ -19,11 +19,13 @@ homepage = "https://github.com/matter-labs/teepot"
 actix-http = "3"
 actix-web = { version = "4.5", features = ["rustls-0_23"] }
 anyhow = "1.0.82"
+async-trait = "0.1.86"
 awc = { version = "3.4", features = ["rustls-0_23-webpki-roots"] }
 base64 = "0.22.0"
 bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
 clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
+config = { version = "0.15.8", default-features = false, features = ["yaml", "json", "toml", "async"] }
 const-oid = { version = "0.9", default-features = false }
 enumset = { version = "1.1", features = ["serde"] }
 futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
@@ -35,14 +37,17 @@ intel-tee-quote-verification-sys = { version = "0.2.1" }
 jsonrpsee-types = { version = "0.24", default-features = false }
 num-integer = "0.1.46"
 num-traits = "0.2.18"
+opentelemetry = { version = "0.27.0", features = ["default", "logs"] }
+opentelemetry-appender-tracing = { version = "0.27.0", features = ["experimental_metadata_attributes", "log"] }
+opentelemetry-otlp = { version = "0.27.0", features = ["grpc-tonic", "logs"] }
+opentelemetry-semantic-conventions = { version = "0.28.0", features = ["semconv_experimental"] }
+opentelemetry_sdk = { version = "0.27.1", features = ["tokio", "rt-tokio"] }
 p256 = "0.13.2"
 pe-sign = "0.1.10"
 pgp = "0.15"
 pkcs8 = { version = "0.10" }
 rand = { version = "0.8", features = ["std", "std_rng"] }
 reqwest = { version = "0.12", features = ["json"] }
-reqwest-middleware = "0.4.0"
-reqwest-retry = "0.7.0"
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
 rustls = { version = "0.23.20" }
 secp256k1 = { version = "0.30", features = ["rand", "global-context"] }
@@ -56,11 +61,12 @@ tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCent
 teepot = { path = "crates/teepot" }
 testaso = "0.1.0"
 thiserror = "2.0.11"
-tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time"] }
+tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time", "signal"] }
 tracing = "0.1"
 tracing-actix-web = "0.7"
+tracing-futures = { version = "0.2.5", features = ["std"] }
 tracing-log = "0.2"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "ansi"] }
 tracing-test = { version = "0.2.5", features = ["no-env-filter"] }
 url = "2.5.2"
 webpki-roots = "0.26.1"
