@@ -6,13 +6,9 @@
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 
-pub mod config;
-pub mod ethereum;
-pub mod log;
-pub mod pki;
-pub mod prover;
-pub mod quote;
-pub mod sgx;
+pub mod client;
+pub mod json;
+pub mod server;
 pub mod tdx;
 
 /// pad a byte slice to a fixed sized array

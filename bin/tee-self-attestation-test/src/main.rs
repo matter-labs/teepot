@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Simple TEE self-attestation test
 
@@ -8,7 +8,7 @@
 
 use anyhow::{Context, Result};
 use base64::{engine::general_purpose, Engine as _};
-use teepot::server::attestation::get_quote_and_collateral;
+use teepot::quote::attestation::get_quote_and_collateral;
 use tracing_log::LogTracer;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
 
