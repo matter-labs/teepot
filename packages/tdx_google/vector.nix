@@ -19,16 +19,36 @@
         };
       };
     };
+    transforms = {
+      add_custom_fields = {
+        type = "remap";
+        inputs = [ "otlp.logs" ];
+        source = ''
+          # Create resources if it doesn't exist
+          if !exists(.resources) {
+              .resources = {}
+          }
+          # https://opentelemetry.io/docs/specs/semconv/resource/host/
+          .resources.host.name            = "''${HOST_NAME:-hostname}"
+          .resources.host.id              = "''${HOST_ID:-hostid}"
+          .resources.host.image.name      = "''${HOST_IMAGE:-host_image}"
+
+          # https://opentelemetry.io/docs/specs/semconv/resource/container/
+          .resources.container.image.name = "''${CONTAINER_HUB:-container_hub}/''${CONTAINER_IMAGE:-container_image}"
+          .resources.container.image.id   = "''${CONTAINER_DIGEST:-container_digest}"
+        '';
+      };
+    };
     sinks = {
       console = {
-        inputs = [ "otlp.logs" ];
+        inputs = [ "add_custom_fields" ];
         target = "stdout";
         type = "console";
         encoding = { codec = "json"; };
       };
       kafka = {
         type = "kafka";
-        inputs = [ "otlp.logs" ];
+        inputs = [ "add_custom_fields" ];
         bootstrap_servers = "\${KAFKA_URLS:-127.0.0.1:0}";
         topic = "\${KAFKA_TOPIC:-tdx-google}";
         encoding = {
@@ -38,23 +58,10 @@
       };
     };
   };
-  systemd.services.vector.path = [ pkgs.curl pkgs.coreutils ];
-  # `-` means, that the file can be missing, so that `ExecStartPre` can execute and create it
-  systemd.services.vector.serviceConfig.EnvironmentFile = "-/run/vector/env";
-  # `+` means, that the process has access to all files, to be able to write to `/run`
-  systemd.services.vector.serviceConfig.ExecStartPre = "+" + toString (
-    pkgs.writeShellScript "vector-start-pre" ''
-      set -eu -o pipefail
-      : "''${KAFKA_URLS:=$(curl --silent --fail "http://metadata.google.internal/computeMetadata/v1/instance/attributes/kafka_urls" -H "Metadata-Flavor: Google")}"
-      : "''${KAFKA_TOPIC:=$(curl --silent --fail "http://metadata.google.internal/computeMetadata/v1/instance/attributes/kafka_topic" -H "Metadata-Flavor: Google")}"
-
-      KAFKA_TOPIC="''${KAFKA_TOPIC:-tdx-google}"
-
-      mkdir -p /run/vector
-      cat >/run/vector/env <<EOF
-      KAFKA_URLS="''${KAFKA_URLS}"
-      KAFKA_TOPIC="''${KAFKA_TOPIC}"
-      EOF
-    ''
-  );
+  systemd.services.vector = {
+    after = [ "network-online.target" "metadata.service" ];
+    requires = [ "network-online.target" "metadata.service" ];
+    path = [ pkgs.curl pkgs.coreutils ];
+    serviceConfig.EnvironmentFile = "-/run/env/env";
+  };
 }

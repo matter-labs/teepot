@@ -6,6 +6,9 @@
   imports = [
     "${toString modulesPath}/profiles/minimal.nix"
     "${toString modulesPath}/profiles/qemu-guest.nix"
+    ./metadata.nix
+    ./vector.nix
+    ./container.nix
   ];
 
   services.journald.console = "/dev/ttyS0";
