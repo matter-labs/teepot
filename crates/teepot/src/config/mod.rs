@@ -39,7 +39,12 @@ pub struct HttpSource<F: Format> {
 #[async_trait]
 impl<F: Format + Send + Sync + Debug> AsyncSource for HttpSource<F> {
     async fn collect(&self) -> Result<Map<String, config::Value>, ConfigError> {
-        let response = match reqwest::get(&self.uri)
+        let response = match reqwest::Client::builder()
+            .build()
+            .map_err(|e| ConfigError::Foreign(Box::new(e)))?
+            .get(&self.uri)
+            .header("Metadata-Flavor", "Google")
+            .send()
             .await
             .map_err(|e| ConfigError::Foreign(Box::new(e)))
         {
@@ -142,7 +147,7 @@ impl Default for TelemetryOtlpConfig {
     fn default() -> Self {
         Self {
             enable: true,
-            endpoint: "127.0.0.1:4317".to_string(),
+            endpoint: "http://127.0.0.1:4317".to_string(),
             protocol: "grpc".to_string(),
         }
     }
