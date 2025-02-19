@@ -63,6 +63,9 @@
     ''
   );
 
+  services.journald.console = "/dev/ttyS0";
+  systemd.services."serial-getty@ttyS0".enable = lib.mkForce false;
+
   # the container might want to listen on ports
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPortRanges = [{ from = 1024; to = 65535; }];
