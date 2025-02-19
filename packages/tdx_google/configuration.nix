@@ -43,10 +43,6 @@
     ];
   };
 
-  environment.systemPackages = with pkgs; [
-    teepot.teepot
-  ];
-
   # /var is on tmpfs anyway
   services.journald.storage = "volatile";
 
