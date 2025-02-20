@@ -49,5 +49,8 @@
       KAFKA_URLS="''${KAFKA_URLS}"
       EOF
     '';
+    postStop = lib.mkDefault ''
+      shutdown --reboot +5
+    '';
   };
 }
