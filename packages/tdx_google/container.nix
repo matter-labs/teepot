@@ -23,12 +23,14 @@
       echo "Measuring $DIGEST" >&2
       test -c /dev/tdx_guest && tdx-extend --digest "$DIGEST" --rtmr 3
 
+      # /sys/kernel/config is needed for attestation
       docker run -d --rm \
         --name tdx_container \
         --env "GOOGLE_METADATA=1" \
         --network=host \
         --init \
         --privileged \
+        -v /sys/kernel/config:/sys/kernel/config \
         "sha256:$DIGEST"
       exec docker wait tdx_container
     '';
