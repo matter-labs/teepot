@@ -36,7 +36,6 @@ opentelemetry_sdk.workspace = true
 p256.workspace = true
 pgp.workspace = true
 pkcs8.workspace = true
-rand.workspace = true
 reqwest.workspace = true
 rsa.workspace = true
 rustls.workspace = true

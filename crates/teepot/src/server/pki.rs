@@ -13,10 +13,9 @@ use const_oid::{
 use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use p256::{ecdsa::DerSignature, pkcs8::EncodePrivateKey};
 use pkcs8::der;
-use rand::rngs::OsRng;
 use rustls::pki_types::PrivatePkcs8KeyDer;
 use sha2::{Digest, Sha256};
-use signature::Signer;
+use signature::{rand_core::OsRng, Signer};
 use std::{str::FromStr, time::Duration};
 use tracing::debug;
 use x509_cert::{
@@ -223,7 +222,7 @@ where
     S::VerifyingKey: EncodePublicKey,
 {
     // Generate a keypair.
-    let mut rng = rand::rngs::OsRng;
+    let mut rng = OsRng;
     let signing_key = p256::ecdsa::SigningKey::random(&mut rng);
     let verifying_key = signing_key.verifying_key();
     let verifying_key_der = verifying_key

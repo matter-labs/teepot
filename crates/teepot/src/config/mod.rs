@@ -10,7 +10,7 @@ use config::{
 };
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::{logs::LoggerProvider, runtime, Resource};
+use opentelemetry_sdk::{logs::SdkLoggerProvider, Resource};
 use opentelemetry_semantic_conventions::{
     attribute::{SERVICE_NAME, SERVICE_VERSION},
     SCHEMA_URL,
@@ -259,23 +259,24 @@ fn init_telemetry(
         }),
     );
     // Configure OpenTelemetry resource
-    let resource = Resource::from_schema_url(
-        [
-            KeyValue::new(SERVICE_NAME, config.crate_name.clone()),
-            KeyValue::new(SERVICE_VERSION, config.pkg_version.clone()),
-        ],
-        SCHEMA_URL,
-    );
+    let resource = Resource::builder()
+        .with_schema_url(
+            [
+                KeyValue::new(SERVICE_NAME, config.crate_name.clone()),
+                KeyValue::new(SERVICE_VERSION, config.pkg_version.clone()),
+            ],
+            SCHEMA_URL,
+        )
+        .build();
 
     // Configure the OTLP exporter
-    let logging_provider = LoggerProvider::builder()
+    let logging_provider = SdkLoggerProvider::builder()
         .with_batch_exporter(
             opentelemetry_otlp::LogExporter::builder()
                 .with_tonic()
                 .with_endpoint(&config.otlp.endpoint)
                 .with_protocol(protocol_from_string(&config.otlp.protocol)?)
                 .build()?,
-            runtime::Tokio,
         )
         .with_resource(resource)
         .build();
