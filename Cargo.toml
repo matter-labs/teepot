@@ -37,11 +37,11 @@ intel-tee-quote-verification-sys = { version = "0.2.1" }
 jsonrpsee-types = { version = "0.24", default-features = false }
 num-integer = "0.1.46"
 num-traits = "0.2.18"
-opentelemetry = { version = "0.27.0", features = ["default", "logs"] }
-opentelemetry-appender-tracing = { version = "0.27.0", features = ["experimental_metadata_attributes", "log"] }
-opentelemetry-otlp = { version = "0.27.0", features = ["grpc-tonic", "logs"] }
+opentelemetry = { version = "0.28.0", features = ["default", "logs"] }
+opentelemetry-appender-tracing = { version = "0.28.0", features = ["experimental_metadata_attributes", "log"] }
+opentelemetry-otlp = { version = "0.28.0", features = ["grpc-tonic", "logs"] }
 opentelemetry-semantic-conventions = { version = "0.28.0", features = ["semconv_experimental"] }
-opentelemetry_sdk = { version = "0.27.1", features = ["tokio", "rt-tokio"] }
+opentelemetry_sdk = { version = "0.28.0", features = ["tokio", "rt-tokio"] }
 p256 = "0.13.2"
 pe-sign = "0.1.10"
 pgp = "0.15"
