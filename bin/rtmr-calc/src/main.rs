@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 use anyhow::{anyhow, Result};
 use clap::Parser;
@@ -10,7 +10,10 @@ use std::{
     io::{Error, ErrorKind, Read, Seek, SeekFrom},
     path::PathBuf,
 };
-use teepot::log::{setup_logging, LogLevelParser};
+use teepot::{
+    log::{setup_logging, LogLevelParser},
+    tdx::rtmr::UEFI_MARKER_DIGEST_BYTES,
+};
 use tracing::{debug, info, level_filters::LevelFilter};
 
 /// Precalculate rtmr1 and rtmr2 values.
@@ -98,7 +101,7 @@ fn main() -> Result<()> {
         Ok:
           validseparator: UEFI
        */
-    rtmr1.extend(&hex::decode("394341b7182cd227c5c6b07ef8000cdfd86136c4292b8e576573ad7ed9ae41019f5818b4b971c9effc60e1ad9f1289f0")?);
+    rtmr1.extend(&UEFI_MARKER_DIGEST_BYTES);
 
     // Open disk image.
     let cfg = gpt::GptConfig::new().writable(false);
