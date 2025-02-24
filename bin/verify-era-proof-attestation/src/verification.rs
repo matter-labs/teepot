@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{anyhow, Context, Result};
@@ -114,6 +114,9 @@ pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificat
             .collect::<Vec<_>>()
             .join(", ")
     };
+
+    let version = quote.header.version;
+    println!("Quote version: {:#}", version);
 
     info!(
         "Quote verification result: {tcblevel}. {report}. Advisory IDs: {advisories}.",
