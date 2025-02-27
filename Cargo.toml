@@ -20,7 +20,7 @@ actix-http = "3"
 actix-web = { version = "4.5", features = ["rustls-0_23"] }
 anyhow = "1.0.82"
 async-trait = "0.1.86"
-awc = { version = "3.4", features = ["rustls-0_23-webpki-roots"] }
+awc = { version = "3.5", features = ["rustls-0_23-webpki-roots"] }
 base64 = "0.22.0"
 bytemuck = { version = "1.15.0", features = ["derive", "min_const_generics", "extern_crate_std"] }
 bytes = "1"
@@ -37,16 +37,15 @@ intel-tee-quote-verification-sys = { version = "0.2.1" }
 jsonrpsee-types = { version = "0.24", default-features = false }
 num-integer = "0.1.46"
 num-traits = "0.2.18"
-opentelemetry = { version = "0.27.0", features = ["default", "logs"] }
-opentelemetry-appender-tracing = { version = "0.27.0", features = ["experimental_metadata_attributes", "log"] }
-opentelemetry-otlp = { version = "0.27.0", features = ["grpc-tonic", "logs"] }
+opentelemetry = { version = "0.28.0", features = ["default", "logs"] }
+opentelemetry-appender-tracing = { version = "0.28.1", features = ["experimental_metadata_attributes", "log"] }
+opentelemetry-otlp = { version = "0.28.0", features = ["grpc-tonic", "logs"] }
 opentelemetry-semantic-conventions = { version = "0.28.0", features = ["semconv_experimental"] }
-opentelemetry_sdk = { version = "0.27.1", features = ["tokio", "rt-tokio"] }
+opentelemetry_sdk = { version = "0.28.0", features = ["tokio", "rt-tokio"] }
 p256 = "0.13.2"
 pe-sign = "0.1.10"
 pgp = "0.15"
 pkcs8 = { version = "0.10" }
-rand = { version = "0.8", features = ["std", "std_rng"] }
 reqwest = { version = "0.12", features = ["json"] }
 rsa = { version = "0.9.6", features = ["sha2", "pem"] }
 rustls = { version = "0.23.20" }
