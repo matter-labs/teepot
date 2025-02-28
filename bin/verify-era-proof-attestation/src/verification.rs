@@ -1,20 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 use crate::{args::AttestationPolicyArgs, client::JsonRpcClient};
 use anyhow::{anyhow, Context, Result};
 use hex::encode;
-use secp256k1::{ecdsa::Signature, Message};
+use secp256k1::{
+    ecdsa::{RecoverableSignature, RecoveryId, Signature},
+    Message, SECP256K1,
+};
 use teepot::{
     client::TcbLevel,
-    ethereum::recover_signer,
+    ethereum::{public_key_to_ethereum_address, recover_signer},
     prover::reportdata::ReportData,
     quote::{
         error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
         QuoteVerificationResult, Report,
     },
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, info, trace, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
 
 struct TeeProof {
@@ -35,18 +38,56 @@ impl TeeProof {
     pub fn verify(&self) -> Result<bool> {
         match &self.report {
             ReportData::V0(report) => {
+                debug!("ReportData::V0");
                 let signature = Signature::from_compact(&self.signature)?;
                 let root_hash_msg = Message::from_digest_slice(&self.root_hash.0)?;
                 Ok(signature.verify(&root_hash_msg, &report.pubkey).is_ok())
             }
             ReportData::V1(report) => {
+                debug!("ReportData::V1");
                 let ethereum_address_from_report = report.ethereum_address;
                 let root_hash_msg = Message::from_digest_slice(self.root_hash.as_bytes())?;
-                let signature_bytes: [u8; 65] = self
-                    .signature
-                    .clone()
+
+                trace!("sig len = {}", self.signature.len());
+
+                let sig_vec = self.signature.clone();
+
+                if self.signature.len() == 64 {
+                    info!("Signature is missing RecoveryId!");
+                    // Fallback for missing RecoveryId
+                    for rec_id in [
+                        RecoveryId::Zero,
+                        RecoveryId::One,
+                        RecoveryId::Two,
+                        RecoveryId::Three,
+                    ] {
+                        let Ok(sig) = RecoverableSignature::from_compact(&sig_vec, rec_id) else {
+                            continue;
+                        };
+                        let Ok(public) = SECP256K1.recover_ecdsa(&root_hash_msg, &sig) else {
+                            continue;
+                        };
+                        let ethereum_address_from_signature =
+                            public_key_to_ethereum_address(&public);
+
+                        debug!(
+                            "Root hash: {}. Ethereum address from the attestation quote: {}. Ethereum address from the signature: {}.",
+                            self.root_hash,
+                            encode(ethereum_address_from_report),
+                            encode(ethereum_address_from_signature),
+                        );
+                        if ethereum_address_from_signature == ethereum_address_from_report {
+                            info!("Had to use RecoveryId::{rec_id:?}");
+                            return Ok(true);
+                        }
+                    }
+                    return Ok(false);
+                }
+
+                let signature_bytes: [u8; 65] = sig_vec
                     .try_into()
-                    .map_err(|e| anyhow!("{:?}", e))?;
+                    .map_err(|e| anyhow!("{:?}", e))
+                    .context("invalid length of signature bytes")?;
                 let ethereum_address_from_signature =
                     recover_signer(&signature_bytes, &root_hash_msg)?;
                 debug!(
@@ -77,8 +118,7 @@ pub async fn verify_batch_proof(
     let report_data_bytes = quote_verification_result.quote.get_report_data();
     let report_data = ReportData::try_from(report_data_bytes)?;
     let tee_proof = TeeProof::new(report_data, root_hash, signature.to_vec());
-    let verification_successful = tee_proof.verify().is_ok();
-    Ok(verification_successful)
+    tee_proof.verify()
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
