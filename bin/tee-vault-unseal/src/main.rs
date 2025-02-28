@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Server to initialize and unseal the Vault TEE.
 
@@ -9,27 +9,33 @@
 mod init;
 mod unseal;
 
-use actix_web::rt::time::sleep;
-use actix_web::web::Data;
-use actix_web::{web, App, HttpServer};
+use actix_web::{rt::time::sleep, web, web::Data, App, HttpServer};
 use anyhow::{bail, Context, Result};
 use awc::Client;
 use clap::Parser;
 use init::post_init;
 use rustls::ServerConfig;
-use std::fmt::Debug;
-use std::io::Read;
-use std::net::Ipv6Addr;
-use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
-use teepot::client::{AttestationArgs, TeeConnection};
-use teepot::json::http::{Init, Unseal};
-use teepot::json::secrets::AdminConfig;
-use teepot::server::attestation::{get_quote_and_collateral, VaultAttestationArgs};
-use teepot::server::new_json_cfg;
-use teepot::server::pki::make_self_signed_cert;
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use std::{
+    fmt::Debug,
+    io::Read,
+    net::Ipv6Addr,
+    path::PathBuf,
+    sync::{Arc, RwLock},
+    time::Duration,
+};
+use teepot::{
+    client::{AttestationArgs, TeeConnection},
+    json::{
+        http::{Init, Unseal},
+        secrets::AdminConfig,
+    },
+    server::{
+        attestation::{get_quote_and_collateral, VaultAttestationArgs},
+        new_json_cfg,
+        pki::make_self_signed_cert,
+    },
+    sgx::{parse_tcb_levels, EnumSet, TcbLevel},
+};
 use tracing::{error, info};
 use tracing_log::LogTracer;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
@@ -135,6 +141,8 @@ async fn main() -> Result<()> {
     }
 
     let (report_data, cert_chain, priv_key) = make_self_signed_cert("CN=localhost", None)?;
+
+    let _ = rustls::crypto::ring::default_provider().install_default();
 
     // init server config builder with safe defaults
     let config = ServerConfig::builder()
