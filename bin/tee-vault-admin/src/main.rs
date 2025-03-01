@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Server to handle requests to the Vault TEE
 
@@ -9,26 +9,27 @@ mod command;
 mod digest;
 mod sign;
 
-use actix_web::web::Data;
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, web::Data, App, HttpServer};
 use anyhow::{Context, Result};
 use clap::Parser;
 use command::post_command;
 use digest::get_digest;
 use rustls::ServerConfig;
 use sign::post_sign;
-use std::net::Ipv6Addr;
-use std::sync::Arc;
-use teepot::json::http::{SignRequest, VaultCommandRequest, DIGEST_URL};
-use teepot::server::attestation::{get_quote_and_collateral, VaultAttestationArgs};
-use teepot::server::new_json_cfg;
-use teepot::server::pki::make_self_signed_cert;
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use std::{net::Ipv6Addr, sync::Arc};
+use teepot::{
+    json::http::{SignRequest, VaultCommandRequest, DIGEST_URL},
+    server::{
+        attestation::{get_quote_and_collateral, VaultAttestationArgs},
+        new_json_cfg,
+        pki::make_self_signed_cert,
+    },
+    sgx::{parse_tcb_levels, EnumSet, TcbLevel},
+};
 use tracing::{error, info};
 use tracing_actix_web::TracingLogger;
 use tracing_log::LogTracer;
-use tracing_subscriber::Registry;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
 
 /// Server state
 pub struct ServerState {
@@ -70,6 +71,8 @@ async fn main() -> Result<()> {
         // don't return for now, we can still serve requests but we won't be able to attest
     }
 
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     // init server config builder with safe defaults
     let config = ServerConfig::builder()
         .with_no_client_auth()
@@ -77,8 +80,6 @@ async fn main() -> Result<()> {
         .context("Failed to load TLS key/cert files")?;
 
     info!("Starting HTTPS server at port {}", args.port);
-
-    info!("Quote verified! Connection secure!");
 
     let server_state = Arc::new(ServerState {
         report_data,
