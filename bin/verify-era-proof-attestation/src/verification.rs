@@ -55,7 +55,12 @@ impl TeeProof {
                 if self.signature.len() == 64 {
                     info!("Signature is missing RecoveryId!");
                     // Fallback for missing RecoveryId
-                    for rec_id in [RecoveryId::Zero, RecoveryId::One] {
+                    for rec_id in [
+                        RecoveryId::Zero,
+                        RecoveryId::One,
+                        RecoveryId::Two,
+                        RecoveryId::Three,
+                    ] {
                         let Ok(sig) = RecoverableSignature::from_compact(&sig_vec, rec_id) else {
                             continue;
                         };
