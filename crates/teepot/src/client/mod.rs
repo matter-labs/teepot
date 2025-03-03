@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Helper functions for CLI clients to verify Intel SGX enclaves and other TEEs.
 
@@ -8,29 +8,36 @@
 
 pub mod vault;
 
-pub use crate::quote::verify_quote_with_collateral;
-pub use crate::quote::QuoteVerificationResult;
-use crate::quote::Report;
-use crate::server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension};
-use crate::sgx::Quote;
-pub use crate::sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel};
+use crate::{
+    quote::Report,
+    server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension},
+    sgx::Quote,
+};
+pub use crate::{
+    quote::{verify_quote_with_collateral, QuoteVerificationResult},
+    sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel},
+};
 use actix_web::http::header;
 use anyhow::Result;
 use awc::{Client, Connector};
 use clap::Args;
 use const_oid::AssociatedOid;
 use intel_tee_quote_verification_rs::Collateral;
-use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerifier};
-use rustls::client::WebPkiServerVerifier;
-use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
-use rustls::{ClientConfig, DigitallySignedStruct, Error, SignatureScheme};
+use rustls::{
+    client::{
+        danger::{HandshakeSignatureValid, ServerCertVerifier},
+        WebPkiServerVerifier,
+    },
+    pki_types::{CertificateDer, ServerName, UnixTime},
+    ClientConfig, DigitallySignedStruct, Error, SignatureScheme,
+};
 use sha2::{Digest, Sha256};
-use std::sync::Arc;
-use std::time;
-use std::time::Duration;
+use std::{sync::Arc, time, time::Duration};
 use tracing::{debug, error, info, trace, warn};
-use x509_cert::der::{Decode as _, Encode as _};
-use x509_cert::Certificate;
+use x509_cert::{
+    der::{Decode as _, Encode as _},
+    Certificate,
+};
 
 /// Options and arguments needed to attest a TEE
 #[derive(Args, Debug, Clone)]
@@ -63,6 +70,8 @@ impl TeeConnection {
     /// This will verify the attestation report and check that the enclave
     /// is running the expected code.
     pub fn new(args: &AttestationArgs) -> Self {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+
         let tls_config = Arc::new(
             ClientConfig::builder()
                 .dangerous()
@@ -259,6 +268,8 @@ impl TeeConnection {
                         info!("mrenclave `{mrenclave}` matches");
                     }
                 }
+
+                info!("Quote verified! Connection secure!");
 
                 Ok(rustls::client::danger::ServerCertVerified::assertion())
             }

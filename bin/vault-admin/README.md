@@ -9,7 +9,7 @@
 Verified signature for `81A312C59D679D930FA9E8B06D728F29A2DBABF8`
 
 ❯ RUST_LOG=info cargo run -p vault-admin -- \
-  send \
+  command \
    --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d \
    --sgx-allowed-tcb-levels SwHardeningNeeded \
    --server https://127.0.0.1:8444 \

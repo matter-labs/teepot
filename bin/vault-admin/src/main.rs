@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
@@ -116,8 +116,6 @@ async fn main() -> Result<()> {
         env!("CARGO_CRATE_NAME"),
         &args.log_level,
     )?)?;
-
-    info!("Quote verified! Connection secure!");
 
     match args.cmd {
         SubCommands::Command(args) => send_commands(args).await?,
