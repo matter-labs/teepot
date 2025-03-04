@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Tool for SGX attestation and batch signature verification
 
@@ -14,6 +14,7 @@ use teepot::{
     ethereum::recover_signer,
     prover::reportdata::ReportData,
     quote::{error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
+    sgx::Collateral,
 };
 use zksync_basic_types::H256;
 
@@ -121,6 +122,41 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
         tee_qv_get_collateral(attestation_quote_bytes),
         "Failed to get collateral",
     )?;
+    let Collateral {
+        pck_crl_issuer_chain,
+        root_ca_crl,
+        pck_crl,
+        tcb_info_issuer_chain,
+        tcb_info,
+        qe_identity_issuer_chain,
+        qe_identity,
+        ..
+    } = collateral.clone();
+
+    fs::write(
+        "pck_crl_issuer_chain.pem",
+        &pck_crl_issuer_chain[0..pck_crl_issuer_chain.len() - 1],
+    )
+    .context("Failed to write PCK CRL issuer chain")?;
+    fs::write("root_ca_crl.pem", &root_ca_crl[0..root_ca_crl.len() - 1])
+        .context("Failed to write root CA CRL")?;
+    fs::write("platformCrl.bin", &pck_crl[0..pck_crl.len() - 1])
+        .context("Failed to write PCK CRL")?;
+    fs::write(
+        "tcb_info_issuer_chain.pem",
+        &tcb_info_issuer_chain[0..tcb_info_issuer_chain.len() - 1],
+    )
+    .context("Failed to write TCB info issuer chain")?;
+    fs::write("tcb_info.json", &tcb_info[0..tcb_info.len() - 1])
+        .context("Failed to write TCB info")?;
+    fs::write(
+        "qe_identity_issuer_chain.pem",
+        &qe_identity_issuer_chain[0..qe_identity_issuer_chain.len() - 1],
+    )
+    .context("Failed to write QE identity issuer chain")?;
+    fs::write("qe_identity.json", &qe_identity[0..qe_identity.len() - 1])
+        .context("Failed to write QE identity")?;
+
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
@@ -144,6 +180,9 @@ fn print_quote_verification_summary(quote_verification_result: &QuoteVerificatio
         println!("\tInfo: Advisory ID: {advisory}");
     }
     println!("Quote verification result: {}", tcblevel);
+
+    let version = quote.header.version;
+    println!("Quote version: {:#}", version);
 
     println!("{:#}", &quote.report);
 }

@@ -155,6 +155,9 @@ pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificat
             .join(", ")
     };
 
+    let version = quote.header.version;
+    println!("Quote version: {:#}", version);
+
     info!(
         "Quote verification result: {tcblevel}. {report}. Advisory IDs: {advisories}.",
         report = &quote.report
