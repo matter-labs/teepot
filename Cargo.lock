@@ -6455,6 +6455,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
+ "x509-cert",
  "zksync_basic_types",
  "zksync_types",
  "zksync_web3_decl",

@@ -21,6 +21,7 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 url.workspace = true
+x509-cert.workspace = true
 zksync_basic_types.workspace = true
 zksync_types.workspace = true
 zksync_web3_decl.workspace = true
