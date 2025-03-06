@@ -24,3 +24,4 @@ url.workspace = true
 zksync_basic_types.workspace = true
 zksync_types.workspace = true
 zksync_web3_decl.workspace = true
+x509-cert.workspace = true

@@ -91,6 +91,7 @@ async fn verify_batches_proofs(
             &http_client,
             &node_client,
             &args.attestation_policy,
+            args.save,
         )
         .await?;
 
@@ -141,6 +142,7 @@ async fn verify_batch_proofs(
     http_client: &Client,
     node_client: &MainNodeClient,
     attestation_policy: &AttestationPolicyArgs,
+    save: bool,
 ) -> Result<bool> {
     let proofs = get_proofs(stop_receiver, batch_number, http_client, rpc_url).await?;
     let batch_no = batch_number.0;
@@ -178,6 +180,7 @@ async fn verify_batch_proofs(
             node_client,
             &proof.signature.unwrap_or_default(),
             L1BatchNumber(proof.l1_batch_number),
+            save,
         )
         .await?;
 
