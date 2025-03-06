@@ -201,8 +201,7 @@ impl TeeConnection {
                     advisories,
                     earliest_expiration_date,
                     ..
-                } = verify_quote_with_collateral(quote_bytes, collateral.as_ref(), current_time)
-                    .unwrap();
+                } = verify_quote_with_collateral(quote_bytes, collateral, current_time).unwrap();
 
                 let Report::SgxEnclave(report_body) = quote.report else {
                     return Err(Error::General("TDX quote and not SGX quote".into()));

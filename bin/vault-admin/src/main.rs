@@ -21,7 +21,7 @@ use teepot::{
     server::signatures::verify_sig,
     sgx::sign::Signature,
 };
-use tracing::{error, info, level_filters::LevelFilter};
+use tracing::{error, level_filters::LevelFilter};
 
 #[derive(Args, Debug)]
 struct SendArgs {

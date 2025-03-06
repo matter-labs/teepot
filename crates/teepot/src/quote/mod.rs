@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 // Parts of it are Copyright (c) 2024 Phala Network
 // and copied from https://github.com/Phala-Network/dcap-qvl
@@ -627,6 +627,8 @@ pub fn get_quote(report_data: &[u8]) -> Result<(TEEType, Box<[u8]>), QuoteError>
 
 /// The result of the quote verification
 pub struct QuoteVerificationResult {
+    /// the used collateral
+    pub collateral: Collateral,
     /// the raw result
     pub result: sgx_ql_qv_result_t,
     /// indicates if the collateral is expired
@@ -644,7 +646,7 @@ pub struct QuoteVerificationResult {
 /// Verifies a quote with optional collateral material
 pub fn verify_quote_with_collateral(
     quote: &[u8],
-    collateral: Option<&Collateral>,
+    collateral: Option<Collateral>,
     current_time: i64,
 ) -> Result<QuoteVerificationResult, QuoteError> {
     let mut supp_data: mem::MaybeUninit<sgx_ql_qv_supplemental_t> = mem::MaybeUninit::zeroed();
@@ -689,9 +691,19 @@ pub fn verify_quote_with_collateral(
 
     trace!("tee_verify_quote");
 
-    let (collateral_expiration_status, result) =
-        tee_verify_quote(quote, collateral, current_time, None, p_supplemental_data)
-            .context("tee_verify_quote")?;
+    let collateral = match collateral {
+        None => tee_qv_get_collateral(quote).context("tee_qv_get_collateral")?,
+        Some(c) => c,
+    };
+
+    let (collateral_expiration_status, result) = tee_verify_quote(
+        quote,
+        Some(&collateral),
+        current_time,
+        None,
+        p_supplemental_data,
+    )
+    .context("tee_verify_quote")?;
 
     trace!("tee_verify_quote end");
 
@@ -721,6 +733,7 @@ pub fn verify_quote_with_collateral(
     let quote = Quote::parse(quote)?;
 
     let res = QuoteVerificationResult {
+        collateral,
         collateral_expired: collateral_expiration_status != 0,
         earliest_expiration_date,
         tcb_level_date_tag,
