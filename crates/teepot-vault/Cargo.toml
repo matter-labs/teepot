@@ -1,0 +1,35 @@
+[package]
+name = "teepot-vault"
+description = "TEE secret manager"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+actix-http = "3"
+actix-web.workspace = true
+anyhow.workspace = true
+awc.workspace = true
+bytes.workspace = true
+clap.workspace = true
+const-oid.workspace = true
+futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
+hex.workspace = true
+intel-tee-quote-verification-rs.workspace = true
+pgp.workspace = true
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+sha2.workspace = true
+tdx-attest-rs.workspace = true
+teepot.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+webpki-roots = "0.26.1"
+x509-cert.workspace = true
+
+[dev-dependencies]
+base64.workspace = true

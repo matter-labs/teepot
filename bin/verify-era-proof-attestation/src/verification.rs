@@ -9,13 +9,13 @@ use secp256k1::{
     Message, SECP256K1,
 };
 use teepot::{
-    client::TcbLevel,
     ethereum::{public_key_to_ethereum_address, recover_signer},
     prover::reportdata::ReportData,
     quote::{
         error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
         QuoteVerificationResult, Report,
     },
+    sgx::TcbLevel,
 };
 use tracing::{debug, info, trace, warn};
 use zksync_basic_types::{L1BatchNumber, H256};

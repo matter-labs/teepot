@@ -37,11 +37,12 @@ let
       fileset = unions [
         # Default files from crane (Rust and cargo files)
         (craneLib.fileset.commonCargoSources inputs.src)
-        (fileFilter (file: file.hasExt "hcl") (inputs.src + "/bin"))
+        (fileFilter (file: file.hasExt "hcl") (inputs.src + "/crates/teepot-vault/bin"))
         # deny.toml and friends
         (fileFilter (file: file.hasExt "toml") inputs.src)
         # Custom test data files
         (maybeMissing (inputs.src + "/crates/teepot/tests/data"))
+        (maybeMissing (inputs.src + "/crates/teepot-vault/tests/data"))
       ];
     };
 

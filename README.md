@@ -2,30 +2,36 @@
 
 ## Parts of this project
 
-- `teepot`: The main rust crate that abstracts TEEs and key-value stores.
-- `tee-vault-unseal`: An enclave that uses the Vault API to unseal a vault as a proxy.
-- `vault-unseal`: A client utility, that talks to `tee-vault-unseal` to unseal a vault.
-- `tee-vault-admin`: An enclave that uses the Vault API to administer a vault as a proxy.
-- `vault-admin`: A client utility, that talks to `tee-vault-admin` to administer a vault.
-- `teepot-read` : A pre-exec utility that reads from the key-value store and passes the key-value pairs as environment
-  variables to the enclave.
-- `teepot-write` : A pre-exec utility that reads key-values from the environment variables and writes them to the
-  key-value store.
-- `verify-attestation`: A client utility that verifies the attestation of an enclave.
-- `tee-key-preexec`: A pre-exec utility that generates a p256 secret key and passes it as an environment variable to the
-  enclave along with the attestation quote containing the hash of the public key.
-- `tdx_google`: A base VM running on Google Cloud TDX. It receives a container URL via the instance metadata,
-  measures the sha384 of the URL to RTMR3 and launches the container.
-- `tdx-extend`: A utility to extend an RTMR register with a hash value.
-- `rtmr-calc`: A utility to calculate RTMR1 and RTMR2 from a GPT disk, the linux kernel, the linux initrd
-  and a UKI (unified kernel image).
-- `sha384-extend`: A utility to calculate RTMR registers after extending them with a digest.
+### teepot - lib
 
-## Vault
+- `teepot`: The main rust crate that abstracts TEEs.
+    - `verify-attestation`: A client utility that verifies the attestation of an enclave.
+    - `tee-key-preexec`: A pre-exec utility that generates a p256 secret key and passes it as an environment variable to
+      the
+      enclave along with the attestation quote containing the hash of the public key.
+    - `tdx_google`: A base VM running on Google Cloud TDX. It receives a container URL via the instance metadata,
+      measures the sha384 of the URL to RTMR3 and launches the container.
+    - `tdx-extend`: A utility to extend an RTMR register with a hash value.
+    - `rtmr-calc`: A utility to calculate RTMR1 and RTMR2 from a GPT disk, the linux kernel, the linux initrd
+      and a UKI (unified kernel image).
+    - `sha384-extend`: A utility to calculate RTMR registers after extending them with a digest.
+
+### Vault
 
 Part of this project is a key-value store that runs in a Trusted Execution Environment (TEE) and uses Remote Attestation
 for Authentication. The key-value store is implemented using Hashicorp Vault running in an Intel SGX enclave via the
 Gramine runtime.
+
+- `teepot-vault`: A crate lib with for the TEE key-value store components:
+    - `tee-vault-unseal`: An enclave that uses the Vault API to unseal a vault as a proxy.
+    - `vault-unseal`: A client utility, that talks to `tee-vault-unseal` to unseal a vault.
+    - `tee-vault-admin`: An enclave that uses the Vault API to administer a vault as a proxy.
+    - `vault-admin`: A client utility, that talks to `tee-vault-admin` to administer a vault.
+    - `teepot-read` : A pre-exec utility that reads from the key-value store and passes the key-value pairs as
+      environment
+      variables to the enclave.
+    - `teepot-write` : A pre-exec utility that reads key-values from the environment variables and writes them to the
+      key-value store.
 
 ## Development
 
@@ -77,7 +83,7 @@ $ nix run .#fmt
 ### Build as the CI would
 
 ```shell
-$ nix run github:nixos/nixpkgs/nixos-23.11#nixci
+$ nix run github:nixos/nixpkgs/nixos-24.11#nixci -- build
 ```
 
 ### Build and test individual container

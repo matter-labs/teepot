@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 //! Pre-exec for binary running in a TEE needing attestation of a secret signing key
 
@@ -17,7 +17,7 @@ use std::io::Write;
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
-use teepot::server::pki::make_signed_cert;
+use teepot::pki::make_signed_cert;
 use tracing::error;
 use tracing_log::LogTracer;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
