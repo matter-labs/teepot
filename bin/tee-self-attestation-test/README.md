@@ -68,3 +68,14 @@ mrsigner: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
 mrenclave: 7ffe70789261a51769f50e129bfafb2aafe91a4e17c3f0d52839006777c652f6
 reportdata: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 ```
+
+## podman
+
+```bash
+❯ podman run -i --rm --group-add=keep-groups -v /var/run/aesmd:/var/run/aesmd -v /dev/sgx_enclave:/dev/sgx_enclave \
+  matterlabsrobot/teepot-self-attestation-test-sgx-dcap:latest \
+  | base64 -d --ignore-garbage \
+  | podman run -i --rm --net host \
+  -v /etc/sgx_default_qcnl.conf:/etc/sgx_default_qcnl.conf \
+  matterlabsrobot/verify-attestation-sgx-dcap:latest
+```
