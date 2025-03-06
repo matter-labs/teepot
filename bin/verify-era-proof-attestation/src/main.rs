@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Tool for SGX attestation and batch signature verification, both continuous and one-shot
 
@@ -8,9 +8,7 @@ mod client;
 mod proof;
 mod verification;
 
-use crate::verification::{
-    log_quote_verification_summary, verify_attestation_quote, verify_batch_proof,
-};
+use crate::verification::verify_batch_proof;
 use anyhow::Result;
 use args::{Arguments, AttestationPolicyArgs};
 use clap::Parser;
@@ -174,17 +172,14 @@ async fn verify_batch_proofs(
 
         let attestation = proof.attestation.unwrap_or_default();
         debug!(batch_no, "Verifying quote ({} bytes)...", attestation.len());
-        let quote_verification_result = verify_attestation_quote(&attestation)?;
         let verified_successfully = verify_batch_proof(
-            &quote_verification_result,
+            &attestation,
             attestation_policy,
             node_client,
             &proof.signature.unwrap_or_default(),
             L1BatchNumber(proof.l1_batch_number),
         )
         .await?;
-
-        log_quote_verification_summary(&quote_verification_result);
 
         if verified_successfully {
             info!(

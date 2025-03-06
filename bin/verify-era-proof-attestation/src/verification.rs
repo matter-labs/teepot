@@ -12,10 +12,7 @@ use teepot::{
     client::TcbLevel,
     ethereum::{public_key_to_ethereum_address, recover_signer},
     prover::reportdata::ReportData,
-    quote::{
-        error::QuoteContext, tee_qv_get_collateral, verify_quote_with_collateral,
-        QuoteVerificationResult, Report,
-    },
+    quote::{tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult, Report},
 };
 use tracing::{debug, info, trace, warn};
 use zksync_basic_types::{L1BatchNumber, H256};
@@ -104,13 +101,19 @@ impl TeeProof {
 }
 
 pub async fn verify_batch_proof(
-    quote_verification_result: &QuoteVerificationResult,
+    attestation_quote_bytes: &[u8],
     attestation_policy: &AttestationPolicyArgs,
     node_client: &impl JsonRpcClient,
     signature: &[u8],
     batch_number: L1BatchNumber,
 ) -> Result<bool> {
-    if !is_quote_matching_policy(attestation_policy, quote_verification_result) {
+    use std::fs;
+
+    let quote_verification_result = verify_attestation_quote(attestation_quote_bytes)?;
+
+    log_quote_verification_summary(&quote_verification_result);
+
+    if !is_quote_matching_policy(attestation_policy, &quote_verification_result) {
         return Ok(false);
     }
 
@@ -122,7 +125,7 @@ pub async fn verify_batch_proof(
 }
 
 pub fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerificationResult> {
-    let collateral = QuoteContext::context(
+    let collateral = teepot::quote::error::QuoteContext::context(
         tee_qv_get_collateral(attestation_quote_bytes),
         "Failed to get collateral!",
     )?;
