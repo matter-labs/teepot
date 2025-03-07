@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 mod sgx {
     use anyhow::{Context, Result};
@@ -13,7 +13,7 @@ mod sgx {
 
     fn check_quote(
         quote: &[u8],
-        collateral: Option<&Collateral>,
+        collateral: Option<Collateral>,
         current_time: i64,
         expected_mrsigner: &[u8],
         expected_reportdata: &[u8],
@@ -26,6 +26,7 @@ mod sgx {
             quote,
             advisories,
             tcb_level_date_tag,
+            ..
         } = verify_quote_with_collateral(quote, collateral, current_time)?;
 
         if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
@@ -1140,7 +1141,7 @@ mod sgx {
 
         check_quote(
             &quote,
-            Some(&collateral),
+            Some(collateral),
             current_time,
             &mrsigner,
             &report_data,
@@ -2211,7 +2212,7 @@ mod sgx {
 
         check_quote(
             &quote,
-            Some(&collateral),
+            Some(collateral),
             current_time,
             &mrsigner,
             &report_data,
@@ -2594,7 +2595,7 @@ mod sgx {
 
         check_quote(
             &quote,
-            Some(&collateral),
+            Some(collateral),
             current_time,
             &mrsigner,
             &report_data,
@@ -3677,7 +3678,7 @@ mod sgx {
 
         check_quote(
             &quote,
-            Some(&collateral),
+            Some(collateral),
             current_time,
             &mrsigner,
             &report_data,
@@ -4805,7 +4806,7 @@ mod sgx {
 
         check_quote(
             &quote,
-            Some(&collateral),
+            Some(collateral),
             current_time as i64,
             &mrsigner,
             &report_data,
