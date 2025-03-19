@@ -58,17 +58,17 @@ fn main_with_error() -> Result<()> {
                 .extend()?;
 
             // save quote to file
-            std::fs::write(TEE_QUOTE_FILE, quote)?;
+            std::fs::write(TEE_QUOTE_FILE, quote).context(TEE_QUOTE_FILE)?;
             teepot::quote::TEEType::TDX.to_string()
         }
         Ok((tee_type, quote)) => {
             // save quote to file
-            std::fs::write(TEE_QUOTE_FILE, quote)?;
+            std::fs::write(TEE_QUOTE_FILE, quote).context(TEE_QUOTE_FILE)?;
             tee_type.to_string()
         }
         Err(e) => {
             error!("Failed to get quote: {}", e);
-            std::fs::write(TEE_QUOTE_FILE, [])?;
+            std::fs::write(TEE_QUOTE_FILE, []).context(TEE_QUOTE_FILE)?;
             "none".to_string()
         }
     };
