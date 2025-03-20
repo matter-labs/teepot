@@ -2,10 +2,12 @@
 # Copyright (c) 2024 Matter Labs
 { teepot
 , pkgs
+, stdenv
 , container-name ? "teepot-vault-admin-sgx-azure"
 , tag ? null
 , isAzure ? null
 }:
+if (stdenv.hostPlatform.system != "x86_64-linux") then { } else
 pkgs.lib.tee.sgxGramineContainer {
   name = container-name;
   inherit tag;

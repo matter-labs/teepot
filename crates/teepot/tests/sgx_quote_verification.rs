@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 mod sgx {
     use anyhow::{Context, Result};
-    use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
     use std::time::{Duration, UNIX_EPOCH};
     use teepot::{
         prover::reportdata::{ReportData, ReportDataV1},
-        quote::{verify_quote_with_collateral, Quote, QuoteVerificationResult, Report},
+        quote::{
+            tcblevel::TcbLevel, verify_quote_with_collateral, Collateral, Quote,
+            QuoteVerificationResult, Report,
+        },
     };
     use tracing_test::traced_test;
 
@@ -17,7 +19,7 @@ mod sgx {
         current_time: i64,
         expected_mrsigner: &[u8],
         expected_reportdata: &[u8],
-        expected_result: sgx_ql_qv_result_t,
+        expected_result: TcbLevel,
     ) -> Result<()> {
         let QuoteVerificationResult {
             collateral_expired,
@@ -28,7 +30,7 @@ mod sgx {
             tcb_level_date_tag,
         } = verify_quote_with_collateral(quote, collateral, current_time)?;
 
-        if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
+        if collateral_expired || result != TcbLevel::Ok {
             print!("Attestation failed: ");
 
             if collateral_expired {
@@ -40,28 +42,7 @@ mod sgx {
                     earliest_expiration_date
                 );
             }
-
-            match result {
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK => (),
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_CONFIG_NEEDED => println!("Config needed"),
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_CONFIG_AND_SW_HARDENING_NEEDED => {
-                    println!("Config and Software hardening needed")
-                }
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OUT_OF_DATE => println!("Out of date"),
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OUT_OF_DATE_CONFIG_NEEDED => {
-                    println!("Out of Date and Config needed")
-                }
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_SW_HARDENING_NEEDED => {
-                    println!("Software hardening needed")
-                }
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_INVALID_SIGNATURE => {
-                    println!("Invalid signature")
-                }
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_REVOKED => println!("Revoked"),
-                sgx_ql_qv_result_t::SGX_QL_QV_RESULT_UNSPECIFIED => println!("Unspecified"),
-
-                _ => println!("Unknown state!"),
-            }
+            println!("{result:?}");
         }
 
         for advisory in advisories {
@@ -85,6 +66,8 @@ mod sgx {
     }
 
     #[test]
+    // alternative quote verification cannot cope with old collateral data format
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     fn sw_hardening() {
         let quote = [
             0x03, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x0e, 0x00, 0x93, 0x9a,
@@ -1144,12 +1127,14 @@ mod sgx {
             current_time,
             &mrsigner,
             &report_data,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_SW_HARDENING_NEEDED,
+            TcbLevel::SwHardeningNeeded,
         )
         .unwrap();
     }
 
     #[test]
+    // alternative quote verification cannot cope with old collateral data format
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     fn out_of_date() {
         let quote = [
             0x03, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x0e, 0x00, 0x93, 0x9a,
@@ -2215,7 +2200,7 @@ mod sgx {
             current_time,
             &mrsigner,
             &report_data,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OUT_OF_DATE,
+            TcbLevel::OutOfDate,
         )
         .unwrap();
     }
@@ -2598,12 +2583,14 @@ mod sgx {
             current_time,
             &mrsigner,
             &report_data,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_SW_HARDENING_NEEDED,
+            TcbLevel::SwHardeningNeeded,
         )
         .unwrap();
     }
 
     #[test]
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    // alternative quote verification errors on debug flag
     fn vault_proxy() {
         let quote = [
             3, 0, 2, 0, 0, 0, 0, 0, 9, 0, 14, 0, 147, 154, 114, 51, 247, 156, 76, 169, 148, 10, 13,
@@ -3681,7 +3668,7 @@ mod sgx {
             current_time,
             &mrsigner,
             &report_data,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_SW_HARDENING_NEEDED,
+            TcbLevel::SwHardeningNeeded,
         )
         .unwrap();
     }
@@ -4809,7 +4796,7 @@ mod sgx {
             current_time as i64,
             &mrsigner,
             &report_data,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK,
+            TcbLevel::Ok,
         )
         .context("check_quote")?;
         Ok(())

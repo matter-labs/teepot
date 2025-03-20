@@ -8,9 +8,8 @@
 pub mod sign;
 
 use crate::quote::error::QuoteContext;
-pub use crate::quote::error::QuoteError;
+pub use crate::quote::{error::QuoteError, Collateral};
 use bytemuck::{try_from_bytes, AnyBitPattern, PodCastError};
-pub use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
 use std::{
     fs::OpenOptions,
     io::{Read, Write},

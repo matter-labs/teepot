@@ -20,7 +20,6 @@ use awc::{
 };
 use bytes::Bytes;
 use futures_core::Stream;
-use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use rustls::ClientConfig;
 use serde_json::{json, Value};
 use std::{
@@ -28,13 +27,13 @@ use std::{
     sync::Arc,
     time,
 };
-use teepot::quote::error::QuoteContext;
+use teepot::quote::get_collateral;
 pub use teepot::{
     quote::{
         tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
         verify_quote_with_collateral, QuoteVerificationResult,
     },
-    sgx::{sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral},
+    sgx::{sgx_gramine_get_quote, Collateral},
 };
 use tracing::{debug, error, info, trace};
 
@@ -158,7 +157,7 @@ impl VaultConnection {
         info!("Getting attestation report");
         let attestation_url = AuthRequest::URL;
         let quote = sgx_gramine_get_quote(&self.key_hash).context("Failed to get own quote")?;
-        let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
+        let collateral = get_collateral(&quote).context("Failed to get own collateral")?;
 
         let auth_req = AuthRequest {
             name: self.name.clone(),

@@ -10,11 +10,11 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use secp256k1::{rand, Secp256k1};
 use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+use teepot::tdx::rtmr::TdxRtmrEvent;
 use teepot::{
-    ethereum::public_key_to_ethereum_address,
-    prover::reportdata::ReportDataV1,
-    quote::get_quote,
-    tdx::rtmr::{TdxRtmrEvent, UEFI_MARKER_DIGEST_BYTES},
+    ethereum::public_key_to_ethereum_address, prover::reportdata::ReportDataV1, quote::get_quote,
+    tdx::UEFI_MARKER_DIGEST_BYTES,
 };
 use tracing::error;
 use tracing_log::LogTracer;
@@ -52,6 +52,7 @@ fn main_with_error() -> Result<()> {
         Ok((teepot::quote::TEEType::TDX, quote)) => {
             // In the case of TDX, we want to advance RTMR 3 after getting the quote,
             // so that any breach can't generate a new attestation with the expected RTMRs
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
             TdxRtmrEvent::default()
                 .with_rtmr_index(3)
                 .with_extend_data(UEFI_MARKER_DIGEST_BYTES)

@@ -19,7 +19,7 @@ impl PolicyEnforcer {
         quote_verification_result: &QuoteVerificationResult,
     ) -> Result<()> {
         let quote = &quote_verification_result.quote;
-        let tcblevel = TcbLevel::from(quote_verification_result.result);
+        let tcblevel = quote_verification_result.result;
 
         match &quote.report {
             Report::SgxEnclave(report_body) => {
