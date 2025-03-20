@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2023-2025 Matter Labs
 
-use teepot::quote::{tcblevel::TcbLevel, QuoteVerificationResult};
+use teepot::quote::QuoteVerificationResult;
 
 /// Handles reporting and logging of verification results
 pub struct VerificationReporter;
@@ -11,7 +11,7 @@ impl VerificationReporter {
     pub fn log_quote_verification_summary(quote_verification_result: &QuoteVerificationResult) {
         let QuoteVerificationResult {
             collateral_expired,
-            result,
+            result: tcblevel,
             quote,
             advisories,
             ..
@@ -21,7 +21,6 @@ impl VerificationReporter {
             tracing::warn!("Freshly fetched collateral expired!");
         }
 
-        let tcblevel = TcbLevel::from(*result);
         let advisories = if advisories.is_empty() {
             "None".to_string()
         } else {

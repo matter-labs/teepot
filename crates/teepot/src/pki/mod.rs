@@ -2,13 +2,12 @@
 // Copyright (c) 2023-2025 Matter Labs
 
 //! Create a private key and a signed and self-signed certificates
-use crate::quote::{error::QuoteContext, get_quote};
+use crate::quote::{get_collateral, get_quote};
 use anyhow::{Context, Result};
 use const_oid::{
     db::rfc5280::{ID_KP_CLIENT_AUTH, ID_KP_SERVER_AUTH},
     AssociatedOid,
 };
-use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use p256::{ecdsa::DerSignature, pkcs8::EncodePrivateKey};
 use pkcs8::der;
 use rustls::pki_types::PrivatePkcs8KeyDer;
@@ -148,7 +147,7 @@ pub fn make_self_signed_cert(
     debug!("quote.len: {:?}", quote.len());
     // Create a relative distinguished name.
     let rdns = RdnSequence::from_str(dn)?;
-    let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
+    let collateral = get_collateral(&quote).context("Failed to get own collateral")?;
 
     let mut serial = [0u8; 16];
     getrandom::fill(&mut serial)?;

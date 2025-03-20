@@ -12,7 +12,7 @@ use std::{
 };
 use teepot::{
     log::{setup_logging, LogLevelParser},
-    tdx::rtmr::UEFI_MARKER_DIGEST_BYTES,
+    tdx::UEFI_MARKER_DIGEST_BYTES,
 };
 use tracing::{debug, info, level_filters::LevelFilter};
 

@@ -6,21 +6,10 @@
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::Parser;
-use secp256k1::{rand, Secp256k1};
-use std::{ffi::OsString, os::unix::process::CommandExt, process::Command};
-use teepot::{
-    ethereum::public_key_to_ethereum_address,
-    prover::reportdata::ReportDataV1,
-    quote::get_quote,
-    tdx::rtmr::{TdxRtmrEvent, UEFI_MARKER_DIGEST_BYTES},
-};
+use std::ffi::OsString;
 use tracing::error;
-use tracing_log::LogTracer;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
-
-const TEE_QUOTE_FILE: &str = "/tmp/tee_quote";
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -33,7 +22,21 @@ struct Args {
     cmd_args: Vec<OsString>,
 }
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn main_with_error() -> Result<()> {
+    use anyhow::Context;
+    use secp256k1::{rand, Secp256k1};
+    use std::{os::unix::process::CommandExt, process::Command};
+    use teepot::tdx::rtmr::TdxRtmrEvent;
+    use teepot::{
+        ethereum::public_key_to_ethereum_address, prover::reportdata::ReportDataV1,
+        quote::get_quote,
+    };
+    use tracing_log::LogTracer;
+    use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
+
+    const TEE_QUOTE_FILE: &str = "/tmp/tee_quote";
+
     LogTracer::init().context("Failed to set logger")?;
 
     let subscriber = Registry::default()
@@ -54,7 +57,7 @@ fn main_with_error() -> Result<()> {
             // so that any breach can't generate a new attestation with the expected RTMRs
             TdxRtmrEvent::default()
                 .with_rtmr_index(3)
-                .with_extend_data(UEFI_MARKER_DIGEST_BYTES)
+                .with_extend_data(teepot::tdx::UEFI_MARKER_DIGEST_BYTES)
                 .extend()?;
 
             // save quote to file
@@ -92,6 +95,11 @@ fn main_with_error() -> Result<()> {
             cmd = args.cmd_args[0].to_string_lossy()
         )
     })
+}
+
+#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+fn main_with_error() -> Result<()> {
+    anyhow::bail!("OS or architecture not supported");
 }
 
 fn main() -> Result<()> {

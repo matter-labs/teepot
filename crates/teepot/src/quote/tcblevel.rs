@@ -4,7 +4,6 @@
 //! Intel SGX Enclave TCB level wrapper
 
 use enumset::EnumSetType;
-use intel_tee_quote_verification_rs::sgx_ql_qv_result_t;
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Display, Formatter},
@@ -34,37 +33,20 @@ pub enum TcbLevel {
     Invalid,
 }
 
-impl From<sgx_ql_qv_result_t> for TcbLevel {
-    fn from(value: sgx_ql_qv_result_t) -> Self {
-        match value {
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK => TcbLevel::Ok,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OUT_OF_DATE => TcbLevel::OutOfDate,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OUT_OF_DATE_CONFIG_NEEDED => {
-                TcbLevel::OutOfDateConfigNeeded
-            }
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_SW_HARDENING_NEEDED => TcbLevel::SwHardeningNeeded,
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_CONFIG_AND_SW_HARDENING_NEEDED => {
-                TcbLevel::ConfigAndSwHardeningNeeded
-            }
-            sgx_ql_qv_result_t::SGX_QL_QV_RESULT_CONFIG_NEEDED => TcbLevel::ConfigNeeded,
-            _ => TcbLevel::Invalid,
-        }
-    }
-}
-
 impl FromStr for TcbLevel {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Ok" => Ok(TcbLevel::Ok),
-            "ConfigNeeded" => Ok(TcbLevel::ConfigNeeded),
-            "ConfigAndSwHardeningNeeded" => Ok(TcbLevel::ConfigAndSwHardeningNeeded),
-            "SwHardeningNeeded" => Ok(TcbLevel::SwHardeningNeeded),
-            "OutOfDate" => Ok(TcbLevel::OutOfDate),
-            "OutOfDateConfigNeeded" => Ok(TcbLevel::OutOfDateConfigNeeded),
-            "Invalid" => Ok(TcbLevel::Invalid),
-            _ => Err(()),
+        match s.to_ascii_lowercase().as_str() {
+            "ok" => Ok(TcbLevel::Ok),
+            "uptodate" => Ok(TcbLevel::Ok),
+            "configneeded" => Ok(TcbLevel::ConfigNeeded),
+            "configandswhardeningneeded" => Ok(TcbLevel::ConfigAndSwHardeningNeeded),
+            "swhardeningneeded" => Ok(TcbLevel::SwHardeningNeeded),
+            "outofdate" => Ok(TcbLevel::OutOfDate),
+            "outofdateconfigneeded" => Ok(TcbLevel::OutOfDateConfigNeeded),
+            "invalid" => Ok(TcbLevel::Invalid),
+            _ => Err(format!("Invalid TCB level: {}", s)),
         }
     }
 }
