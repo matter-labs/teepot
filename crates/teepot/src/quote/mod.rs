@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 // Parts of it are Copyright (c) 2024 Phala Network
 // and copied from https://github.com/Phala-Network/dcap-qvl
 
 //! Get a quote from a TEE
+
+pub mod attestation;
 pub mod error;
 
 use crate::{
