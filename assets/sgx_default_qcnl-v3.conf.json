@@ -1,0 +1,10 @@
+{
+  "pccs_url": "https://api.trustedservices.intel.com/sgx/certification/v3/",
+  "use_secure_cert": false,
+  "collateral_service": "https://api.trustedservices.intel.com/sgx/certification/v3/",
+  "retry_times": 6,
+  "retry_delay": 10,
+  "pck_cache_expire_hours": 168,
+  "verify_collateral_cache_expire_hours": 168,
+  "local_cache_only": false
+}

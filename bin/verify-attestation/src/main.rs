@@ -127,7 +127,7 @@ fn verify_attestation_quote(attestation_quote_bytes: &[u8]) -> Result<QuoteVerif
     let unix_time: i64 = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
-    verify_quote_with_collateral(attestation_quote_bytes, Some(&collateral), unix_time)
+    verify_quote_with_collateral(attestation_quote_bytes, Some(collateral), unix_time)
         .context("Failed to verify quote with collateral")
 }
 
