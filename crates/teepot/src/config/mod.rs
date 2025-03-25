@@ -147,8 +147,8 @@ impl Default for TelemetryOtlpConfig {
     fn default() -> Self {
         Self {
             enable: true,
-            endpoint: "http://127.0.0.1:4317".to_string(),
-            protocol: "grpc".to_string(),
+            endpoint: "http://127.0.0.1:4318/v1/logs".to_string(),
+            protocol: "http/json".to_string(),
         }
     }
 }
@@ -269,15 +269,31 @@ fn init_telemetry(
         )
         .build();
 
-    // Configure the OTLP exporter
-    let logging_provider = SdkLoggerProvider::builder()
-        .with_batch_exporter(
-            opentelemetry_otlp::LogExporter::builder()
-                .with_tonic()
+    // Parse the protocol from the configuration
+    let protocol = protocol_from_string(&config.otlp.protocol)?;
+
+    // Configure the OTLP exporter based on the protocol
+    let exporter_builder = opentelemetry_otlp::LogExporter::builder();
+
+    // Choose transport based on protocol
+    let exporter = match protocol {
+        opentelemetry_otlp::Protocol::Grpc => exporter_builder
+            .with_tonic()
+            .with_endpoint(&config.otlp.endpoint)
+            .with_protocol(protocol)
+            .build()?,
+        opentelemetry_otlp::Protocol::HttpBinary | opentelemetry_otlp::Protocol::HttpJson => {
+            exporter_builder
+                .with_http()
                 .with_endpoint(&config.otlp.endpoint)
-                .with_protocol(protocol_from_string(&config.otlp.protocol)?)
-                .build()?,
-        )
+                .with_protocol(protocol)
+                .build()?
+        }
+    };
+
+    // Configure the logging provider with the exporter
+    let logging_provider = SdkLoggerProvider::builder()
+        .with_batch_exporter(exporter)
         .with_resource(resource)
         .build();
 
