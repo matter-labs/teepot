@@ -15,9 +15,18 @@
       User = "root";
       EnvironmentFile = "-/run/env/env";
     };
-    path = [ pkgs.docker pkgs.teepot.teepot.tdx_extend ];
+    path = [ pkgs.docker pkgs.teepot.teepot.tdx_extend pkgs.iproute2 ];
     script = ''
       set -eu -o pipefail
+
+      # wait for vector to initialize itself
+      for i in {1..30}; do
+        if [[ $(ss -H -t -l -n sport = 4318) ]]; then
+          break
+        fi
+        echo "Waiting for vector to initialize itself..." >&2
+        sleep 1
+      done
 
       DIGEST=''${CONTAINER_DIGEST#sha256:}
       echo "Measuring $DIGEST" >&2
