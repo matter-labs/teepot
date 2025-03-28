@@ -5560,6 +5560,7 @@ dependencies = [
  "clap 4.5.30",
  "serde",
  "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-log 0.2.0",
  "tracing-subscriber",
@@ -5579,6 +5580,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-actix-web",
  "tracing-log 0.2.0",
@@ -5596,6 +5598,7 @@ dependencies = [
  "rustls",
  "serde_json",
  "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-log 0.2.0",
  "tracing-subscriber",
@@ -5605,19 +5608,14 @@ dependencies = [
 name = "teepot"
 version = "0.3.0"
 dependencies = [
- "actix-http",
- "actix-web",
  "anyhow",
  "async-trait",
- "awc",
  "base64 0.22.1",
  "bytemuck",
- "bytes",
  "clap 4.5.30",
  "config",
  "const-oid",
  "enumset",
- "futures-core",
  "getrandom 0.3.1",
  "hex",
  "num-integer",
@@ -5628,7 +5626,6 @@ dependencies = [
  "opentelemetry-semantic-conventions 0.28.0",
  "opentelemetry_sdk 0.28.0",
  "p256",
- "pgp",
  "pkcs8 0.10.2",
  "reqwest 0.12.12",
  "rsa",
@@ -5636,7 +5633,6 @@ dependencies = [
  "secp256k1 0.30.0",
  "serde",
  "serde_json",
- "serde_with 3.12.0",
  "sha2",
  "sha3",
  "signature 2.2.0",
@@ -5650,10 +5646,8 @@ dependencies = [
  "tracing-log 0.2.0",
  "tracing-subscriber",
  "tracing-test",
- "webpki-roots",
  "x509-cert",
  "zeroize",
- "zksync_basic_types",
 ]
 
 [[package]]
@@ -5665,7 +5659,7 @@ dependencies = [
  "awc",
  "clap 4.5.30",
  "serde_json",
- "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-log 0.2.0",
  "tracing-subscriber",
@@ -5680,6 +5674,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "teepot-vault"
+version = "0.3.0"
+dependencies = [
+ "actix-http",
+ "actix-web",
+ "anyhow",
+ "awc",
+ "base64 0.22.1",
+ "bytes",
+ "clap 4.5.30",
+ "const-oid",
+ "futures-core",
+ "hex",
+ "pgp",
+ "rustls",
+ "serde",
+ "serde_json",
+ "serde_with 3.12.0",
+ "sha2",
+ "tdx-attest-rs",
+ "teepot",
+ "teepot-tee-quote-verification-rs",
+ "thiserror 2.0.11",
+ "tracing",
+ "webpki-roots",
+ "x509-cert",
+]
+
+[[package]]
 name = "teepot-write"
 version = "0.3.0"
 dependencies = [
@@ -5688,7 +5711,7 @@ dependencies = [
  "awc",
  "clap 4.5.30",
  "serde_json",
- "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-log 0.2.0",
  "tracing-subscriber",
@@ -6397,6 +6420,7 @@ dependencies = [
  "pgp",
  "serde_json",
  "teepot",
+ "teepot-vault",
  "tracing",
 ]
 
@@ -6409,7 +6433,7 @@ dependencies = [
  "base64 0.22.1",
  "clap 4.5.30",
  "serde_json",
- "teepot",
+ "teepot-vault",
  "tracing",
  "tracing-log 0.2.0",
  "tracing-subscriber",
@@ -6433,10 +6457,7 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap 4.5.30",
- "hex",
- "secp256k1 0.30.0",
  "teepot",
- "zksync_basic_types",
 ]
 
 [[package]]

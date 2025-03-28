@@ -1,5 +1,5 @@
 [package]
-name = "verify-attestation"
+name = "vault-admin"
 publish = false
 version.workspace = true
 edition.workspace = true
@@ -8,6 +8,13 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+actix-web.workspace = true
 anyhow.workspace = true
+bytemuck.workspace = true
 clap.workspace = true
+hex.workspace = true
+pgp.workspace = true
+serde_json.workspace = true
 teepot.workspace = true
+teepot-vault.workspace = true
+tracing.workspace = true

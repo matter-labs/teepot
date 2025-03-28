@@ -11,13 +11,13 @@ $ docker compose up
 
 ```bash
 ❯ cd teepot
-❯ gpg --export username@example.com | base64 > gpgkey.pub
+❯ gpg --export username@example.com | base64 > assets/gpgkey.pub
 ❯ export GPG_TTY="$(tty)"
 ❯ gpg-connect-agent updatestartuptty /bye
 
-❯ RUST_LOG=info cargo run -p vault-unseal --  --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d     --sgx-allowed-tcb-levels SwHardeningNeeded      --server https://20.172.154.218:8443    init   --unseal-threshold 1 -u bin/tee-vault-admin/tests/data/gpgkey.pub  --admin-threshold 1 -a  bin/tee-vault-admin/tests/data/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801
+❯ RUST_LOG=info cargo run -p vault-unseal --  --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d     --sgx-allowed-tcb-levels SwHardeningNeeded      --server https://20.172.154.218:8443    init   --unseal-threshold 1 -u assets/gpgkey.pub  --admin-threshold 1 -a  assets/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801
     Finished dev [unoptimized + debuginfo] target(s) in 0.09s
-     Running `target/debug/vault-unseal --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d --sgx-allowed-tcb-levels SwHardeningNeeded --server 'https://20.172.154.218:8443' init --unseal-threshold 1 -u bin/tee-vault-admin/tests/data/gpgkey.pub --admin-threshold 1 -a bin/tee-vault-admin/tests/data/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801`
+     Running `target/debug/vault-unseal --sgx-mrsigner c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d --sgx-allowed-tcb-levels SwHardeningNeeded --server 'https://20.172.154.218:8443' init --unseal-threshold 1 -u assets/gpgkey.pub --admin-threshold 1 -a assets/gpgkey.pub --admin-tee-mrenclave 21c8c1a4dbcce04798f5119eb47203084bc74e564a3c954d1a21172c656cb801`
 2023-08-23T14:47:56.902422Z  INFO tee_client: Getting attestation report
 2023-08-23T14:47:57.340877Z  INFO tee_client: Checked or set server certificate public key hash `b4bf52fdb37431c8531fb310be389c2d17ad9bd41d662e10308c9147c007d0d0`
 2023-08-23T14:47:57.741599Z  INFO tee_client: Verifying attestation report
@@ -155,9 +155,9 @@ container.
   --server https://127.0.0.1:8443 \
   init \
   --unseal-threshold 1 \
-  --unseal-pgp-key-file ./tests/data/gpgkey.pub \
+  --unseal-pgp-key-file ./assets/gpgkey.pub \
   --admin-threshold 1 \
-  --admin-pgp-key-file  ./tests/data/gpgkey.pub \
+  --admin-pgp-key-file  ./assets/gpgkey.pub \
   --admin-tee-mrenclave 98a540dd7056584e2009c7cf7374f932fbb8e30a4c66cc815c9809620653f751
 ```
 
