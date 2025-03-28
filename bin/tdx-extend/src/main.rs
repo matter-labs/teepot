@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024 Matter Labs
+// Copyright (c) 2024-2025 Matter Labs
 
 //! Extend the TDX measurement
 
@@ -10,8 +10,8 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use teepot::{
     log::{setup_logging, LogLevelParser},
-    pad,
     tdx::rtmr::TdxRtmrEvent,
+    util::pad,
 };
 use tracing::{error, level_filters::LevelFilter};
 
@@ -40,7 +40,7 @@ fn main_with_error() -> Result<()> {
 
     // Parse the digest string as a hex array
     let digest_bytes = hex::decode(&args.digest).context("Invalid digest format")?;
-    let extend_data: [u8; 48] = pad(&digest_bytes);
+    let extend_data: [u8; 48] = pad(&digest_bytes).context("Invalid digest length")?;
 
     // Extend the TDX measurement with the extend data
     TdxRtmrEvent::default()
