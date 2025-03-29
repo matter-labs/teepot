@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 use anyhow::{anyhow, Result};
 use clap::{ArgGroup, Args, Parser};
 use std::time::Duration;
-use teepot::log::LogLevelParser;
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use teepot::{
+    log::LogLevelParser,
+    sgx::{parse_tcb_levels, EnumSet, TcbLevel},
+};
 use tracing_subscriber::filter::LevelFilter;
 use url::Url;
 use zksync_basic_types::L1BatchNumber;
@@ -43,6 +45,9 @@ pub struct Arguments {
     /// Criteria for valid attestation policy. Invalid proofs will be rejected.
     #[clap(flatten)]
     pub attestation_policy: AttestationPolicyArgs,
+    /// Save artifacts needed for verification
+    #[clap(short = 's', long = "save")]
+    pub save: bool,
 }
 
 /// Attestation policy implemented as a set of criteria that must be met by SGX attestation.

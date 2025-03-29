@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Common attestation API for all TEEs
 
@@ -68,7 +68,9 @@ pub fn get_quote_and_collateral(
         tcb_level_date_tag,
         quote,
         advisories,
-    } = verify_quote_with_collateral(&myquote, Some(&collateral), unix_time.saturating_add(60))
+        collateral,
+        ..
+    } = verify_quote_with_collateral(&myquote, Some(collateral), unix_time.saturating_add(60))
         .context("Failed to verify own quote with collateral")?;
 
     debug!(tcb_level_date_tag);
