@@ -14,7 +14,9 @@ use std::{
 pub use enumset::EnumSet;
 
 /// TCB level
-#[derive(EnumSetType, Debug)]
+#[derive(EnumSetType, Debug, Serialize, Deserialize)]
+#[enumset(serialize_repr = "list")]
+#[non_exhaustive]
 pub enum TcbLevel {
     /// TCB is up to date
     Ok,
