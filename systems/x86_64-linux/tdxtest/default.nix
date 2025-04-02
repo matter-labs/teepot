@@ -29,7 +29,7 @@
 
   systemd.services.docker_start_container = {
     #    environment = {
-    #      CONTAINER_IMAGE = "matterlabsrobot/tdx-test:pnj1ryxxb8gbzk9wh18s9bcqrzr1z9ff";
+    #      CONTAINER_IMAGE = "ghcr.io/matter-labs/tdx-test:pnj1ryxxb8gbzk9wh18s9bcqrzr1z9ff";
     #      CONTAINER_HUB = "docker.io";
     #      CONTAINER_TOKEN = "";
     #      CONTAINER_USER = "";
