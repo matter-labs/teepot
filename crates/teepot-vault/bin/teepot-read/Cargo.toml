@@ -1,0 +1,21 @@
+[package]
+name = "teepot-read"
+publish = false
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web.workspace = true
+anyhow.workspace = true
+awc.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+teepot-vault.workspace = true
+tracing.workspace = true
+tracing-log.workspace = true
+tracing-subscriber.workspace = true

@@ -21,6 +21,6 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 url.workspace = true
-zksync_basic_types.workspace = true
-zksync_types.workspace = true
-zksync_web3_decl.workspace = true
+zksync_basic_types = "=0.1.0"
+zksync_types = "=0.1.0"
+zksync_web3_decl = "=0.1.0"

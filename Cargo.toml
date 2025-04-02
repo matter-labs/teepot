@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*", "bin/*"]
+members = ["crates/*", "bin/*", "crates/teepot-vault/bin/*"]
 resolver = "2"
 
 [profile.release]
@@ -16,7 +16,6 @@ repository = "https://github.com/matter-labs/teepot"
 homepage = "https://github.com/matter-labs/teepot"
 
 [workspace.dependencies]
-actix-http = "3"
 actix-web = { version = "4.5", features = ["rustls-0_23"] }
 anyhow = "1.0.82"
 async-trait = "0.1.86"
@@ -28,7 +27,6 @@ clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "
 config = { version = "0.15.8", default-features = false, features = ["yaml", "json", "toml", "async"] }
 const-oid = { version = "0.9", default-features = false }
 enumset = { version = "1.1", features = ["serde"] }
-futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
 getrandom = { version = "0.3.1", features = ["std"] }
 gpt = "4.0.0"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
@@ -58,6 +56,7 @@ sha3 = "0.10.8"
 signature = "2.2.0"
 tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
 teepot = { path = "crates/teepot" }
+teepot-vault = { path = "crates/teepot-vault" }
 testaso = "0.1.0"
 thiserror = "2.0.11"
 tokio = { version = "1", features = ["sync", "macros", "rt-multi-thread", "fs", "time", "signal"] }
@@ -68,9 +67,5 @@ tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "ansi"] }
 tracing-test = { version = "0.2.5", features = ["no-env-filter"] }
 url = "2.5.2"
-webpki-roots = "0.26.1"
 x509-cert = { version = "0.2", features = ["builder", "signature"] }
 zeroize = { version = "1.7.0", features = ["serde"] }
-zksync_basic_types = "=0.1.0"
-zksync_types = "=0.1.0"
-zksync_web3_decl = "=0.1.0"

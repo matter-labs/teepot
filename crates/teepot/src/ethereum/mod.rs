@@ -37,7 +37,6 @@ pub fn public_key_to_ethereum_address(public: &PublicKey) -> [u8; 20] {
 #[cfg(test)]
 mod tests {
     use secp256k1::{Secp256k1, SecretKey};
-    use zksync_basic_types::H256;
 
     use super::*;
 
@@ -71,10 +70,10 @@ mod tests {
 
         assert_eq!(address, expected_address.as_slice());
 
-        // Generate a random root hash, create a message from the hash, and sign the message using
+        // Take a root hash, create a message from the hash, and sign the message using
         // the secret key
-        let root_hash = H256::random();
-        let root_hash_bytes = root_hash.as_bytes();
+        let root_hash = b"12345678901234567890123456789012";
+        let root_hash_bytes = root_hash.as_slice();
         let msg_to_sign = Message::from_digest(root_hash_bytes.try_into().unwrap());
         let signature = sign_message(&secret_key, msg_to_sign).unwrap();
 
