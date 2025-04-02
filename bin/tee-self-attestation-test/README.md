@@ -1,6 +1,6 @@
 # self-attestation-test
 
-Optionally build and load the containers (remove the `matterlabsrobot/` repo from the commands below then)
+Optionally build and load the containers (remove the `ghcr.io/matter-labs/` repo from the commands below then)
 
 ```bash
 $ nix build -L .#container-verify-attestation-sgx && docker load -i result
@@ -12,9 +12,9 @@ $ nix build -L .#container-self-attestation-test-sgx-azure && docker load -i res
 
 ```bash
 ❯ docker run -i --init --rm --privileged --device /dev/sgx_enclave \
-    matterlabsrobot/teepot-self-attestation-test-sgx-azure:latest \
+    ghcr.io/matter-labs/teepot-self-attestation-test-sgx-azure:latest \
     | base64 -d --ignore-garbage \
-    | docker run -i --rm matterlabsrobot/verify-attestation-sgx:latest -
+    | docker run -i --rm ghcr.io/matter-labs/verify-attestation-sgx:latest -
 
 aesm_service: warning: Turn to daemon. Use "--no-daemon" option to execute in foreground.
 Gramine is starting. Parsing TOML manifest file, this may take some time...
@@ -31,9 +31,9 @@ reportdata: 00000000000000000000000000000000000000000000000000000000000000000000
 
 ```bash
 ❯ docker run -i --init --rm --privileged --device /dev/sgx_enclave \
-    matterlabsrobot/teepot-self-attestation-test-sgx-dcap:latest \
+    ghcr.io/matter-labs/teepot-self-attestation-test-sgx-dcap:latest \
     | base64 -d --ignore-garbage \
-    | docker run -i --rm matterlabsrobot/verify-attestation-sgx:latest -
+    | docker run -i --rm ghcr.io/matter-labs/verify-attestation-sgx:latest -
 
 aesm_service: warning: Turn to daemon. Use "--no-daemon" option to execute in foreground.
 Gramine is starting. Parsing TOML manifest file, this may take some time...
@@ -48,9 +48,9 @@ On an outdated machine, this might look like this:
 
 ```bash
 ❯ docker run -i --init --rm --privileged --device /dev/sgx_enclave \
-                matterlabsrobot/teepot-self-attestation-test-sgx-dcap:latest \
+                ghcr.io/matter-labs/teepot-self-attestation-test-sgx-dcap:latest \
                 | base64 -d --ignore-garbage \
-                | docker run -i --rm matterlabsrobot/verify-attestation-sgx:latest -
+                | docker run -i --rm ghcr.io/matter-labs/verify-attestation-sgx:latest -
 
 aesm_service: warning: Turn to daemon. Use "--no-daemon" option to execute in foreground.
 Gramine is starting. Parsing TOML manifest file, this may take some time...
@@ -73,9 +73,9 @@ reportdata: 00000000000000000000000000000000000000000000000000000000000000000000
 
 ```bash
 ❯ podman run -i --rm --group-add=keep-groups -v /var/run/aesmd:/var/run/aesmd -v /dev/sgx_enclave:/dev/sgx_enclave \
-  matterlabsrobot/teepot-self-attestation-test-sgx-dcap:latest \
+  ghcr.io/matter-labs/teepot-self-attestation-test-sgx-dcap:latest \
   | base64 -d --ignore-garbage \
   | podman run -i --rm --net host \
   -v /etc/sgx_default_qcnl.conf:/etc/sgx_default_qcnl.conf \
-  matterlabsrobot/verify-attestation-sgx-dcap:latest
+  ghcr.io/matter-labs/verify-attestation-sgx-dcap:latest
 ```

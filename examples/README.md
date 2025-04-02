@@ -121,7 +121,7 @@ Passphrase:
 Find out the `mr_enclave` value of the teepot-vault-admin-sgx-azure enclave and extract the sigstruct file:
 
 ```bash
-❯ docker run -v .:/mnt --pull always -it matterlabsrobot/teepot-vault-admin-sgx-azure:latest 'gramine-sgx-sigstruct-view teepot-vault-admin-sgx-azure.sig; cp teepot-vault-admin-sgx-azure.sig /mnt'
+❯ docker run -v .:/mnt --pull always -it ghcr.io/matter-labs/teepot-vault-admin-sgx-azure:latest 'gramine-sgx-sigstruct-view teepot-vault-admin-sgx-azure.sig; cp teepot-vault-admin-sgx-azure.sig /mnt'
 [...]
 Attributes:
     mr_signer: c5591a72b8b86e0d8814d6e8750e3efe66aea2d102b8ba2405365559b858697d
@@ -226,18 +226,18 @@ Next is to sign the admin tee with the vault-admin tool:
 ```
 
 Then replace `teepot-vault-admin-sgx-azure.sig` with `teepot-vault-admin-sgx-azure-new.sig` in the container
-image `matterlabsrobot/teepot-vault-admin-sgx-azure:latest` with this Dockerfile:
+image `ghcr.io/matter-labs/teepot-vault-admin-sgx-azure:latest` with this Dockerfile:
 
 ```Dockerfile
-FROM matterlabsrobot/teepot-vault-admin-sgx-azure:latest
+FROM ghcr.io/matter-labs/teepot-vault-admin-sgx-azure:latest
 COPY teepot-vault-admin-sgx-azure-new.sig /app/teepot-vault-admin-sgx-azure.sig
 ```
 
 Build and push the new image:
 
 ```bash
-❯ docker build -t matterlabsrobot/teepot-vault-admin-sgx-azure-signed:latest .
-❯ docker push matterlabsrobot/teepot-vault-admin-sgx-azure-signed:latest
+❯ docker build -t ghcr.io/matter-labs/teepot-vault-admin-sgx-azure-signed:latest .
+❯ docker push ghcr.io/matter-labs/teepot-vault-admin-sgx-azure-signed:latest
 ```
 
 Delete the old vault-admin pod and start the new one:

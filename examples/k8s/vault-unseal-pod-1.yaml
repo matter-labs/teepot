@@ -11,7 +11,7 @@ spec:
       operator: Exists
       effect: NoSchedule
   containers:
-    - image: matterlabsrobot/teepot-vault-unseal-sgx-azure:latest
+    - image: ghcr.io/matter-labs/teepot-vault-unseal-sgx-azure:latest
       name: vault-unseal
       imagePullPolicy: Always
       env:

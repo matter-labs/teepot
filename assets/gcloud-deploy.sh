@@ -45,6 +45,6 @@ gcloud compute instances create tdx-pilot \
          --maintenance-policy=TERMINATE \
          --image-project=tdx-pilot \
          --project tdx-pilot \
-         --metadata=container_hub="docker.io",container_image="matterlabsrobot/test-tdx:117p5y281limw0w7b03v802ij00c5gzw" \
+         --metadata=container_hub="docker.io",container_image="ghcr.io/matter-labs/test-tdx:117p5y281limw0w7b03v802ij00c5gzw" \
          --metadata-from-file=container_config=$BASE_DIR/config.json \
          --image tdx-img-f-"${NO}"
