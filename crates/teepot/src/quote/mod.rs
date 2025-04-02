@@ -8,6 +8,7 @@
 
 pub mod attestation;
 pub mod error;
+pub mod tcblevel;
 
 use crate::{
     quote::error::{QuoteContext as _, QuoteError},

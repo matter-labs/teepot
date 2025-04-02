@@ -3,11 +3,11 @@
 
 //! Common attestation API for all TEEs
 
-use crate::{
-    quote::{
-        error::QuoteContext, get_quote, verify_quote_with_collateral, QuoteVerificationResult,
-    },
-    sgx::{Collateral, EnumSet, TcbLevel},
+use crate::quote::{
+    error::QuoteContext,
+    get_quote,
+    tcblevel::{EnumSet, TcbLevel},
+    verify_quote_with_collateral, Collateral, QuoteVerificationResult,
 };
 use anyhow::{bail, Context, Result};
 use intel_tee_quote_verification_rs::tee_qv_get_collateral;
