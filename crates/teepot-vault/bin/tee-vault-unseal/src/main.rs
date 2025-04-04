@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Server to initialize and unseal the Vault TEE.
 
@@ -22,7 +22,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use teepot::pki::make_self_signed_cert;
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use teepot::quote::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 use teepot_vault::client::{AttestationArgs, TeeConnection};
 use teepot_vault::json::http::{Init, Unseal};
 use teepot_vault::json::secrets::AdminConfig;

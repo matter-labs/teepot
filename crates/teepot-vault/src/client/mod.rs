@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Helper functions for CLI clients to verify Intel SGX enclaves and other TEEs.
 
@@ -25,11 +25,12 @@ use rustls::{
 };
 use sha2::{Digest, Sha256};
 use std::{sync::Arc, time, time::Duration};
-use teepot::{quote::Report, sgx::Quote};
 pub use teepot::{
+    quote::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
     quote::{verify_quote_with_collateral, QuoteVerificationResult},
-    sgx::{parse_tcb_levels, sgx_ql_qv_result_t, EnumSet, TcbLevel},
+    sgx::sgx_ql_qv_result_t,
 };
+use teepot::{quote::Report, sgx::Quote};
 use tracing::{debug, error, info, trace, warn};
 use x509_cert::{
     der::{Decode as _, Encode as _},

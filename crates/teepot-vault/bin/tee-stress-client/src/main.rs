@@ -11,7 +11,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use teepot::quote::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 use teepot_vault::{
     client::vault::VaultConnection,
     server::{

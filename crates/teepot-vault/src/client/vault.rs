@@ -30,10 +30,11 @@ use std::{
 };
 use teepot::quote::error::QuoteContext;
 pub use teepot::{
-    quote::{verify_quote_with_collateral, QuoteVerificationResult},
-    sgx::{
-        parse_tcb_levels, sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral, EnumSet, TcbLevel,
+    quote::{
+        tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
+        verify_quote_with_collateral, QuoteVerificationResult,
     },
+    sgx::{sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral},
 };
 use tracing::{debug, error, info, trace};
 

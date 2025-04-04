@@ -7,9 +7,9 @@ use anyhow::{bail, Context, Result};
 use clap::Parser;
 
 use std::{fs, io::Read, path::PathBuf, str::FromStr, time::UNIX_EPOCH};
-use teepot::{
-    quote::{error, tee_qv_get_collateral, verify_quote_with_collateral, QuoteVerificationResult},
-    sgx::TcbLevel,
+use teepot::quote::{
+    error, tcblevel::TcbLevel, tee_qv_get_collateral, verify_quote_with_collateral,
+    QuoteVerificationResult,
 };
 
 #[derive(Parser, Debug)]
