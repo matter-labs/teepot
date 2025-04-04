@@ -9,7 +9,6 @@
 pub mod client;
 pub mod json;
 pub mod server;
-pub mod tdx;
 
 /// pad a byte slice to a fixed sized array
 pub fn pad<const T: usize>(input: &[u8]) -> [u8; T] {
