@@ -2,8 +2,9 @@
 # Copyright (c) 2024 Matter Labs
 { lib
 , inputs
+, stdenv
 , makeRustPlatform
-, nixsgx
+, nixsgx ? null
 , pkg-config
 , rust-bin
 , pkgs
@@ -24,6 +25,8 @@ let
 
     buildInputs = [
       openssl
+    ]
+    ++ lib.optionals (stdenv.hostPlatform.system == "x86_64-linux") [
       nixsgx.sgx-sdk
       nixsgx.sgx-dcap
       nixsgx.sgx-dcap.quote_verify

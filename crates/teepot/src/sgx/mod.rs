@@ -1,23 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 // Copyright (c) The Enarx Project Developers https://github.com/enarx/sgx
 
 //! Intel SGX Enclave report structures.
 
 pub mod sign;
-pub mod tcblevel;
 
 use crate::quote::error::QuoteContext;
-pub use crate::quote::error::QuoteError;
+pub use crate::quote::{error::QuoteError, Collateral};
 use bytemuck::{try_from_bytes, AnyBitPattern, PodCastError};
-pub use intel_tee_quote_verification_rs::{sgx_ql_qv_result_t, Collateral};
 use std::{
     fs::OpenOptions,
     io::{Read, Write},
     mem,
 };
-pub use tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 
 /// Structure of a quote
 #[derive(Copy, Clone, Debug, AnyBitPattern)]

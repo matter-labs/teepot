@@ -1,20 +1,30 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2024 Matter Labs
-{ lib, pkgs, makeWrapper, teepot }:
-let teepotCrate = teepot.teepotCrate; in
+{ lib
+, pkgs
+, makeWrapper
+, teepot
+, stdenv
+}:
+let
+  teepotCrate = teepot.teepotCrate;
+in
 teepotCrate.craneLib.buildPackage (
-  teepotCrate.commonArgs // {
+  teepotCrate.commonArgs
+    // {
     pname = "teepot";
     inherit (teepotCrate) cargoArtifacts;
 
     nativeBuildInputs = teepotCrate.commonArgs.nativeBuildInputs ++ [ makeWrapper ];
 
     passthru = {
-      inherit (teepotCrate) rustPlatform
+      inherit (teepotCrate)
+        rustPlatform
         rustVersion
         commonArgs
         craneLib
-        cargoArtifacts;
+        cargoArtifacts
+        ;
     };
 
     outputs = [
@@ -37,9 +47,10 @@ teepotCrate.craneLib.buildPackage (
       "verify_era_proof_attestation"
     ];
 
-    postInstall = ''
+    postInstall = lib.optionalString (stdenv.hostPlatform.system == "x86_64-linux") ''
       removeReferencesToVendoredSources "$out" "$cargoVendorDir"
       removeReferencesToVendoredSources "$out" "${teepotCrate.rustVersion}/lib/rustlib/"
+    '' + ''
       mkdir -p $out/nix-support
       for i in $outputs; do
         [[ $i == "out" ]] && continue
@@ -47,14 +58,19 @@ teepotCrate.craneLib.buildPackage (
         echo -n "''${!i} " >> $out/nix-support/propagated-user-env-packages
         binname=''${i//_/-}
         mv "$out/bin/$binname" "''${!i}/bin/"
-
-        makeWrapper "''${!i}/bin/$binname" "''${!i}/bin/$binname-dcap" \
-          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ pkgs.nixsgx.sgx-dcap.quote_verify pkgs.nixsgx.sgx-dcap.default_qpl pkgs.curl ]}" \
-          --set-default QCNL_CONF_PATH "${pkgs.nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf"
-
+    '' + lib.optionalString (stdenv.hostPlatform.system == "x86_64-linux") ''
+      makeWrapper "''${!i}/bin/$binname" "''${!i}/bin/$binname-dcap" \
+        --prefix LD_LIBRARY_PATH : "${
+          lib.makeLibraryPath [
+            pkgs.nixsgx.sgx-dcap.quote_verify
+            pkgs.nixsgx.sgx-dcap.default_qpl
+            pkgs.curl
+          ]
+        }" \
+        --set-default QCNL_CONF_PATH "${pkgs.nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf"
+    '' + ''
       done
       rmdir "$out/bin"
     '';
   }
 )
-

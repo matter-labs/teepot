@@ -2,11 +2,13 @@
 # Copyright (c) 2024 Matter Labs
 { dockerTools
 , buildEnv
+, stdenv
 , teepot
 , openssl
 , curl
 , nixsgx
 }:
+if (stdenv.hostPlatform.system != "x86_64-linux") then { } else
 dockerTools.buildLayeredImage {
   name = "vault-admin";
 

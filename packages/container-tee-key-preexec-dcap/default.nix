@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Matter Labs
 { teepot
 , pkgs
+, stdenv
 , bash
 , coreutils
 , container-name ? "teepot-key-preexec-dcap"
@@ -9,6 +10,7 @@
 }: let
   entrypoint = "${bash}/bin/bash";
 in
+if (stdenv.hostPlatform.system != "x86_64-linux") then { } else
 pkgs.lib.tee.sgxGramineContainer {
   name = container-name;
   inherit tag entrypoint;

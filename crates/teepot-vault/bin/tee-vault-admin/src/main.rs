@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Server to handle requests to the Vault TEE
 
@@ -17,7 +17,7 @@ use digest::get_digest;
 use rustls::ServerConfig;
 use sign::post_sign;
 use std::{net::Ipv6Addr, sync::Arc};
-use teepot::sgx::{parse_tcb_levels, EnumSet, TcbLevel};
+use teepot::quote::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel};
 use teepot_vault::{
     json::http::{SignRequest, VaultCommandRequest, DIGEST_URL},
     server::{
