@@ -9,10 +9,13 @@ use serde::{Deserialize, Serialize};
 
 pub use teepot::{
     quote::{
-        attestation::get_quote_and_collateral, error::QuoteContext, get_quote,
+        attestation::get_quote_and_collateral,
+        error::QuoteContext,
+        get_quote,
+        tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
         verify_quote_with_collateral, QuoteVerificationResult,
     },
-    sgx::{parse_tcb_levels, Collateral, EnumSet, TcbLevel},
+    sgx::Collateral,
 };
 
 /// Options and arguments needed to attest a TEE

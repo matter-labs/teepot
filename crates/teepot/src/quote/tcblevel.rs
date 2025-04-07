@@ -1,17 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Intel SGX Enclave TCB level wrapper
 
 use enumset::EnumSetType;
 use intel_tee_quote_verification_rs::sgx_ql_qv_result_t;
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+use serde::{Deserialize, Serialize};
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
 
 pub use enumset::EnumSet;
 
 /// TCB level
-#[derive(EnumSetType, Debug)]
+#[derive(EnumSetType, Debug, Serialize, Deserialize)]
+#[enumset(serialize_repr = "list")]
+#[non_exhaustive]
 pub enum TcbLevel {
     /// TCB is up to date
     Ok,
