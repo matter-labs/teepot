@@ -15,7 +15,7 @@ use crate::{
     core::{VerificationResult, VerifierConfig, VerifierMode},
     error::Result,
 };
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 
 // Using an enum instead of a trait because async functions in traits can't be used in trait objects
 /// Processor variants for different verification modes
@@ -28,13 +28,10 @@ pub enum ProcessorType {
 
 impl ProcessorType {
     /// Run the processor until completion or interruption
-    pub async fn run(
-        &self,
-        stop_receiver: watch::Receiver<bool>,
-    ) -> Result<Vec<(u32, VerificationResult)>> {
+    pub async fn run(&self, token: CancellationToken) -> Result<Vec<(u32, VerificationResult)>> {
         match self {
-            ProcessorType::OneShot(processor) => processor.run(stop_receiver).await,
-            ProcessorType::Continuous(processor) => processor.run(stop_receiver).await,
+            ProcessorType::OneShot(processor) => processor.run(&token).await,
+            ProcessorType::Continuous(processor) => processor.run(&token).await,
         }
     }
 }

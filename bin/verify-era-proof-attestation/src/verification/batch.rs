@@ -8,7 +8,7 @@ use crate::{
     proof::Proof,
     verification::{AttestationVerifier, PolicyEnforcer, SignatureVerifier, VerificationReporter},
 };
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use zksync_basic_types::L1BatchNumber;
 
 /// Result of a batch verification
@@ -40,7 +40,7 @@ impl<C: JsonRpcClient> BatchVerifier<C> {
     /// Verify proofs for a batch
     pub async fn verify_batch_proofs(
         &self,
-        stop_receiver: &mut watch::Receiver<bool>,
+        token: &CancellationToken,
         batch_number: L1BatchNumber,
         proofs: Vec<Proof>,
     ) -> error::Result<BatchVerificationResult> {
@@ -49,7 +49,7 @@ impl<C: JsonRpcClient> BatchVerifier<C> {
         let mut verified_proofs_count: u32 = 0;
 
         for proof in proofs.into_iter() {
-            if *stop_receiver.borrow() {
+            if token.is_cancelled() {
                 tracing::warn!("Stop signal received during batch verification");
                 return Ok(BatchVerificationResult {
                     total_count: total_proofs_count,

@@ -4,7 +4,7 @@
 //! Core functionality for processing individual batches
 
 use crate::error;
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use zksync_basic_types::L1BatchNumber;
 
 use crate::{
@@ -41,10 +41,10 @@ impl BatchProcessor {
     /// Process a single batch and return the verification result
     pub async fn process_batch(
         &self,
-        stop_receiver: &mut watch::Receiver<bool>,
+        token: &CancellationToken,
         batch_number: L1BatchNumber,
     ) -> error::Result<VerificationResult> {
-        if *stop_receiver.borrow() {
+        if token.is_cancelled() {
             tracing::info!("Stop signal received, shutting down");
             return Ok(VerificationResult::Interrupted);
         }
@@ -56,7 +56,7 @@ impl BatchProcessor {
         for tee_type in self.config.args.tee_types.iter() {
             match self
                 .proof_fetcher
-                .get_proofs(stop_receiver, batch_number, tee_type)
+                .get_proofs(token, batch_number, tee_type)
                 .await
             {
                 Ok(batch_proofs) => proofs.extend(batch_proofs),
@@ -81,7 +81,7 @@ impl BatchProcessor {
         // Verify proofs for the current batch
         let verification_result = self
             .batch_verifier
-            .verify_batch_proofs(stop_receiver, batch_number, proofs)
+            .verify_batch_proofs(token, batch_number, proofs)
             .await?;
 
         let result = if verification_result.total_count == 0 {
@@ -103,7 +103,7 @@ impl BatchProcessor {
         if !matches!(result, VerificationResult::Interrupted)
             && self.config.args.rate_limit.as_millis() > 0
         {
-            tokio::time::timeout(self.config.args.rate_limit, stop_receiver.changed())
+            tokio::time::timeout(self.config.args.rate_limit, token.cancelled())
                 .await
                 .ok();
         }

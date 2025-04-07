@@ -4,7 +4,7 @@
 //! One-shot batch processor for verifying a single batch or a range of batches
 
 use crate::error;
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use zksync_basic_types::L1BatchNumber;
 
 use crate::{
@@ -38,7 +38,7 @@ impl OneShotProcessor {
     /// Run the processor until completion or interruption
     pub async fn run(
         &self,
-        mut stop_receiver: watch::Receiver<bool>,
+        token: &CancellationToken,
     ) -> error::Result<Vec<(u32, VerificationResult)>> {
         tracing::info!(
             "Starting one-shot verification of batches {} to {}",
@@ -52,10 +52,7 @@ impl OneShotProcessor {
 
         for batch_number in self.start_batch.0..=self.end_batch.0 {
             let batch = L1BatchNumber(batch_number);
-            let result = self
-                .batch_processor
-                .process_batch(&mut stop_receiver, batch)
-                .await?;
+            let result = self.batch_processor.process_batch(token, batch).await?;
 
             match result {
                 VerificationResult::Success => success_count += 1,

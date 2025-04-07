@@ -3,7 +3,7 @@
 
 //! Continuous batch processor for ongoing verification of new batches
 
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use zksync_basic_types::L1BatchNumber;
 
 use crate::{
@@ -32,7 +32,7 @@ impl ContinuousProcessor {
     /// Run the processor until stopped
     pub async fn run(
         &self,
-        mut stop_receiver: watch::Receiver<bool>,
+        token: &CancellationToken,
     ) -> error::Result<Vec<(u32, VerificationResult)>> {
         tracing::info!(
             "Starting continuous verification from batch {}",
@@ -45,13 +45,9 @@ impl ContinuousProcessor {
         let mut current_batch = self.start_batch.0;
 
         // Continue processing batches until stopped or reaching maximum batch number
-        while !*stop_receiver.borrow() {
+        while !token.is_cancelled() {
             let batch = L1BatchNumber(current_batch);
-            match self
-                .batch_processor
-                .process_batch(&mut stop_receiver, batch)
-                .await
-            {
+            match self.batch_processor.process_batch(token, batch).await {
                 Ok(result) => {
                     match result {
                         VerificationResult::Success => success_count += 1,
@@ -64,7 +60,7 @@ impl ContinuousProcessor {
                         VerificationResult::NoProofsFound => {
                             // In continuous mode, we might hit batches that don't have proofs yet
                             // Wait a bit longer before retrying
-                            if !*stop_receiver.borrow() {
+                            if !token.is_cancelled() {
                                 tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                                 // Don't increment batch number, try again
                                 continue;

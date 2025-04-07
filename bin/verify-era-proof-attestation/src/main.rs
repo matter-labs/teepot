@@ -10,15 +10,15 @@ mod processor;
 mod proof;
 mod verification;
 
-use clap::Parser;
-use error::Result;
-use tokio::{signal, sync::watch};
-
 use crate::{
     core::{VerifierConfig, VerifierConfigArgs},
     error::Error,
     processor::ProcessorFactory,
 };
+use clap::Parser;
+use error::Result;
+use tokio::signal;
+use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -35,14 +35,17 @@ async fn main() -> Result<()> {
     // Create processor based on config
     let (processor, mode) = ProcessorFactory::create(config.clone())?;
 
-    // Set up stop channel
-    let (stop_sender, stop_receiver) = watch::channel(false);
+    // Set up a cancellation Token
+    let token = CancellationToken::new();
 
     // Log startup information
     tracing::info!("Starting verification in {}", mode);
 
     // Spawn processing task
-    let mut process_handle = tokio::spawn(async move { processor.run(stop_receiver).await });
+    let mut process_handle = {
+        let token = token.clone();
+        tokio::spawn(async move { processor.run(token).await })
+    };
 
     // Wait for processing to complete or for stop signal
     tokio::select! {
@@ -77,7 +80,7 @@ async fn main() -> Result<()> {
         },
         _ = signal::ctrl_c() => {
             tracing::info!("Stop signal received, shutting down gracefully...");
-            stop_sender.send(true).ok();
+            token.cancel();
 
             // Wait for processor to complete gracefully
             match process_handle.await {

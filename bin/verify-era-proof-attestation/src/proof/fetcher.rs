@@ -10,7 +10,7 @@ use crate::{
     },
 };
 use std::time::Duration;
-use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use url::Url;
 use zksync_basic_types::{tee_types::TeeType, L1BatchNumber};
 
@@ -34,7 +34,7 @@ impl ProofFetcher {
     /// Get proofs for a batch number with retry logic
     pub async fn get_proofs(
         &self,
-        stop_receiver: &mut watch::Receiver<bool>,
+        token: &CancellationToken,
         batch_number: L1BatchNumber,
         tee_type: &TeeType,
     ) -> Result<Vec<Proof>> {
@@ -43,8 +43,8 @@ impl ProofFetcher {
         let max_backoff = Duration::from_secs(128);
         let retry_backoff_multiplier: f32 = 2.0;
 
-        while !*stop_receiver.borrow() {
-            match self.send_request(&proofs_request, stop_receiver).await {
+        while !token.is_cancelled() {
+            match self.send_request(&proofs_request, token).await {
                 Ok(response) => {
                     // Parse the response using the ProofResponseParser
                     match ProofResponseParser::parse_response(response) {
@@ -84,9 +84,7 @@ impl ProofFetcher {
                 }
             }
 
-            tokio::time::timeout(backoff, stop_receiver.changed())
-                .await
-                .ok();
+            tokio::time::timeout(backoff, token.cancelled()).await.ok();
 
             backoff = std::cmp::min(
                 Duration::from_millis(
@@ -95,13 +93,13 @@ impl ProofFetcher {
                 max_backoff,
             );
 
-            if *stop_receiver.borrow() {
+            if token.is_cancelled() {
                 break;
             }
         }
 
         // If we've reached this point, we've either been stopped or exhausted retries
-        if *stop_receiver.borrow() {
+        if token.is_cancelled() {
             // Return empty vector if stopped
             Ok(vec![])
         } else {
@@ -114,7 +112,7 @@ impl ProofFetcher {
     async fn send_request(
         &self,
         request: &GetProofsRequest,
-        stop_receiver: &mut watch::Receiver<bool>,
+        token: &CancellationToken,
     ) -> Result<GetProofsResponse> {
         let retry_helper = RetryHelper::new(self.retry_config.clone());
         let request_clone = request.clone();
@@ -128,7 +126,7 @@ impl ProofFetcher {
                     .await;
 
                 // Check if we need to abort due to stop signal
-                if *stop_receiver.borrow() {
+                if token.is_cancelled() {
                     return Err(Error::Interrupted);
                 }
 
