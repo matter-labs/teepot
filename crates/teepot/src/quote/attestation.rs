@@ -81,7 +81,7 @@ pub fn get_quote_and_collateral(
     }
 
     if tcblevel != TcbLevel::Ok
-        && allowed_tcb_levels.map_or(false, |levels| !levels.contains(tcblevel))
+        && allowed_tcb_levels.is_some_and(|levels| !levels.contains(tcblevel))
     {
         error!("Quote verification result: {}", tcblevel);
         bail!("Quote verification result: {}", tcblevel);

@@ -222,7 +222,7 @@ impl TeeConnection {
                     if self
                         .args
                         .sgx_allowed_tcb_levels
-                        .map_or(true, |levels| !levels.contains(tcblevel))
+                        .is_none_or(|levels| !levels.contains(tcblevel))
                     {
                         error!("Quote verification result: {}", tcblevel);
                         return Err(Error::General(format!(
