@@ -1,0 +1,27 @@
+[package]
+name = "intel-dcap-api"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords = ["sgx", "tdx", "intel", "attestation", "confidential"]
+categories = ["api-bindings", "cryptography", "authentication"]
+
+[dependencies]
+percent-encoding = "2.3.1"
+reqwest = { workspace = true, features = ["json"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+hex.workspace = true
+x509-cert.workspace = true
+
+[features]
+default = ["reqwest/default-tls"]
+rustls = ["reqwest/rustls-tls"]

@@ -2604,6 +2604,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "intel-dcap-api"
+version = "0.3.0"
+dependencies = [
+ "hex",
+ "percent-encoding",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.11",
+ "tokio",
+ "url",
+ "x509-cert",
+]
+
+[[package]]
 name = "intel-tee-quote-verification-sys"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
