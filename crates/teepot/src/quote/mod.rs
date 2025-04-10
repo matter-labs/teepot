@@ -10,27 +10,25 @@ pub mod attestation;
 pub mod error;
 pub mod tcblevel;
 
-use crate::{
-    quote::error::{QuoteContext as _, QuoteError},
-    sgx::sgx_gramine_get_quote,
-    tdx::tgx_get_quote,
+#[cfg_attr(all(target_os = "linux", target_arch = "x86_64"), path = "intel.rs")]
+#[cfg_attr(
+    not(all(target_os = "linux", target_arch = "x86_64")),
+    path = "phala.rs"
+)]
+mod os;
+
+use crate::quote::{
+    error::{QuoteContext as _, QuoteError},
+    tcblevel::TcbLevel,
 };
-use bytemuck::{cast_slice, AnyBitPattern};
-use intel_tee_quote_verification_rs::{
-    sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t, tee_get_supplemental_data_version_and_size,
-    tee_supp_data_descriptor_t, tee_verify_quote, Collateral,
-};
+use bytemuck::AnyBitPattern;
 use serde::{Deserialize, Serialize};
 use std::{
-    ffi::CStr,
     fmt::{Display, Formatter},
     io::Read,
-    mem,
     str::FromStr,
 };
-use tracing::{trace, warn};
-
-pub use intel_tee_quote_verification_rs::tee_qv_get_collateral;
+use tracing::trace;
 
 #[allow(missing_docs)]
 pub const TEE_TYPE_SGX: u32 = 0x00000000;
@@ -603,35 +601,13 @@ impl FromStr for TEEType {
 
 /// Get the attestation quote from a TEE
 pub fn get_quote(report_data: &[u8]) -> Result<(TEEType, Box<[u8]>), QuoteError> {
-    // check, if we are running in a TEE
-    if std::fs::metadata("/dev/attestation").is_ok() {
-        if report_data.len() > 64 {
-            return Err(QuoteError::ReportDataSize);
-        }
-
-        let mut report_data_fixed = [0u8; 64];
-        report_data_fixed[..report_data.len()].copy_from_slice(report_data);
-
-        Ok((TEEType::SGX, sgx_gramine_get_quote(&report_data_fixed)?))
-    } else if std::fs::metadata("/dev/tdx_guest").is_ok() {
-        if report_data.len() > 64 {
-            return Err(QuoteError::ReportDataSize);
-        }
-
-        let mut report_data_fixed = [0u8; 64];
-        report_data_fixed[..report_data.len()].copy_from_slice(report_data);
-
-        Ok((TEEType::TDX, tgx_get_quote(&report_data_fixed)?))
-    } else {
-        // if not, return an error
-        Err(QuoteError::UnknownTee)
-    }
+    os::get_quote(report_data)
 }
 
 /// The result of the quote verification
 pub struct QuoteVerificationResult {
     /// the raw result
-    pub result: sgx_ql_qv_result_t,
+    pub result: TcbLevel,
     /// indicates if the collateral is expired
     pub collateral_expired: bool,
     /// the earliest expiration date of the collateral
@@ -644,93 +620,41 @@ pub struct QuoteVerificationResult {
     pub quote: Quote,
 }
 
+/// The collateral data needed to do remote attestation for SGX and TDX
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Collateral {
+    /// Major version of the collateral data
+    pub major_version: u16,
+    /// Minor version of the collateral data
+    pub minor_version: u16,
+    /// Type of TEE (SGX=0, TDX=0x81)
+    pub tee_type: u32,
+    /// The PCK CRL issuer chain used for validating the PCK CRL
+    pub pck_crl_issuer_chain: Box<[u8]>,
+    /// The root CA CRL used for validating the PCK CRL issuer chain
+    pub root_ca_crl: Box<[u8]>,
+    /// The PCK CRL used for validating the PCK certificate
+    pub pck_crl: Box<[u8]>,
+    /// The TCB info issuer chain used for validating the TCB info
+    pub tcb_info_issuer_chain: Box<[u8]>,
+    /// The TCB info used for determining the TCB level
+    pub tcb_info: Box<[u8]>,
+    /// The QE identity issuer chain used for validating the QE identity
+    pub qe_identity_issuer_chain: Box<[u8]>,
+    /// The QE identity used for validating the QE
+    pub qe_identity: Box<[u8]>,
+}
+
+/// Get the collateral data from an SGX or TDX quote
+pub fn get_collateral(quote: &[u8]) -> Result<Collateral, QuoteError> {
+    os::get_collateral(quote)
+}
+
 /// Verifies a quote with optional collateral material
 pub fn verify_quote_with_collateral(
     quote: &[u8],
     collateral: Option<&Collateral>,
     current_time: i64,
 ) -> Result<QuoteVerificationResult, QuoteError> {
-    let mut supp_data: mem::MaybeUninit<sgx_ql_qv_supplemental_t> = mem::MaybeUninit::zeroed();
-    let mut supp_data_desc = tee_supp_data_descriptor_t {
-        major_version: 0,
-        data_size: 0,
-        p_data: supp_data.as_mut_ptr() as *mut u8,
-    };
-    trace!("tee_get_supplemental_data_version_and_size");
-    let (_, supp_size) =
-        tee_get_supplemental_data_version_and_size(quote).map_err(|e| QuoteError::Quote3Error {
-            msg: "tee_get_supplemental_data_version_and_size".into(),
-            inner: e,
-        })?;
-
-    trace!(
-        "tee_get_supplemental_data_version_and_size supp_size: {}",
-        supp_size
-    );
-
-    if supp_size == mem::size_of::<sgx_ql_qv_supplemental_t>() as u32 {
-        supp_data_desc.data_size = supp_size;
-    } else {
-        supp_data_desc.data_size = 0;
-        trace!(
-            "tee_get_supplemental_data_version_and_size supp_size: {}",
-            supp_size
-        );
-        trace!(
-            "mem::size_of::<sgx_ql_qv_supplemental_t>(): {}",
-            mem::size_of::<sgx_ql_qv_supplemental_t>()
-        );
-        warn!("Quote supplemental data size is different between DCAP QVL and QvE, please make sure you installed DCAP QVL and QvE from same release.")
-    }
-
-    let p_supplemental_data = match supp_data_desc.data_size {
-        0 => None,
-        _ => Some(&mut supp_data_desc),
-    };
-
-    let has_sup = p_supplemental_data.is_some();
-
-    trace!("tee_verify_quote");
-
-    let (collateral_expiration_status, result) =
-        tee_verify_quote(quote, collateral, current_time, None, p_supplemental_data)
-            .context("tee_verify_quote")?;
-
-    trace!("tee_verify_quote end");
-
-    // check supplemental data if necessary
-    let (advisories, earliest_expiration_date, tcb_level_date_tag) = if has_sup {
-        unsafe {
-            let supp_data = supp_data.assume_init();
-            // convert to valid UTF-8 string
-            let ads = CStr::from_bytes_until_nul(cast_slice(&supp_data.sa_list[..]))
-                .ok()
-                .and_then(|s| CStr::to_str(s).ok())
-                .into_iter()
-                .flat_map(|s| s.split(',').map(str::trim).map(String::from))
-                .filter(|s| !s.is_empty())
-                .collect();
-            (
-                ads,
-                supp_data.earliest_expiration_date,
-                supp_data.tcb_level_date_tag,
-            )
-        }
-    } else {
-        (vec![], 0, 0)
-    };
-
-    trace!("Quote::parse");
-    let quote = Quote::parse(quote)?;
-
-    let res = QuoteVerificationResult {
-        collateral_expired: collateral_expiration_status != 0,
-        earliest_expiration_date,
-        tcb_level_date_tag,
-        result,
-        quote,
-        advisories,
-    };
-
-    Ok(res)
+    os::verify_quote_with_collateral(quote, collateral, current_time)
 }

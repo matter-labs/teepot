@@ -6,11 +6,18 @@
 , teepot
 , nixsgx
 , stdenv
+,
 }:
 let
-  toolchain_with_src = (teepot.teepot.passthru.rustVersion.override {
-    extensions = [ "rustfmt" "clippy" "rust-src" ];
-  });
+  toolchain_with_src = (
+    teepot.teepot.passthru.rustVersion.override {
+      extensions = [
+        "rustfmt"
+        "clippy"
+        "rust-src"
+      ];
+    }
+  );
 in
 mkShell {
   inputsFrom = [ teepot.teepot ];
@@ -21,26 +28,34 @@ mkShell {
     teepot.teepot.passthru.rustPlatform.bindgenHook
   ];
 
-  packages = with pkgs; [
-    dive
-    taplo
-    vault
-    cargo-release
-    google-cloud-sdk-gce
-    azure-cli
-    kubectl
-    kubectx
-    k9s
-  ];
+  packages =
+    with pkgs;
+    [
+      dive
+      taplo
+      vault
+      cargo-release
+      azure-cli
+      kubectl
+      kubectx
+      k9s
+      google-cloud-sdk
+    ];
 
-  TEE_LD_LIBRARY_PATH = lib.makeLibraryPath [
-    pkgs.curl
-    nixsgx.sgx-dcap
-    nixsgx.sgx-dcap.quote_verify
-    nixsgx.sgx-dcap.default_qpl
-  ];
+  TEE_LD_LIBRARY_PATH = lib.makeLibraryPath (
+    lib.optionals (stdenv.hostPlatform.system == "x86_64-linux") [
+      pkgs.curl
+      nixsgx.sgx-dcap
+      nixsgx.sgx-dcap.quote_verify
+      nixsgx.sgx-dcap.default_qpl
+    ]
+  );
 
-  QCNL_CONF_PATH = "${nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf";
+  QCNL_CONF_PATH =
+    if (stdenv.hostPlatform.system != "x86_64-linux") then
+      ""
+    else
+      "${nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf";
   OPENSSL_NO_VENDOR = "1";
   RUST_SRC_PATH = "${toolchain_with_src}/lib/rustlib/src/rust/library";
 

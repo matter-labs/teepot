@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Matter Labs
 { teepot
 , pkgs
+, stdenv
 , vat
 , vault
 , container-name ? "teepot-vault-sgx-azure"
@@ -12,6 +13,7 @@ let
   entrypoint = "${teepot.teepot.tee_ratls_preexec}/bin/tee-ratls-preexec";
   appDir = "/opt/vault";
 in
+if (stdenv.hostPlatform.system != "x86_64-linux") then { } else
 pkgs.lib.tee.sgxGramineContainer {
   name = container-name;
   inherit tag;
@@ -86,5 +88,3 @@ pkgs.lib.tee.sgxGramineContainer {
     sys.experimental__enable_flock = true;
   };
 }
-
-

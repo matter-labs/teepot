@@ -2,12 +2,14 @@
 # Copyright (c) 2024 Matter Labs
 { lib
 , inputs
+, stdenv
 , makeRustPlatform
-, nixsgx
+, nixsgx ? null
 , pkg-config
 , rust-bin
 , pkgs
 , openssl
+, darwin
 }:
 let
   rustVersion = rust-bin.fromRustupToolchainFile (inputs.src + "/rust-toolchain.toml");
@@ -23,11 +25,15 @@ let
     ];
 
     buildInputs = [
-      openssl
+      openssl.dev
+    ]
+    ++ lib.optionals (stdenv.hostPlatform.system == "x86_64-linux") [
       nixsgx.sgx-sdk
       nixsgx.sgx-dcap
       nixsgx.sgx-dcap.quote_verify
       nixsgx.sgx-dcap.libtdx_attest
+    ] ++ lib.optionals stdenv.isDarwin [
+      darwin.apple_sdk.frameworks.Security
     ];
 
     strictDeps = true;

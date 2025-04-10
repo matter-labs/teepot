@@ -4,13 +4,11 @@
 //! Common attestation API for all TEEs
 
 use crate::quote::{
-    error::QuoteContext,
-    get_quote,
+    get_collateral, get_quote,
     tcblevel::{EnumSet, TcbLevel},
     verify_quote_with_collateral, Collateral, QuoteVerificationResult,
 };
 use anyhow::{bail, Context, Result};
-use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use serde::{Deserialize, Serialize};
 use std::{
     sync::{Arc, RwLock},
@@ -46,8 +44,7 @@ pub fn get_quote_and_collateral(
     static ATTESTATION: RwLock<Option<Attestation>> = RwLock::new(None);
 
     let unix_time: i64 = std::time::SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .duration_since(UNIX_EPOCH)?
         .as_secs() as _;
 
     if let Some(attestation) = ATTESTATION.read().unwrap().as_ref() {
@@ -65,11 +62,11 @@ pub fn get_quote_and_collateral(
     }
 
     let (_tee_type, myquote) = get_quote(report_data).context("Failed to get own quote")?;
-    let collateral = tee_qv_get_collateral(&myquote).context("Failed to get own collateral")?;
+    let collateral = get_collateral(&myquote).context("Failed to get own collateral")?;
 
     let QuoteVerificationResult {
         collateral_expired,
-        result,
+        result: tcblevel,
         earliest_expiration_date,
         tcb_level_date_tag,
         quote,
@@ -83,9 +80,8 @@ pub fn get_quote_and_collateral(
         bail!("Freshly fetched collateral expired");
     }
 
-    let tcblevel = TcbLevel::from(result);
     if tcblevel != TcbLevel::Ok
-        && allowed_tcb_levels.map_or(false, |levels| !levels.contains(tcblevel))
+        && allowed_tcb_levels.is_some_and(|levels| !levels.contains(tcblevel))
     {
         error!("Quote verification result: {}", tcblevel);
         bail!("Quote verification result: {}", tcblevel);

@@ -20,7 +20,6 @@ use awc::{
 };
 use bytes::Bytes;
 use futures_core::Stream;
-use intel_tee_quote_verification_rs::tee_qv_get_collateral;
 use rustls::ClientConfig;
 use serde_json::{json, Value};
 use std::{
@@ -28,13 +27,13 @@ use std::{
     sync::Arc,
     time,
 };
-use teepot::quote::error::QuoteContext;
+use teepot::quote::get_collateral;
 pub use teepot::{
     quote::{
         tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
         verify_quote_with_collateral, QuoteVerificationResult,
     },
-    sgx::{sgx_gramine_get_quote, sgx_ql_qv_result_t, Collateral},
+    sgx::{sgx_gramine_get_quote, Collateral},
 };
 use tracing::{debug, error, info, trace};
 
@@ -158,7 +157,7 @@ impl VaultConnection {
         info!("Getting attestation report");
         let attestation_url = AuthRequest::URL;
         let quote = sgx_gramine_get_quote(&self.key_hash).context("Failed to get own quote")?;
-        let collateral = tee_qv_get_collateral(&quote).context("Failed to get own collateral")?;
+        let collateral = get_collateral(&quote).context("Failed to get own collateral")?;
 
         let auth_req = AuthRequest {
             name: self.name.clone(),
@@ -298,7 +297,7 @@ impl VaultConnection {
     }
 
     /// set a secret in the vault
-    pub async fn store_secret<'de, T: serde::Serialize>(
+    pub async fn store_secret<T: serde::Serialize>(
         &self,
         val: T,
         rel_path: &str,
@@ -307,7 +306,7 @@ impl VaultConnection {
     }
 
     /// set a secret in the vault for a different TEE
-    pub async fn store_secret_for_tee<'de, T: serde::Serialize>(
+    pub async fn store_secret_for_tee<T: serde::Serialize>(
         &self,
         tee_name: &str,
         val: T,
@@ -331,7 +330,7 @@ impl VaultConnection {
     }
 
     /// get a secret from the vault
-    pub async fn load_secret<'de, T: serde::de::DeserializeOwned>(
+    pub async fn load_secret<T: serde::de::DeserializeOwned>(
         &self,
         rel_path: &str,
     ) -> Result<Option<T>, HttpResponseError> {
@@ -339,7 +338,7 @@ impl VaultConnection {
     }
 
     /// get a secret from the vault for a specific TEE
-    pub async fn load_secret_for_tee<'de, T: serde::de::DeserializeOwned>(
+    pub async fn load_secret_for_tee<T: serde::de::DeserializeOwned>(
         &self,
         tee_name: &str,
         rel_path: &str,

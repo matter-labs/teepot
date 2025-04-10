@@ -8,13 +8,15 @@
 
 pub mod vault;
 
-use crate::server::pki::{RaTlsCollateralExtension, RaTlsQuoteExtension};
+use crate::server::{
+    attestation::Collateral,
+    pki::{RaTlsCollateralExtension, RaTlsQuoteExtension},
+};
 use actix_web::http::header;
 use anyhow::Result;
 use awc::{Client, Connector};
 use clap::Args;
 use const_oid::AssociatedOid;
-use intel_tee_quote_verification_rs::Collateral;
 use rustls::{
     client::{
         danger::{HandshakeSignatureValid, ServerCertVerifier},
@@ -25,10 +27,9 @@ use rustls::{
 };
 use sha2::{Digest, Sha256};
 use std::{sync::Arc, time, time::Duration};
-pub use teepot::{
-    quote::tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
-    quote::{verify_quote_with_collateral, QuoteVerificationResult},
-    sgx::sgx_ql_qv_result_t,
+pub use teepot::quote::{
+    tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
+    verify_quote_with_collateral, QuoteVerificationResult,
 };
 use teepot::{quote::Report, sgx::Quote};
 use tracing::{debug, error, info, trace, warn};
@@ -194,7 +195,7 @@ impl TeeConnection {
 
                 let QuoteVerificationResult {
                     collateral_expired,
-                    result,
+                    result: tcblevel,
                     quote,
                     advisories,
                     earliest_expiration_date,
@@ -206,7 +207,7 @@ impl TeeConnection {
                     return Err(Error::General("TDX quote and not SGX quote".into()));
                 };
 
-                if collateral_expired || result != sgx_ql_qv_result_t::SGX_QL_QV_RESULT_OK {
+                if collateral_expired || tcblevel != TcbLevel::Ok {
                     if collateral_expired {
                         error!(
                             "Collateral is out of date! Expired {}",
@@ -218,11 +219,10 @@ impl TeeConnection {
                         )));
                     }
 
-                    let tcblevel = TcbLevel::from(result);
                     if self
                         .args
                         .sgx_allowed_tcb_levels
-                        .map_or(true, |levels| !levels.contains(tcblevel))
+                        .is_none_or(|levels| !levels.contains(tcblevel))
                     {
                         error!("Quote verification result: {}", tcblevel);
                         return Err(Error::General(format!(

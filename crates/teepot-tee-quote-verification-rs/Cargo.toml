@@ -5,10 +5,12 @@ name = "teepot-tee-quote-verification-rs"
 version = "0.3.0"
 edition = "2021"
 license = "BSD-3-Clause"
-repository.workspace = true
-homepage.workspace = true
+repository = "https://github.com/matter-labs/teepot"
+homepage = "https://github.com/matter-labs/teepot"
 description = "Fork of intel-tee-quote-verification-rs"
 
 [dependencies]
-intel-tee-quote-verification-sys.workspace = true
-serde.workspace = true
+serde = { version = "1", features = ["derive", "rc"] }
+
+[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dependencies]
+intel-tee-quote-verification-sys = { version = "0.2.1" }

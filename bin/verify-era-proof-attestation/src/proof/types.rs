@@ -61,12 +61,12 @@ impl Proof {
     pub fn is_permanently_ignored(&self) -> bool {
         self.status
             .as_ref()
-            .map_or(false, |s| s.eq_ignore_ascii_case("permanently_ignored"))
+            .is_some_and(|s| s.eq_ignore_ascii_case("permanently_ignored"))
     }
 
     /// Check if the proof is failed or picked by a prover
     pub fn is_failed_or_picked(&self) -> bool {
-        self.status.as_ref().map_or(false, |s| {
+        self.status.as_ref().is_some_and(|s| {
             s.eq_ignore_ascii_case("failed") || s.eq_ignore_ascii_case("picked_by_prover")
         })
     }

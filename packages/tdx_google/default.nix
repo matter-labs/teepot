@@ -2,9 +2,12 @@
 # Copyright (c) 2024 Matter Labs
 { lib
 , pkgs
+, stdenv
 , system
 , ...
-}: lib.teepot.nixosGenerate {
+}:
+if (stdenv.hostPlatform.system != "x86_64-linux") then { } else
+lib.teepot.nixosGenerate {
   inherit (lib) nixosSystem;
   inherit system pkgs;
   modules = [
