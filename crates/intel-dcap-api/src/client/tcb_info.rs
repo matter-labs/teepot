@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! TCB Info
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::IntelApiError,
@@ -9,8 +11,6 @@ use crate::{
 };
 
 impl ApiClient {
-    // --- TCB Info ---
-
     /// GET /sgx/certification/{v3,v4}/tcb
     /// Retrieves SGX TCB information for a given FMSPC.
     ///
@@ -91,8 +91,8 @@ impl ApiClient {
         let (tcb_info_json, issuer_chain) = self
             .fetch_json_with_issuer_chain(
                 request_builder,
-                "TCB-Info-Issuer-Chain",           // v4 name
-                Some("SGX-TCB-Info-Issuer-Chain"), // v3 name
+                "TCB-Info-Issuer-Chain",
+                Some("SGX-TCB-Info-Issuer-Chain"),
             )
             .await?;
 

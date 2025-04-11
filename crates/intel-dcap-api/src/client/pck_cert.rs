@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! Provisioning Certification Service
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::IntelApiError,
@@ -11,8 +13,6 @@ use crate::{
 use reqwest::header;
 
 impl ApiClient {
-    // === Provisioning Certification Service ===
-
     /// GET /sgx/certification/{v3,v4}/pckcert
     /// Retrieves a single SGX PCK certificate using encrypted PPID and SVNs.
     ///

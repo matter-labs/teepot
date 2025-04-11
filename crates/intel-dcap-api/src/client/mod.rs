@@ -9,10 +9,7 @@ mod pck_crl;
 mod registration;
 mod tcb_info;
 
-use crate::{
-    error::IntelApiError,
-    types::ApiVersion, // Import ApiVersion
-};
+use crate::{error::IntelApiError, types::ApiVersion};
 use reqwest::Client;
 use url::Url;
 
@@ -63,7 +60,8 @@ impl ApiClient {
     /// This function may fail if the provided TLS version or base URL
     /// cannot be used to build a `reqwest` client.
     pub fn new() -> Result<Self, IntelApiError> {
-        Self::new_with_options(BASE_URL, ApiVersion::V4) // Default to V4
+        // Default to V4
+        Self::new_with_options(BASE_URL, ApiVersion::V4)
     }
 
     /// Creates a new client targeting a specific API version.
@@ -91,7 +89,8 @@ impl ApiClient {
     /// Returns an `IntelApiError` if the `reqwest` client cannot be built
     /// or if the provided base URL is invalid.
     pub fn new_with_base_url(base_url: impl reqwest::IntoUrl) -> Result<Self, IntelApiError> {
-        Self::new_with_options(base_url, ApiVersion::V4) // Default to V4
+        // Default to V4
+        Self::new_with_options(base_url, ApiVersion::V4)
     }
 
     /// Creates a new client with a custom base URL and specific API version.
@@ -114,7 +113,7 @@ impl ApiClient {
                 .min_tls_version(reqwest::tls::Version::TLS_1_2)
                 .build()?,
             base_url: base_url.into_url()?,
-            api_version, // Store the version
+            api_version,
         })
     }
 }

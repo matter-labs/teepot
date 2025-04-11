@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! FMSPCs & TCB Evaluation Data Numbers
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::{check_status, IntelApiError},
@@ -11,8 +13,6 @@ use crate::{
 use reqwest::StatusCode;
 
 impl ApiClient {
-    // --- FMSPCs & TCB Evaluation Data Numbers ---
-
     /// GET /sgx/certification/{v3,v4}/fmspcs
     /// Retrieves a list of FMSPC values for SGX and TDX platforms (API v4 only).
     ///

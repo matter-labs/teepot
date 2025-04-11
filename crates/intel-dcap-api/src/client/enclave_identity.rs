@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! Enclave Identity
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::IntelApiError,
@@ -9,8 +11,6 @@ use crate::{
 };
 
 impl ApiClient {
-    // --- Enclave Identity ---
-
     /// Retrieves the SGX QE Identity from the Intel API.
     ///
     /// Returns Enclave Identity JSON string (Appendix B) and Issuer Chain header.

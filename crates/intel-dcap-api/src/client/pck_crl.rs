@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! PCK Certificate Revocation List
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::{check_status, IntelApiError},
@@ -52,8 +54,8 @@ impl ApiClient {
 
         let issuer_chain = self.get_required_header(
             &response,
-            "SGX-PCK-CRL-Issuer-Chain",       // v4 name
-            Some("SGX-PCK-CRL-Issuer-Chain"), // v3 name
+            "SGX-PCK-CRL-Issuer-Chain",
+            Some("SGX-PCK-CRL-Issuer-Chain"),
         )?;
 
         // Response body is PEM or DER CRL

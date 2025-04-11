@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! Internal helper methods
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::{check_status, extract_api_error_details, IntelApiError},
@@ -12,10 +14,6 @@ use reqwest::{RequestBuilder, Response, StatusCode};
 use std::io;
 
 impl ApiClient {
-    // ------------------------
-    // Internal helper methods
-    // ------------------------
-
     /// Helper to construct API paths dynamically based on version and technology (SGX/TDX).
     pub(super) fn build_api_path(
         &self,

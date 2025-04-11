@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Matter Labs
 
+//! Registration
+
 use super::ApiClient; // Import from parent module
 use crate::{
     error::{check_status, IntelApiError},
