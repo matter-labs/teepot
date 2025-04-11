@@ -31,6 +31,7 @@ enumset = { version = "1.1", features = ["serde"] }
 getrandom = { version = "0.3.1", features = ["std"] }
 gpt = "4.0.0"
 hex = { version = "0.4.3", features = ["std"], default-features = false }
+intel-dcap-api = { path = "crates/intel-dcap-api" }
 num-integer = "0.1.46"
 num-traits = "0.2.18"
 opentelemetry = { version = "0.28.0", features = ["default", "logs"] }
@@ -65,5 +66,5 @@ tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "ansi"] }
 tracing-test = { version = "0.2.5", features = ["no-env-filter"] }
 url = "2.5.2"
-x509-cert = { version = "0.2", features = ["builder", "signature"] }
+x509-cert = { version = "0.2", features = ["builder", "signature", "default"] }
 zeroize = { version = "1.7.0", features = ["serde"] }
