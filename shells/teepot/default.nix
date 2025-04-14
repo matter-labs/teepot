@@ -42,31 +42,23 @@ mkShell {
       google-cloud-sdk
     ];
 
-  TEE_LD_LIBRARY_PATH = lib.makeLibraryPath (
-    lib.optionals (stdenv.hostPlatform.system == "x86_64-linux") [
-      pkgs.curl
-      nixsgx.sgx-dcap
-      nixsgx.sgx-dcap.quote_verify
-      nixsgx.sgx-dcap.default_qpl
-    ]
-  );
-
-  QCNL_CONF_PATH =
-    if (stdenv.hostPlatform.system != "x86_64-linux") then
-      ""
-    else
-      "${nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf";
-  OPENSSL_NO_VENDOR = "1";
-  RUST_SRC_PATH = "${toolchain_with_src}/lib/rustlib/src/rust/library";
+  env = {
+    QCNL_CONF_PATH =
+      if (stdenv.hostPlatform.system != "x86_64-linux") then
+        ""
+      else
+        "${nixsgx.sgx-dcap.default_qpl}/etc/sgx_default_qcnl.conf";
+    OPENSSL_NO_VENDOR = "1";
+    RUST_SRC_PATH = "${toolchain_with_src}/lib/rustlib/src/rust/";
+  };
 
   shellHook = ''
-    if [ "x$NIX_LD" = "x" ]; then
-      export NIX_LD=$(<${stdenv.cc}/nix-support/dynamic-linker)
-    fi
-    if [ "x$NIX_LD_LIBRARY_PATH" = "x" ]; then
-      export NIX_LD_LIBRARY_PATH="$TEE_LD_LIBRARY_PATH"
-    else
-      export NIX_LD_LIBRARY_PATH="$NIX_LD_LIBRARY_PATH:$TEE_LD_LIBRARY_PATH"
-    fi
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
+      pkgs.lib.makeLibraryPath (lib.optionals (stdenv.hostPlatform.system == "x86_64-linux") [
+        pkgs.curl
+        nixsgx.sgx-dcap
+        nixsgx.sgx-dcap.quote_verify
+        nixsgx.sgx-dcap.default_qpl
+      ])}"
   '';
 }
