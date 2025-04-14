@@ -1,5 +1,6 @@
 [package]
 name = "intel-dcap-api"
+description = "Intel DCAP API Client"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
