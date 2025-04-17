@@ -50,8 +50,9 @@ impl ContinuousProcessor {
             match self.batch_processor.process_batch(token, batch).await {
                 Ok(result) => {
                     match result {
-                        VerificationResult::Success => success_count += 1,
-                        VerificationResult::PartialSuccess { .. } => success_count += 1,
+                        VerificationResult::Success | VerificationResult::PartialSuccess { .. } => {
+                            success_count += 1;
+                        }
                         VerificationResult::Failure => failure_count += 1,
                         VerificationResult::Interrupted => {
                             results.push((current_batch, result));

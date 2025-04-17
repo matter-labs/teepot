@@ -81,7 +81,7 @@ fn print_quote_verification_summary(quote_verification_result: &QuoteVerificatio
     for advisory in advisories {
         println!("\tInfo: Advisory ID: {advisory}");
     }
-    println!("Quote verification result: {}", tcblevel);
+    println!("Quote verification result: {tcblevel}");
 
     println!("{:#}", &quote.report);
 }

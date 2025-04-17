@@ -31,9 +31,9 @@ use std::{
 use tracing::trace;
 
 #[allow(missing_docs)]
-pub const TEE_TYPE_SGX: u32 = 0x00000000;
+pub const TEE_TYPE_SGX: u32 = 0x0000_0000;
 #[allow(missing_docs)]
-pub const TEE_TYPE_TDX: u32 = 0x00000081;
+pub const TEE_TYPE_TDX: u32 = 0x0000_0081;
 
 #[allow(missing_docs)]
 pub const BODY_SGX_ENCLAVE_REPORT_TYPE: u16 = 1;
@@ -583,7 +583,7 @@ impl Display for TEEType {
             TEEType::TDX => "tdx",
             TEEType::SNP => "snp",
         };
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }
 

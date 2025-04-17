@@ -96,7 +96,7 @@ impl Error {
 impl From<reqwest::Error> for Error {
     fn from(value: reqwest::Error) -> Self {
         Self::Http {
-            status_code: value.status().map(|v| v.as_u16()).unwrap_or(0),
+            status_code: value.status().map_or(0, |v| v.as_u16()),
             message: value.to_string(),
         }
     }

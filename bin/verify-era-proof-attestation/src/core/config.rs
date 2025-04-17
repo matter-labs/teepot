@@ -190,15 +190,12 @@ impl VerifierConfig {
     pub fn new(args: VerifierConfigArgs) -> error::Result<Self> {
         let policy = if let Some(path) = &args.attestation_policy_file {
             let policy_content = fs::read_to_string(path).map_err(|e| {
-                error::Error::internal(format!("Failed to read attestation policy file: {}", e))
+                error::Error::internal(format!("Failed to read attestation policy file: {e}"))
             })?;
 
             let policy_config: AttestationPolicyConfig = serde_yaml::from_str(&policy_content)
                 .map_err(|e| {
-                    error::Error::internal(format!(
-                        "Failed to parse attestation policy file: {}",
-                        e
-                    ))
+                    error::Error::internal(format!("Failed to parse attestation policy file: {e}"))
                 })?;
 
             tracing::info!("Loaded attestation policy from file: {:?}", path);
@@ -263,7 +260,7 @@ fn decode_tdx_mrs(
         Some(mrs_array) => {
             let result = mrs_array
                 .into_iter()
-                .map(|strings| decode_and_combine_mrs(strings, bytes_length))
+                .map(|strings| decode_and_combine_mrs(&strings, bytes_length))
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(Some(result))
         }
@@ -272,12 +269,12 @@ fn decode_tdx_mrs(
 
 // Helper function to decode and combine MRs
 fn decode_and_combine_mrs(
-    strings: [String; 5],
+    strings: &[String; 5],
     bytes_length: usize,
 ) -> Result<Bytes, hex::FromHexError> {
     let mut buffer = BytesMut::with_capacity(bytes_length * 5);
 
-    for s in &strings {
+    for s in strings {
         if s.len() > (bytes_length * 2) {
             return Err(hex::FromHexError::InvalidStringLength);
         }
@@ -295,19 +292,16 @@ fn parse_batch_range(s: &str) -> error::Result<(L1BatchNumber, L1BatchNumber)> {
             .map(L1BatchNumber::from)
             .map_err(|e| error::Error::internal(format!("Can't convert batch {s} to number: {e}")))
     };
-    match s.split_once('-') {
-        Some((start, end)) => {
-            let (start, end) = (parse(start)?, parse(end)?);
-            if start > end {
-                Err(error::Error::InvalidBatchRange(s.into()))
-            } else {
-                Ok((start, end))
-            }
+    if let Some((start, end)) = s.split_once('-') {
+        let (start, end) = (parse(start)?, parse(end)?);
+        if start > end {
+            Err(error::Error::InvalidBatchRange(s.into()))
+        } else {
+            Ok((start, end))
         }
-        None => {
-            let batch_number = parse(s)?;
-            Ok((batch_number, batch_number))
-        }
+    } else {
+        let batch_number = parse(s)?;
+        Ok((batch_number, batch_number))
     }
 }
 

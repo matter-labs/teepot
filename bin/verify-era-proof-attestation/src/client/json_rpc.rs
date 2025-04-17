@@ -26,12 +26,10 @@ impl MainNodeClient {
     /// Create a new client for the main node
     pub fn new(rpc_url: Url, chain_id: u64) -> error::Result<Self> {
         let chain_id = L2ChainId::try_from(chain_id)
-            .map_err(|e| error::Error::Internal(format!("Invalid chain ID: {}", e)))?;
+            .map_err(|e| error::Error::Internal(format!("Invalid chain ID: {e}")))?;
 
         let node_client = NodeClient::http(rpc_url.into())
-            .map_err(|e| {
-                error::Error::Internal(format!("Failed to create JSON-RPC client: {}", e))
-            })?
+            .map_err(|e| error::Error::Internal(format!("Failed to create JSON-RPC client: {e}")))?
             .for_network(chain_id.into())
             .build();
 
@@ -46,13 +44,13 @@ impl JsonRpcClient for MainNodeClient {
             .get_l1_batch_details(batch_number)
             .rpc_context("get_l1_batch_details")
             .await
-            .map_err(|e| error::Error::JsonRpc(format!("Failed to get batch details: {}", e)))?
+            .map_err(|e| error::Error::JsonRpc(format!("Failed to get batch details: {e}")))?
             .ok_or_else(|| {
-                error::Error::JsonRpc(format!("No details found for batch #{}", batch_number))
+                error::Error::JsonRpc(format!("No details found for batch #{batch_number}"))
             })?;
 
         batch_details.base.root_hash.ok_or_else(|| {
-            error::Error::JsonRpc(format!("No root hash found for batch #{}", batch_number))
+            error::Error::JsonRpc(format!("No root hash found for batch #{batch_number}"))
         })
     }
 }

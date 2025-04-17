@@ -312,13 +312,13 @@ fn init_telemetry(
     if config.logging.console {
         // Optionally configure JSON logging
         if config.logging.json {
-            subscriber.with(fmt_layer.json()).init()
+            subscriber.with(fmt_layer.json()).init();
         } else {
-            subscriber.with(fmt_layer.pretty()).init()
+            subscriber.with(fmt_layer.pretty()).init();
         }
     } else {
-        subscriber.init()
-    };
+        subscriber.init();
+    }
 
     Ok(())
 }

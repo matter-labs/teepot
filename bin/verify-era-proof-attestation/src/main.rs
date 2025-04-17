@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
                 },
                 Err(e) => {
                     tracing::error!("Task panicked: {}", e);
-                    Err(Error::internal(format!("Task panicked: {}", e)))
+                    Err(Error::internal(format!("Task panicked: {e}")))
                 }
             }
         },

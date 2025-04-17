@@ -36,7 +36,7 @@ impl ProofFetcher {
         &self,
         token: &CancellationToken,
         batch_number: L1BatchNumber,
-        tee_type: &TeeType,
+        tee_type: TeeType,
     ) -> Result<Vec<Proof>> {
         let mut proofs_request = GetProofsRequest::new(batch_number, tee_type);
         let mut backoff = Duration::from_secs(1);

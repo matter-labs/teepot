@@ -61,13 +61,11 @@ pub fn extend_sha384(base: &str, extend: &str) -> Result<String> {
     let mut hasher = sha2::Sha384::new();
 
     hasher.update(pad::<48>(&hex::decode(base).context(format!(
-        "Failed to decode base digest '{}' - expected hex string",
-        base
+        "Failed to decode base digest '{base}' - expected hex string",
     ))?)?);
 
     hasher.update(pad::<48>(&hex::decode(extend).context(format!(
-        "Failed to decode extend digest '{}' - expected hex string",
-        extend
+        "Failed to decode extend digest '{extend}' - expected hex string",
     ))?)?);
 
     Ok(hex::encode(hasher.finalize()))

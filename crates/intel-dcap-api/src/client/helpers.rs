@@ -25,20 +25,18 @@ impl ApiClient {
 
         if technology == "tdx" && self.api_version == ApiVersion::V3 {
             return Err(IntelApiError::UnsupportedApiVersion(format!(
-                "TDX endpoint /{}/{}/{} requires API v4",
-                service, endpoint, technology
+                "TDX endpoint /{service}/{endpoint}/{technology} requires API v4",
             )));
         }
         if technology == "sgx" && service == "registration" {
             // Registration paths are fixed at v1 regardless of client's api_version
-            return Ok(format!("/sgx/registration/v1/{}", endpoint).replace("//", "/"));
+            return Ok(format!("/sgx/registration/v1/{endpoint}").replace("//", "/"));
         }
 
-        Ok(format!(
-            "/{}/certification/{}/{}/{}",
-            technology, api_segment, service, endpoint
+        Ok(
+            format!("/{technology}/certification/{api_segment}/{service}/{endpoint}")
+                .replace("//", "/"),
         )
-        .replace("//", "/"))
     }
 
     /// Helper to add an optional header if the string is non-empty.
@@ -187,25 +185,22 @@ impl ApiClient {
     /// Ensures the client is configured for API v4, otherwise returns an error.
     pub(super) fn ensure_v4_api(&self, function_name: &str) -> Result<(), IntelApiError> {
         if self.api_version != ApiVersion::V4 {
-            Err(IntelApiError::UnsupportedApiVersion(format!(
-                "{} requires API v4",
-                function_name
-            )))
-        } else {
-            Ok(())
+            return Err(IntelApiError::UnsupportedApiVersion(format!(
+                "{function_name} requires API v4",
+            )));
         }
+        Ok(())
     }
 
     /// Checks if a V4-only parameter is provided with a V3 API version.
-    pub(super) fn check_v4_only_param<T>(
+    pub(super) fn check_v4_only_param<T: Copy>(
         &self,
         param_value: Option<T>,
         param_name: &str,
     ) -> Result<(), IntelApiError> {
         if self.api_version == ApiVersion::V3 && param_value.is_some() {
             Err(IntelApiError::UnsupportedApiVersion(format!(
-                "'{}' parameter requires API v4",
-                param_name
+                "'{param_name}' parameter requires API v4",
             )))
         } else {
             Ok(())

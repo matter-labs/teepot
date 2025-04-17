@@ -43,14 +43,14 @@ impl ProcessorFactory {
     /// Create a new processor based on the provided configuration
     pub fn create(config: VerifierConfig) -> Result<(ProcessorType, VerifierMode)> {
         let mode = if let Some((start, end)) = config.args.batch_range {
-            let processor = OneShotProcessor::new(config.clone(), start, end)?;
+            let processor = OneShotProcessor::new(config, start, end)?;
             let mode = VerifierMode::OneShot {
                 start_batch: start,
                 end_batch: end,
             };
             (ProcessorType::OneShot(processor), mode)
         } else if let Some(start) = config.args.continuous {
-            let processor = ContinuousProcessor::new(config.clone(), start)?;
+            let processor = ContinuousProcessor::new(config, start)?;
             let mode = VerifierMode::Continuous { start_batch: start };
             (ProcessorType::Continuous(processor), mode)
         } else {

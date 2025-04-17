@@ -65,6 +65,8 @@ impl Display for Rtmr {
     }
 }
 
+const CHUNK_SIZE: u64 = 1024 * 128;
+
 fn main() -> Result<()> {
     let args = Arguments::parse();
     tracing::subscriber::set_global_default(setup_logging(
@@ -127,7 +129,7 @@ fn main() -> Result<()> {
     let _ = device.seek(SeekFrom::Start(pstart))?;
 
     assert_eq!(header.part_size, 128);
-    assert!(header.num_parts < u8::MAX as _);
+    assert!(header.num_parts < u32::from(u8::MAX));
 
     let empty_bytes = [0u8; 128];
 
@@ -158,7 +160,7 @@ fn main() -> Result<()> {
 
     let section_table = pe.get_section_table()?;
 
-    for section in section_table.iter() {
+    for section in &section_table {
         debug!(section_name = ?section.name()?);
     }
 
@@ -175,14 +177,13 @@ fn main() -> Result<()> {
             .find(|s| s.name().unwrap().eq(sect))
             .ok_or(anyhow!("Failed to find section `{sect}`"))?;
 
-        let mut start = s.pointer_to_raw_data as u64;
-        let end = start + s.virtual_size as u64;
+        let mut start = u64::from(s.pointer_to_raw_data);
+        let end = start + u64::from(s.virtual_size);
 
         debug!(sect, start, end, len = (s.virtual_size));
 
         let mut hasher = Sha384::new();
 
-        const CHUNK_SIZE: u64 = 1024 * 128;
         loop {
             if start >= end {
                 break;

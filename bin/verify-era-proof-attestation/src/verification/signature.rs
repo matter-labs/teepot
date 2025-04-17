@@ -30,9 +30,8 @@ impl SignatureVerifier {
         let report_data_bytes = quote_verification_result.quote.get_report_data();
         tracing::trace!(?report_data_bytes);
 
-        let report_data = ReportData::try_from(report_data_bytes).map_err(|e| {
-            error::Error::internal(format!("Could not convert to ReportData: {}", e))
-        })?;
+        let report_data = ReportData::try_from(report_data_bytes)
+            .map_err(|e| error::Error::internal(format!("Could not convert to ReportData: {e}")))?;
 
         Self::verify(&report_data, &root_hash, signature)
     }
@@ -100,7 +99,7 @@ impl SignatureVerifier {
                     })?;
 
                 recover_signer(&signature_bytes, &root_hash_msg).map_err(|e| {
-                    error::Error::signature_verification(format!("Failed to recover signer: {}", e))
+                    error::Error::signature_verification(format!("Failed to recover signer: {e}"))
                 })?
             }
             // Any other length is invalid

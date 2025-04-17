@@ -104,7 +104,7 @@ pub trait QuoteContextErr {
 impl<T, E: std::fmt::Display> QuoteContextErr for Result<T, E> {
     type Ok = T;
     fn str_context<I: std::fmt::Display>(self, msg: I) -> Result<T, QuoteError> {
-        self.map_err(|e| QuoteError::Unexpected(format!("{}: {}", msg, e)))
+        self.map_err(|e| QuoteError::Unexpected(format!("{msg}: {e}")))
     }
 }
 

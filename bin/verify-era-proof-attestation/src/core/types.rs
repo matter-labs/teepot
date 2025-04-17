@@ -31,13 +31,13 @@ impl fmt::Display for VerifierMode {
                 end_batch,
             } => {
                 if start_batch == end_batch {
-                    write!(f, "one-shot mode (batch {})", start_batch)
+                    write!(f, "one-shot mode (batch {start_batch})")
                 } else {
-                    write!(f, "one-shot mode (batches {}-{})", start_batch, end_batch)
+                    write!(f, "one-shot mode (batches {start_batch}-{end_batch})")
                 }
             }
             VerifierMode::Continuous { start_batch } => {
-                write!(f, "continuous mode (starting from batch {})", start_batch)
+                write!(f, "continuous mode (starting from batch {start_batch})")
             }
         }
     }
@@ -72,9 +72,9 @@ impl VerificationResult {
                 verified_count,
                 unverified_count,
             } => verified_count > unverified_count,
-            VerificationResult::Failure => false,
-            VerificationResult::Interrupted => false,
-            VerificationResult::NoProofsFound => false,
+            VerificationResult::Failure
+            | VerificationResult::Interrupted
+            | VerificationResult::NoProofsFound => false,
         }
     }
 }
@@ -89,8 +89,7 @@ impl fmt::Display for VerificationResult {
             } => {
                 write!(
                     f,
-                    "Partial Success ({} verified, {} failed)",
-                    verified_count, unverified_count
+                    "Partial Success ({verified_count} verified, {unverified_count} failed)"
                 )
             }
             VerificationResult::Failure => write!(f, "Failure"),

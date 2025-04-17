@@ -15,7 +15,7 @@ use sha3::{Digest, Keccak256};
 pub fn recover_signer(sig: &[u8; 65], root_hash: &Message) -> Result<[u8; 20]> {
     let sig = RecoverableSignature::from_compact(
         &sig[0..64],
-        RecoveryId::try_from(sig[64] as i32 - 27)?,
+        RecoveryId::try_from(i32::from(sig[64]) - 27)?,
     )?;
     let public = SECP256K1.recover_ecdsa(root_hash, &sig)?;
     Ok(public_key_to_ethereum_address(&public))

@@ -48,7 +48,7 @@ impl<C: JsonRpcClient> BatchVerifier<C> {
         let mut total_proofs_count: u32 = 0;
         let mut verified_proofs_count: u32 = 0;
 
-        for proof in proofs.into_iter() {
+        for proof in proofs {
             if token.is_cancelled() {
                 tracing::warn!("Stop signal received during batch verification");
                 return Ok(BatchVerificationResult {
@@ -119,7 +119,7 @@ impl<C: JsonRpcClient> BatchVerifier<C> {
                 );
                 verified_proofs_count += 1;
             } else {
-                tracing::warn!(batch_no, proof.proved_at, tee_type, "Verification failed!",);
+                tracing::warn!(batch_no, proof.proved_at, tee_type, "Verification failed!");
             }
         }
 

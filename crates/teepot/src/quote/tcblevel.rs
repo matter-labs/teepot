@@ -38,15 +38,14 @@ impl FromStr for TcbLevel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
-            "ok" => Ok(TcbLevel::Ok),
-            "uptodate" => Ok(TcbLevel::Ok),
+            "ok" | "uptodate" => Ok(TcbLevel::Ok),
             "configneeded" => Ok(TcbLevel::ConfigNeeded),
             "configandswhardeningneeded" => Ok(TcbLevel::ConfigAndSwHardeningNeeded),
             "swhardeningneeded" => Ok(TcbLevel::SwHardeningNeeded),
             "outofdate" => Ok(TcbLevel::OutOfDate),
             "outofdateconfigneeded" => Ok(TcbLevel::OutOfDateConfigNeeded),
             "invalid" => Ok(TcbLevel::Invalid),
-            _ => Err(format!("Invalid TCB level: {}", s)),
+            _ => Err(format!("Invalid TCB level: {s}")),
         }
     }
 }
@@ -72,8 +71,8 @@ pub fn parse_tcb_levels(
     let mut set = EnumSet::new();
     for level_str in s.split(',') {
         let level_str = level_str.trim();
-        let level = TcbLevel::from_str(level_str)
-            .map_err(|_| format!("Invalid TCB level: {}", level_str))?;
+        let level =
+            TcbLevel::from_str(level_str).map_err(|_| format!("Invalid TCB level: {level_str}"))?;
         set.insert(level);
     }
     Ok(set)

@@ -24,7 +24,7 @@ fn extract_header_value(
         .ok_or_else(|| QuoteError::Unexpected(format!("Missing required header: {header_name}")))?
         .to_str()
         .map_err(|e| QuoteError::Unexpected(format!("Invalid header value: {e}")))
-        .map(|val| val.to_string())
+        .map(str::to_string)
 }
 
 /// Fetch collateral data from Intel's Provisioning Certification Service
@@ -74,14 +74,14 @@ pub(crate) fn get_collateral(quote: &[u8]) -> Result<Collateral, QuoteError> {
     let (collateral, pck_crl, pck_issuer_chain) = result;
 
     // Convert QuoteCollateralV3 to Collateral
-    convert_to_collateral(collateral, pck_crl, pck_issuer_chain)
+    convert_to_collateral(collateral, &pck_crl, &pck_issuer_chain)
 }
 
 // Helper function to convert QuoteCollateralV3 to Collateral
 fn convert_to_collateral(
     collateral: QuoteCollateralV3,
-    pck_crl: String,
-    pck_issuer_chain: Bytes,
+    pck_crl: &str,
+    pck_issuer_chain: &[u8],
 ) -> Result<Collateral, QuoteError> {
     let QuoteCollateralV3 {
         tcb_info_issuer_chain,
@@ -119,7 +119,7 @@ fn convert_to_collateral(
         root_ca_crl: Box::new([]),
 
         // Converted values
-        pck_crl_issuer_chain: pck_issuer_chain.as_ref().into(),
+        pck_crl_issuer_chain: pck_issuer_chain.into(),
         pck_crl: pck_crl.as_bytes().into(),
         tcb_info_issuer_chain: to_bytes_with_nul(tcb_info_issuer_chain, "tcb_info_issuer_chain")?,
         tcb_info: to_bytes_with_nul(tcb_info_json, "tcb_info")?,
@@ -134,14 +134,14 @@ fn convert_to_collateral(
 /// Split the last zero byte
 fn get_str_from_bytes(bytes: &[u8], context: &str) -> Result<String, QuoteError> {
     let c_str = CStr::from_bytes_until_nul(bytes)
-        .str_context(format!("Failed to extract CString: {}", context))?;
+        .str_context(format!("Failed to extract CString: {context}"))?;
     Ok(c_str.to_string_lossy().into_owned())
 }
 
 /// Parse JSON field from collateral data
 fn parse_json_field(data: &[u8], context: &str) -> Result<serde_json::Value, QuoteError> {
     serde_json::from_str(&get_str_from_bytes(data, context)?)
-        .str_context(format!("Failed to parse JSON: {}", context))
+        .str_context(format!("Failed to parse JSON: {context}"))
 }
 
 /// Convert Collateral to QuoteCollateralV3
