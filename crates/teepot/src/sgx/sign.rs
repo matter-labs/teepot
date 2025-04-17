@@ -50,8 +50,8 @@ pub struct Author {
 unsafe impl Zeroable for Author {}
 
 impl Author {
-    const HEADER1: [u8; 16] = 0x06000000E10000000000010000000000u128.to_be_bytes();
-    const HEADER2: [u8; 16] = 0x01010000600000006000000001000000u128.to_be_bytes();
+    const HEADER1: [u8; 16] = 0x0600_0000_E100_0000_0000_0100_0000_0000u128.to_be_bytes();
+    const HEADER2: [u8; 16] = 0x0101_0000_6000_0000_6000_0000_0100_0000u128.to_be_bytes();
 
     #[allow(clippy::unreadable_literal)]
     /// Creates a new Author from a date and software defined value.
@@ -245,7 +245,7 @@ impl Digest for S256Digest {
 
     #[inline]
     fn update(&mut self, bytes: &[u8]) {
-        self.0.update(bytes)
+        self.0.update(bytes);
     }
 
     #[inline]

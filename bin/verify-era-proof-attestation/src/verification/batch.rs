@@ -119,7 +119,7 @@ impl<C: JsonRpcClient> BatchVerifier<C> {
                 );
                 verified_proofs_count += 1;
             } else {
-                tracing::warn!(batch_no, proof.proved_at, tee_type, "Verification failed!",);
+                tracing::warn!(batch_no, proof.proved_at, tee_type, "Verification failed!");
             }
         }
 
