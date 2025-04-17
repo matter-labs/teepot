@@ -583,7 +583,7 @@ impl Display for TEEType {
             TEEType::TDX => "tdx",
             TEEType::SNP => "snp",
         };
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }
 

@@ -134,14 +134,14 @@ fn convert_to_collateral(
 /// Split the last zero byte
 fn get_str_from_bytes(bytes: &[u8], context: &str) -> Result<String, QuoteError> {
     let c_str = CStr::from_bytes_until_nul(bytes)
-        .str_context(format!("Failed to extract CString: {}", context))?;
+        .str_context(format!("Failed to extract CString: {context}"))?;
     Ok(c_str.to_string_lossy().into_owned())
 }
 
 /// Parse JSON field from collateral data
 fn parse_json_field(data: &[u8], context: &str) -> Result<serde_json::Value, QuoteError> {
     serde_json::from_str(&get_str_from_bytes(data, context)?)
-        .str_context(format!("Failed to parse JSON: {}", context))
+        .str_context(format!("Failed to parse JSON: {context}"))
 }
 
 /// Convert Collateral to QuoteCollateralV3

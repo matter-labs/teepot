@@ -21,7 +21,7 @@ impl ProofResponseParser {
                 }
             }
 
-            return Err(error::Error::JsonRpc(format!("JSONRPC error: {:?}", error)));
+            return Err(error::Error::JsonRpc(format!("JSONRPC error: {error:?}")));
         }
 
         // Extract proofs from the result

@@ -190,15 +190,12 @@ impl VerifierConfig {
     pub fn new(args: VerifierConfigArgs) -> error::Result<Self> {
         let policy = if let Some(path) = &args.attestation_policy_file {
             let policy_content = fs::read_to_string(path).map_err(|e| {
-                error::Error::internal(format!("Failed to read attestation policy file: {}", e))
+                error::Error::internal(format!("Failed to read attestation policy file: {e}"))
             })?;
 
             let policy_config: AttestationPolicyConfig = serde_yaml::from_str(&policy_content)
                 .map_err(|e| {
-                    error::Error::internal(format!(
-                        "Failed to parse attestation policy file: {}",
-                        e
-                    ))
+                    error::Error::internal(format!("Failed to parse attestation policy file: {e}"))
                 })?;
 
             tracing::info!("Loaded attestation policy from file: {:?}", path);

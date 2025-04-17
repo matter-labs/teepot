@@ -17,7 +17,7 @@ impl AttestationVerifier {
         // Get current time for verification
         let unix_time: i64 = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|e| error::Error::internal(format!("Failed to get system time: {}", e)))?
+            .map_err(|e| error::Error::internal(format!("Failed to get system time: {e}")))?
             .as_secs() as _;
 
         // Verify the quote with the collateral

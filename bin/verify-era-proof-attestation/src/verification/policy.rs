@@ -107,8 +107,7 @@ impl PolicyEnforcer {
     ) -> Result<()> {
         if !allowed_levels.contains(actual_level) {
             let error_msg = format!(
-                "Quote verification failed: TCB level mismatch (expected one of: {:?}, actual: {})",
-                allowed_levels, actual_level
+                "Quote verification failed: TCB level mismatch (expected one of: {allowed_levels:?}, actual: {actual_level})",
             );
             return Err(Error::policy_violation(error_msg));
         }
@@ -152,8 +151,7 @@ impl PolicyEnforcer {
                     .collect::<Vec<_>>()
                     .join(", ");
                 let error_msg = format!(
-                    "Quote verification failed: {} mismatch (expected one of: [ {} ], actual: {:x})",
-                    field_name, valid_values, actual_value
+                    "Quote verification failed: {field_name} mismatch (expected one of: [ {valid_values} ], actual: {actual_value:x})"
                 );
                 return Err(Error::policy_violation(error_msg));
             }

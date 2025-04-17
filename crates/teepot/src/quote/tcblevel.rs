@@ -46,7 +46,7 @@ impl FromStr for TcbLevel {
             "outofdate" => Ok(TcbLevel::OutOfDate),
             "outofdateconfigneeded" => Ok(TcbLevel::OutOfDateConfigNeeded),
             "invalid" => Ok(TcbLevel::Invalid),
-            _ => Err(format!("Invalid TCB level: {}", s)),
+            _ => Err(format!("Invalid TCB level: {s}")),
         }
     }
 }
@@ -72,8 +72,8 @@ pub fn parse_tcb_levels(
     let mut set = EnumSet::new();
     for level_str in s.split(',') {
         let level_str = level_str.trim();
-        let level = TcbLevel::from_str(level_str)
-            .map_err(|_| format!("Invalid TCB level: {}", level_str))?;
+        let level =
+            TcbLevel::from_str(level_str).map_err(|_| format!("Invalid TCB level: {level_str}"))?;
         set.insert(level);
     }
     Ok(set)

@@ -53,10 +53,7 @@ pub fn setup_logging(
         .try_from_env()
         .unwrap_or(match *log_level {
             LevelFilter::OFF => EnvFilter::new("off"),
-            _ => EnvFilter::new(format!(
-                "warn,{crate_name}={log_level},teepot={log_level}",
-                log_level = log_level
-            )),
+            _ => EnvFilter::new(format!("warn,{crate_name}={log_level},teepot={log_level}")),
         });
 
     let fmt_layer = tracing_subscriber::fmt::layer()

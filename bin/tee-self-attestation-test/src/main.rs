@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         .context("failed to get quote and collateral")?;
 
     let base64_string = general_purpose::STANDARD.encode(report.quote.as_ref());
-    print!("{}", base64_string);
+    print!("{base64_string}");
 
     Ok(())
 }
