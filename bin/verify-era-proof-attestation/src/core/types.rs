@@ -72,9 +72,9 @@ impl VerificationResult {
                 verified_count,
                 unverified_count,
             } => verified_count > unverified_count,
-            VerificationResult::Failure => false,
-            VerificationResult::Interrupted => false,
-            VerificationResult::NoProofsFound => false,
+            VerificationResult::Failure
+            | VerificationResult::Interrupted
+            | VerificationResult::NoProofsFound => false,
         }
     }
 }

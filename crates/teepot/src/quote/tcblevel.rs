@@ -38,8 +38,7 @@ impl FromStr for TcbLevel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
-            "ok" => Ok(TcbLevel::Ok),
-            "uptodate" => Ok(TcbLevel::Ok),
+            "ok" | "uptodate" => Ok(TcbLevel::Ok),
             "configneeded" => Ok(TcbLevel::ConfigNeeded),
             "configandswhardeningneeded" => Ok(TcbLevel::ConfigAndSwHardeningNeeded),
             "swhardeningneeded" => Ok(TcbLevel::SwHardeningNeeded),
