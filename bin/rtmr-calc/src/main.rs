@@ -160,7 +160,7 @@ fn main() -> Result<()> {
 
     let section_table = pe.get_section_table()?;
 
-    for section in section_table.iter() {
+    for section in &section_table {
         debug!(section_name = ?section.name()?);
     }
 

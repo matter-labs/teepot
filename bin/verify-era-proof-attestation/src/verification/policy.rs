@@ -24,7 +24,7 @@ impl PolicyEnforcer {
         match &quote.report {
             Report::SgxEnclave(report_body) => {
                 // Validate TCB level
-                Self::validate_tcb_level(&attestation_policy.sgx_allowed_tcb_levels, tcblevel)?;
+                Self::validate_tcb_level(attestation_policy.sgx_allowed_tcb_levels, tcblevel)?;
 
                 // Validate SGX Advisories
                 for advisory in &quote_verification_result.advisories {
@@ -50,7 +50,7 @@ impl PolicyEnforcer {
             }
             Report::TD10(report_body) => {
                 // Validate TCB level
-                Self::validate_tcb_level(&attestation_policy.tdx_allowed_tcb_levels, tcblevel)?;
+                Self::validate_tcb_level(attestation_policy.tdx_allowed_tcb_levels, tcblevel)?;
 
                 // Validate TDX Advisories
                 for advisory in &quote_verification_result.advisories {
@@ -74,7 +74,7 @@ impl PolicyEnforcer {
             }
             Report::TD15(report_body) => {
                 // Validate TCB level
-                Self::validate_tcb_level(&attestation_policy.tdx_allowed_tcb_levels, tcblevel)?;
+                Self::validate_tcb_level(attestation_policy.tdx_allowed_tcb_levels, tcblevel)?;
 
                 // Validate TDX Advisories
                 for advisory in &quote_verification_result.advisories {
@@ -101,10 +101,7 @@ impl PolicyEnforcer {
     }
 
     /// Helper method to validate TCB levels
-    fn validate_tcb_level(
-        allowed_levels: &EnumSet<TcbLevel>,
-        actual_level: TcbLevel,
-    ) -> Result<()> {
+    fn validate_tcb_level(allowed_levels: EnumSet<TcbLevel>, actual_level: TcbLevel) -> Result<()> {
         if !allowed_levels.contains(actual_level) {
             let error_msg = format!(
                 "Quote verification failed: TCB level mismatch (expected one of: {allowed_levels:?}, actual: {actual_level})",
@@ -116,7 +113,7 @@ impl PolicyEnforcer {
 
     /// Helper method to build combined TDX measurement register
     fn build_tdx_mr<const N: usize>(parts: [&[u8]; N]) -> Vec<u8> {
-        parts.into_iter().flatten().cloned().collect()
+        parts.into_iter().flatten().copied().collect()
     }
 
     /// Check if a policy value matches the actual value

@@ -53,7 +53,7 @@ impl BatchProcessor {
 
         // Fetch proofs for the current batch across different TEE types
         let mut proofs = Vec::new();
-        for tee_type in self.config.args.tee_types.iter() {
+        for tee_type in self.config.args.tee_types.iter().copied() {
             match self
                 .proof_fetcher
                 .get_proofs(token, batch_number, tee_type)

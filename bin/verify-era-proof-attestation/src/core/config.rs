@@ -260,7 +260,7 @@ fn decode_tdx_mrs(
         Some(mrs_array) => {
             let result = mrs_array
                 .into_iter()
-                .map(|strings| decode_and_combine_mrs(strings, bytes_length))
+                .map(|strings| decode_and_combine_mrs(&strings, bytes_length))
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(Some(result))
         }
@@ -269,12 +269,12 @@ fn decode_tdx_mrs(
 
 // Helper function to decode and combine MRs
 fn decode_and_combine_mrs(
-    strings: [String; 5],
+    strings: &[String; 5],
     bytes_length: usize,
 ) -> Result<Bytes, hex::FromHexError> {
     let mut buffer = BytesMut::with_capacity(bytes_length * 5);
 
-    for s in &strings {
+    for s in strings {
         if s.len() > (bytes_length * 2) {
             return Err(hex::FromHexError::InvalidStringLength);
         }

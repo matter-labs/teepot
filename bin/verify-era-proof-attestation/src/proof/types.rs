@@ -17,7 +17,7 @@ pub struct GetProofsRequest {
 
 impl GetProofsRequest {
     /// Create a new request for the given batch number
-    pub fn new(batch_number: L1BatchNumber, tee_type: &TeeType) -> Self {
+    pub fn new(batch_number: L1BatchNumber, tee_type: TeeType) -> Self {
         GetProofsRequest {
             jsonrpc: "2.0".to_string(),
             id: 1,

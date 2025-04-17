@@ -193,7 +193,7 @@ impl ApiClient {
     }
 
     /// Checks if a V4-only parameter is provided with a V3 API version.
-    pub(super) fn check_v4_only_param<T>(
+    pub(super) fn check_v4_only_param<T: Copy>(
         &self,
         param_value: Option<T>,
         param_name: &str,
