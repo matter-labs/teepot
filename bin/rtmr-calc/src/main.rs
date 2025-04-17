@@ -65,6 +65,8 @@ impl Display for Rtmr {
     }
 }
 
+const CHUNK_SIZE: u64 = 1024 * 128;
+
 fn main() -> Result<()> {
     let args = Arguments::parse();
     tracing::subscriber::set_global_default(setup_logging(
@@ -182,7 +184,6 @@ fn main() -> Result<()> {
 
         let mut hasher = Sha384::new();
 
-        const CHUNK_SIZE: u64 = 1024 * 128;
         loop {
             if start >= end {
                 break;
