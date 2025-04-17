@@ -292,19 +292,16 @@ fn parse_batch_range(s: &str) -> error::Result<(L1BatchNumber, L1BatchNumber)> {
             .map(L1BatchNumber::from)
             .map_err(|e| error::Error::internal(format!("Can't convert batch {s} to number: {e}")))
     };
-    match s.split_once('-') {
-        Some((start, end)) => {
-            let (start, end) = (parse(start)?, parse(end)?);
-            if start > end {
-                Err(error::Error::InvalidBatchRange(s.into()))
-            } else {
-                Ok((start, end))
-            }
+    if let Some((start, end)) = s.split_once('-') {
+        let (start, end) = (parse(start)?, parse(end)?);
+        if start > end {
+            Err(error::Error::InvalidBatchRange(s.into()))
+        } else {
+            Ok((start, end))
         }
-        None => {
-            let batch_number = parse(s)?;
-            Ok((batch_number, batch_number))
-        }
+    } else {
+        let batch_number = parse(s)?;
+        Ok((batch_number, batch_number))
     }
 }
 
