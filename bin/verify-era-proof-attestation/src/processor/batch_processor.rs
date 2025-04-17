@@ -68,7 +68,6 @@ impl BatchProcessor {
                         batch_number.0,
                         e
                     );
-                    continue;
                 }
             }
         }
