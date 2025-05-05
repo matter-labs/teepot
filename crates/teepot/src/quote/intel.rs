@@ -11,9 +11,9 @@ use crate::{
 };
 use bytemuck::cast_slice;
 use std::{ffi::CStr, mem, mem::MaybeUninit, pin::Pin};
-use tdx_attest_rs::{tdx_att_get_quote, tdx_attest_error_t, tdx_report_data_t};
 use teepot_tee_quote_verification_rs::{
     quote3_error_t as _quote3_error_t, sgx_ql_qv_result_t, sgx_ql_qv_supplemental_t,
+    tdx_attest_rs::{tdx_att_get_quote, tdx_attest_error_t, tdx_report_data_t},
     tee_get_supplemental_data_version_and_size, tee_qv_get_collateral, tee_supp_data_descriptor_t,
     tee_verify_quote, Collateral as IntelCollateral,
 };

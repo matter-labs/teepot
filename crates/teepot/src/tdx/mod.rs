@@ -3,7 +3,7 @@
 
 //! Intel TDX helper functions.
 
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[cfg(all(feature = "quote_op", target_os = "linux", target_arch = "x86_64"))]
 pub mod rtmr;
 
 /// The sha384 digest of 0u32, which is used in the UEFI TPM protocol

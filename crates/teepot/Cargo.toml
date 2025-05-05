@@ -10,16 +10,17 @@ edition.workspace = true
 authors.workspace = true
 repository.workspace = true
 
-[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dependencies]
-tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
-teepot-tee-quote-verification-rs = { path = "../teepot-tee-quote-verification-rs" }
-
 [target.'cfg(not(all(target_os = "linux", target_arch = "x86_64")))'.dependencies]
 dcap-qvl = "0.2.3"
 chrono = "0.4.40"
 bytes.workspace = true
 
+[features]
+default = ["quote_op"]
+quote_op = ["dep:teepot-tee-quote-verification-rs"]
+
 [dependencies]
+teepot-tee-quote-verification-rs = { path = "../teepot-tee-quote-verification-rs", optional = true }
 anyhow.workspace = true
 async-trait.workspace = true
 bytemuck.workspace = true
@@ -56,6 +57,7 @@ tracing-log.workspace = true
 tracing-subscriber.workspace = true
 x509-cert.workspace = true
 zeroize.workspace = true
+asn1_der.workspace = true
 
 [dev-dependencies]
 base64.workspace = true

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2024-2025 Matter Labs
 
+#[cfg(feature = "quote_op")]
 mod sgx {
     use anyhow::{Context, Result};
     use std::time::{Duration, UNIX_EPOCH};

@@ -38,6 +38,10 @@
 //!
 //! This is a safe wrapper for **sgx-dcap-quoteverify-sys**.
 
+pub mod tdx_attest_rs {
+    pub use tdx_attest_rs::*;
+}
+
 use serde::{Deserialize, Serialize};
 use std::{marker::PhantomData, ops::Deref, slice};
 
