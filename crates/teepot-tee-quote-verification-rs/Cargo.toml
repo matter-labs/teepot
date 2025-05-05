@@ -14,3 +14,4 @@ serde = { version = "1", features = ["derive", "rc"] }
 
 [target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dependencies]
 intel-tee-quote-verification-sys = { version = "0.2.1" }
+tdx-attest-rs = { version = "0.1.2", git = "https://github.com/intel/SGXDataCenterAttestationPrimitives.git", rev = "aa239d25a437a28f3f4de92c38f5b6809faac842" }
