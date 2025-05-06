@@ -575,6 +575,22 @@ impl Quote {
         Ok(quote)
     }
 
+    /// Returns the TEE type of this quote.
+    ///
+    /// The TEE type is extracted from the quote header and can be either SGX or TDX for now.
+    /// Due to validation during quote parsing, this is guaranteed to return only
+    /// valid TEE types.
+    pub fn tee_type(&self) -> TEEType {
+        match self.header.tee_type {
+            TEE_TYPE_SGX => TEEType::SGX,
+            TEE_TYPE_TDX => TEEType::TDX,
+            // Creating `Self` via `parse()`,
+            // should guarantee that the TEE type
+            // is nothing else than SGX or TDX
+            _ => unreachable!(),
+        }
+    }
+
     /// Get the raw certificate chain from the quote.
     pub fn raw_cert_chain(&self) -> Result<&[u8], QuoteError> {
         let cert_data = match &self.auth_data {
