@@ -16,6 +16,7 @@ pub mod tcblevel;
     path = "phala.rs"
 )]
 mod os;
+mod utils;
 
 use crate::quote::{
     error::{QuoteContext as _, QuoteError},
@@ -547,12 +548,55 @@ impl Decode for Quote {
     }
 }
 
+/// FMSPC (Family-Model-Stepping-Platform-CustomSKU) is a 6-byte identifier
+/// that uniquely identifies a platform's SGX TCB level.
+/// It is extracted from the PCK certificate in the SGX quote and is used to
+/// fetch TCB information from Intel's Provisioning Certification Service.
+pub type Fmspc = [u8; 6];
+
+/// CPU Security Version Number (CPUSVN) is a 16-byte value representing
+/// the security version of the CPU microcode and firmware.
+/// It is used in SGX attestation to determine the security patch level
+/// of the platform.
+pub type CpuSvn = [u8; 16];
+
+/// Security Version Number (SVN) is a 16-bit value representing the
+/// security version of a component (like PCE or QE).
+/// Higher values indicate newer security patches have been applied.
+pub type Svn = u16;
+
 impl Quote {
     /// Parse a TEE quote from a byte slice.
     pub fn parse(quote: &[u8]) -> Result<Self, QuoteError> {
         let mut input = quote;
         let quote = Quote::decode(&mut input)?;
         Ok(quote)
+    }
+
+    /// Get the raw certificate chain from the quote.
+    pub fn raw_cert_chain(&self) -> Result<&[u8], QuoteError> {
+        let cert_data = match &self.auth_data {
+            AuthData::V3(data) => &data.certification_data,
+            AuthData::V4(data) => &data.qe_report_data.certification_data,
+        };
+        if cert_data.cert_type != 5 {
+            QuoteError::QuoteCertificationDataUnsupported(format!(
+                "Unsupported cert type: {}",
+                cert_data.cert_type
+            ));
+        }
+        Ok(&cert_data.body.data)
+    }
+
+    /// Get the FMSPC from the quote.
+    pub fn fmspc(&self) -> Result<Fmspc, QuoteError> {
+        let raw_cert_chain = self.raw_cert_chain()?;
+        let certs = utils::extract_certs(raw_cert_chain)?;
+        let cert = certs
+            .first()
+            .ok_or(QuoteError::Unexpected("Invalid certificate".into()))?;
+        let extension_section = utils::get_intel_extension(cert)?;
+        utils::get_fmspc(&extension_section)
     }
 
     /// Get the report data
