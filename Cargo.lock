@@ -4936,6 +4936,7 @@ name = "teepot"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "asn1_der",
  "async-trait",
  "base64",
  "bytemuck",
