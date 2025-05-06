@@ -31,7 +31,7 @@ pub use teepot::quote::{
     tcblevel::{parse_tcb_levels, EnumSet, TcbLevel},
     verify_quote_with_collateral, QuoteVerificationResult,
 };
-use teepot::{quote::Report, sgx::Quote};
+use teepot::quote::{Quote, Report};
 use tracing::{debug, error, info, trace, warn};
 use x509_cert::{
     der::{Decode as _, Encode as _},
@@ -174,17 +174,17 @@ impl TeeConnection {
                     debug!("Failed to get collateral in certificate");
                 }
 
-                let quote = Quote::try_from_bytes(quote_bytes).map_err(|e| {
+                let quote = Quote::parse(quote_bytes).map_err(|e| {
                     Error::General(format!("Failed get quote in certificate {e:?}"))
                 })?;
 
-                if &quote.report_body.reportdata[..32] != hash.as_slice() {
+                if &quote.get_report_data()[..32] != hash.as_slice() {
                     error!("Report data mismatch");
                     return Err(Error::General("Report data mismatch".to_string()));
                 } else {
                     info!(
                         "Report data matches `{}`",
-                        hex::encode(&quote.report_body.reportdata[..32])
+                        hex::encode(&quote.get_report_data()[..32])
                     );
                 }
 
