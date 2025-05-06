@@ -4,6 +4,7 @@
 //! rtmr event data
 
 use crate::sgx::QuoteError;
+use teepot_tee_quote_verification_rs::tdx_attest_rs::{tdx_att_extend, tdx_attest_error_t};
 
 /// The actual rtmr event data handled in DCAP
 #[repr(C, packed)]
@@ -59,8 +60,8 @@ impl TdxRtmrEvent {
     pub fn extend(self) -> Result<(), QuoteError> {
         let event: Vec<u8> = self.into();
 
-        match tdx_attest_rs::tdx_att_extend(&event) {
-            tdx_attest_rs::tdx_attest_error_t::TDX_ATTEST_SUCCESS => Ok(()),
+        match tdx_att_extend(&event) {
+            tdx_attest_error_t::TDX_ATTEST_SUCCESS => Ok(()),
             error_code => Err(error_code.into()),
         }
     }

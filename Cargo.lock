@@ -4968,7 +4968,6 @@ dependencies = [
  "sha2",
  "sha3",
  "signature",
- "tdx-attest-rs",
  "teepot-tee-quote-verification-rs",
  "testaso",
  "thiserror 2.0.11",
@@ -5003,6 +5002,7 @@ version = "0.3.0"
 dependencies = [
  "intel-tee-quote-verification-sys",
  "serde",
+ "tdx-attest-rs",
 ]
 
 [[package]]
