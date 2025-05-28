@@ -45,6 +45,8 @@ pub struct ApiClient {
     client: Client,
     base_url: Url,
     api_version: ApiVersion,
+    /// Maximum number of automatic retries for rate-limited requests (429 responses)
+    max_retries: u32,
 }
 
 impl ApiClient {
@@ -114,6 +116,20 @@ impl ApiClient {
                 .build()?,
             base_url: base_url.into_url()?,
             api_version,
+            max_retries: 3, // Default to 3 retries
         })
+    }
+
+    /// Sets the maximum number of automatic retries for rate-limited requests.
+    ///
+    /// When the API returns a 429 (Too Many Requests) response, the client will
+    /// automatically wait for the duration specified in the Retry-After header
+    /// and retry the request up to this many times.
+    ///
+    /// # Arguments
+    ///
+    /// * `max_retries` - Maximum number of retries (0 disables automatic retries)
+    pub fn set_max_retries(&mut self, max_retries: u32) {
+        self.max_retries = max_retries;
     }
 }

@@ -46,7 +46,7 @@ impl ApiClient {
         }
 
         let request_builder = self.client.get(url);
-        let response = request_builder.send().await?;
+        let response = self.execute_with_retry(request_builder).await?;
         let response = check_status(response, &[StatusCode::OK]).await?;
 
         let fmspcs_json = response.text().await?;

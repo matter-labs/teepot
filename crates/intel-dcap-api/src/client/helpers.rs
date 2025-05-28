@@ -12,6 +12,8 @@ use crate::{
 use percent_encoding::percent_decode_str;
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::io;
+use std::time::Duration;
+use tokio::time::sleep;
 
 impl ApiClient {
     /// Helper to construct API paths dynamically based on version and technology (SGX/TDX).
@@ -84,7 +86,7 @@ impl ApiClient {
         &self,
         request_builder: RequestBuilder,
     ) -> Result<PckCertificateResponse, IntelApiError> {
-        let response = request_builder.send().await?;
+        let response = self.execute_with_retry(request_builder).await?;
         let response = check_status(response, &[StatusCode::OK]).await?;
 
         let issuer_chain = self.get_required_header(
@@ -109,7 +111,7 @@ impl ApiClient {
         &self,
         request_builder: RequestBuilder,
     ) -> Result<PckCertificatesResponse, IntelApiError> {
-        let response = request_builder.send().await?;
+        let response = self.execute_with_retry(request_builder).await?;
         let response = check_status(response, &[StatusCode::OK]).await?;
 
         let issuer_chain = self.get_required_header(
@@ -134,7 +136,7 @@ impl ApiClient {
         v4_issuer_chain_header: &'static str,
         v3_issuer_chain_header: Option<&'static str>,
     ) -> Result<(String, String), IntelApiError> {
-        let response = request_builder.send().await?;
+        let response = self.execute_with_retry(request_builder).await?;
         let response = check_status(response, &[StatusCode::OK]).await?;
 
         let issuer_chain =
@@ -158,7 +160,7 @@ impl ApiClient {
             ))
         })?;
 
-        let response = builder_clone.send().await?;
+        let response = self.execute_with_retry(builder_clone).await?;
         let status = response.status();
 
         if status == StatusCode::NOT_FOUND || status == StatusCode::GONE {
@@ -222,6 +224,71 @@ impl ApiClient {
             ))
         } else {
             Ok(())
+        }
+    }
+
+    /// Executes a request with automatic retry logic for rate limiting (429 responses).
+    ///
+    /// This method will automatically retry the request up to `max_retries` times
+    /// when receiving a 429 Too Many Requests response, waiting for the duration
+    /// specified in the Retry-After header.
+    pub(super) async fn execute_with_retry(
+        &self,
+        request_builder: RequestBuilder,
+    ) -> Result<Response, IntelApiError> {
+        let mut retries = 0;
+
+        loop {
+            // Clone the request builder for retry attempts
+            let builder = request_builder.try_clone().ok_or_else(|| {
+                IntelApiError::Io(io::Error::new(
+                    io::ErrorKind::Other,
+                    "Failed to clone request builder for retry",
+                ))
+            })?;
+
+            let response = builder.send().await?;
+            let status = response.status();
+
+            if status != StatusCode::TOO_MANY_REQUESTS {
+                // Not a rate limit error, return the response
+                return Ok(response);
+            }
+
+            // Handle 429 Too Many Requests
+            if retries >= self.max_retries {
+                // No more retries, return the error
+                let request_id = response
+                    .headers()
+                    .get("Request-ID")
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or("Unknown")
+                    .to_string();
+
+                let retry_after = response
+                    .headers()
+                    .get("Retry-After")
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| v.parse::<u64>().ok())
+                    .unwrap_or(60);
+
+                return Err(IntelApiError::TooManyRequests {
+                    request_id,
+                    retry_after,
+                });
+            }
+
+            // Parse Retry-After header
+            let retry_after_secs = response
+                .headers()
+                .get("Retry-After")
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<u64>().ok())
+                .unwrap_or(60); // Default to 60 seconds
+
+            // Wait before retrying
+            sleep(Duration::from_secs(retry_after_secs)).await;
+            retries += 1;
         }
     }
 }

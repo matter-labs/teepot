@@ -36,13 +36,13 @@ impl ApiClient {
         let path = self.build_api_path("sgx", "registration", "platform")?;
         let url = self.base_url.join(&path)?;
 
-        let response = self
+        let request_builder = self
             .client
             .post(url)
             .header(header::CONTENT_TYPE, "application/octet-stream")
-            .body(platform_manifest)
-            .send()
-            .await?;
+            .body(platform_manifest);
+
+        let response = self.execute_with_retry(request_builder).await?;
 
         let response = check_status(response, &[StatusCode::CREATED]).await?;
 
@@ -81,14 +81,14 @@ impl ApiClient {
         let path = self.build_api_path("sgx", "registration", "package")?;
         let url = self.base_url.join(&path)?;
 
-        let response = self
+        let request_builder = self
             .client
             .post(url)
             .header("Ocp-Apim-Subscription-Key", subscription_key)
             .header(header::CONTENT_TYPE, "application/octet-stream")
-            .body(add_package_request)
-            .send()
-            .await?;
+            .body(add_package_request);
+
+        let response = self.execute_with_retry(request_builder).await?;
 
         let response = check_status(response, &[StatusCode::OK]).await?;
 

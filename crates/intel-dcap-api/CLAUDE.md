@@ -16,6 +16,7 @@ and enclave identity verification.
 - Type-safe request/response structures
 - Support for SGX and TDX platforms
 - Real data integration tests
+- **Automatic rate limit handling with configurable retries**
 
 ## Development Commands
 
@@ -36,6 +37,7 @@ cargo run --example get_pck_crl       # Fetch certificate revocation lists
 cargo run --example common_usage      # Common attestation verification patterns
 cargo run --example integration_test  # Comprehensive test of most API endpoints
 cargo run --example fetch_test_data   # Fetch real data from Intel API for tests
+cargo run --example handle_rate_limit # Demonstrate automatic rate limiting handling
 ```
 
 ## Architecture
@@ -45,6 +47,8 @@ cargo run --example fetch_test_data   # Fetch real data from Intel API for tests
 - **ApiClient** (`src/client/mod.rs`): Main entry point supporting API v3/v4
     - Base URL: https://api.trustedservices.intel.com
     - Manages HTTP client and API version selection
+    - Automatic retry logic for 429 (Too Many Requests) responses
+    - Default: 3 retries, configurable via `set_max_retries()`
 
 ### Key Modules
 
@@ -69,6 +73,7 @@ cargo run --example fetch_test_data   # Fetch real data from Intel API for tests
 
 - **error.rs**: `IntelApiError` for comprehensive error handling
     - Extracts error details from Error-Code and Error-Message headers
+    - **`TooManyRequests` variant for rate limiting (429) after retry exhaustion**
 - **types.rs**: Enums (CaType, ApiVersion, UpdateType, etc.)
 - **requests.rs**: Request structures
 - **responses.rs**: Response structures with JSON and certificate data
@@ -78,9 +83,17 @@ cargo run --example fetch_test_data   # Fetch real data from Intel API for tests
 All client methods follow this pattern:
 
 1. Build request with query parameters
-2. Send HTTP request with proper headers
+2. Send HTTP request with proper headers (with automatic retry on 429)
 3. Parse response (JSON + certificate chains)
 4. Return typed response or error
+
+### Rate Limiting & Retry Logic
+
+- **Automatic Retries**: All HTTP requests automatically retry on 429 (Too Many Requests) responses
+- **Retry Configuration**: Default 3 retries, configurable via `ApiClient::set_max_retries()`
+- **Retry-After Handling**: Waits for duration specified in Retry-After header before retrying
+- **Error Handling**: `IntelApiError::TooManyRequests` returned only after all retries exhausted
+- **Implementation**: `execute_with_retry()` in `src/client/helpers.rs` handles retry logic
 
 ### Testing Strategy
 
@@ -114,6 +127,8 @@ All client methods follow this pattern:
 
 1. **Mockito Header Encoding**: Always URL-encode headers containing newlines/special characters
 2. **API Version Selection**: Some endpoints are V4-only and will return errors on V3
+3. **Rate Limiting**: Client automatically retries 429 responses; disable with `set_max_retries(0)` if manual handling
+   needed
 4. **Platform Filters**: Only certain values are valid (All, Client, E3, E5)
 5. **Test Data**: PCK certificate endpoints require valid platform data and often need subscription keys
 6. **Issuer Chain Validation**: Always check that `issuer_chain` is non-empty - it's critical for signature verification
