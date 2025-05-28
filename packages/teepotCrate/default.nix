@@ -49,6 +49,7 @@ let
         # Custom test data files
         (maybeMissing (inputs.src + "/crates/teepot/tests/data"))
         (maybeMissing (inputs.src + "/crates/teepot-vault/tests/data"))
+        (maybeMissing (inputs.src + "/crates/intel-dcap-api/tests/test_data"))
       ];
     };
 
