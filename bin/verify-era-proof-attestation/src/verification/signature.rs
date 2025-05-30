@@ -59,7 +59,7 @@ impl SignatureVerifier {
         let signature = Signature::from_compact(signature)
             .map_err(|e| error::Error::signature_verification(e.to_string()))?;
         let root_hash_msg = Message::from_digest(root_hash.0);
-        Ok(signature.verify(&root_hash_msg, &report.pubkey).is_ok())
+        Ok(signature.verify(root_hash_msg, &report.pubkey).is_ok())
     }
 
     /// Verify a V1 report
@@ -139,7 +139,7 @@ impl SignatureVerifier {
                 continue;
             };
 
-            let Ok(public) = SECP256K1.recover_ecdsa(message, &rec_sig) else {
+            let Ok(public) = SECP256K1.recover_ecdsa(*message, &rec_sig) else {
                 continue;
             };
 

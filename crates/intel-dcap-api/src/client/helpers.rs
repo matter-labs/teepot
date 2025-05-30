@@ -11,8 +11,7 @@ use crate::{
 };
 use percent_encoding::percent_decode_str;
 use reqwest::{RequestBuilder, Response, StatusCode};
-use std::io;
-use std::time::Duration;
+use std::{io, time::Duration};
 use tokio::time::sleep;
 
 impl ApiClient {
@@ -154,8 +153,7 @@ impl ApiClient {
         resource_description: &str,
     ) -> Result<(), IntelApiError> {
         let builder_clone = request_builder.try_clone().ok_or_else(|| {
-            IntelApiError::Io(io::Error::new(
-                io::ErrorKind::Other,
+            IntelApiError::Io(io::Error::other(
                 "Failed to clone request builder for status check",
             ))
         })?;
@@ -241,8 +239,7 @@ impl ApiClient {
         loop {
             // Clone the request builder for retry attempts
             let builder = request_builder.try_clone().ok_or_else(|| {
-                IntelApiError::Io(io::Error::new(
-                    io::ErrorKind::Other,
+                IntelApiError::Io(io::Error::other(
                     "Failed to clone request builder for retry",
                 ))
             })?;

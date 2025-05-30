@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2023-2024 Matter Labs
+// Copyright (c) 2023-2025 Matter Labs
 
 //! Signature checking utilities
 
-use crate::json::secrets::AdminConfig;
-use crate::server::{HttpResponseError, Status as _};
+use crate::{
+    json::secrets::AdminConfig,
+    server::{HttpResponseError, Status as _},
+};
 use actix_web::http::StatusCode;
 use anyhow::{anyhow, bail, Context, Result};
-use pgp::types::PublicKeyTrait;
-use pgp::{Deserializable, SignedPublicKey, StandaloneSignature};
+use pgp::{
+    composed::{Deserializable, SignedPublicKey, StandaloneSignature},
+    types::PublicKeyTrait,
+};
 use tracing::debug;
 
 /// Verify a pgp signature for some message given some public keys
@@ -91,7 +95,7 @@ impl VerifySig for AdminConfig {
 mod tests {
     use super::verify_sig;
     use base64::{engine::general_purpose, Engine as _};
-    use pgp::{Deserializable, SignedPublicKey};
+    use pgp::composed::{Deserializable, SignedPublicKey};
 
     const TEST_DATA: &str = include_str!("../../tests/data/test.json");
 

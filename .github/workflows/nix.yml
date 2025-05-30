@@ -16,8 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
         with:
+          install_url: https://releases.nixos.org/nix/nix-2.28.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tee-pot:SS6HcrpG87S1M6HZGPsfo7d1xJccCGev7/tXc5+I4jg=
@@ -37,8 +38,9 @@ jobs:
     runs-on: [matterlabs-default-infra-runners]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
         with:
+          install_url: https://releases.nixos.org/nix/nix-2.28.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tee-pot:SS6HcrpG87S1M6HZGPsfo7d1xJccCGev7/tXc5+I4jg=
@@ -76,8 +78,9 @@ jobs:
           - { nixpackage: 'container-tdx-test' }
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
         with:
+          install_url: https://releases.nixos.org/nix/nix-2.28.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tee-pot:SS6HcrpG87S1M6HZGPsfo7d1xJccCGev7/tXc5+I4jg=

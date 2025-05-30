@@ -2,16 +2,16 @@
   "nodes": {
     "crane": {
       "locked": {
-        "lastModified": 1731974531,
-        "narHash": "sha256-z7hiGBWsbWwSnu5UMmYyfHEehlSmfB8sCA8iH4nmxm8=",
+        "lastModified": 1745454774,
+        "narHash": "sha256-oLvmxOnsEKGtwczxp/CwhrfmQUG2ym24OMWowcoRhH8=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "8ff9c457d60951bdd37a05ae903423de7ff55c6e",
+        "rev": "efd36682371678e2b6da3f108fdb5c613b3ec598",
         "type": "github"
       },
       "original": {
         "owner": "ipetkov",
-        "ref": "8ff9c457d60951bdd37a05ae903423de7ff55c6e",
+        "ref": "efd36682371678e2b6da3f108fdb5c613b3ec598",
         "repo": "crane",
         "type": "github"
       }
@@ -156,6 +156,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-25-05": {
+      "locked": {
+        "lastModified": 1748437600,
+        "narHash": "sha256-hYKMs3ilp09anGO7xzfGs3JqEgUqFMnZ8GMAqI6/k04=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "7282cb574e0607e65224d33be8241eae7cfe0979",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1717281328,
@@ -217,6 +233,7 @@
           "nixsgx-flake",
           "nixpkgs"
         ],
+        "nixpkgs-25-05": "nixpkgs-25-05",
         "nixsgx-flake": "nixsgx-flake",
         "rust-overlay": "rust-overlay",
         "snowfall-lib": [
@@ -234,11 +251,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1743993291,
-        "narHash": "sha256-u8GHvduU1gCtoFXvTS/wGjH1ouv5S/GRGq6MAT+sG/k=",
+        "lastModified": 1748572605,
+        "narHash": "sha256-k0nhPtkVDQkVJckRw6fGIeeDBktJf1BH0i8T48o7zkk=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "0cb3c8979c65dc6a5812dfe67499a8c7b8b4325b",
+        "rev": "405ef13a5b80a0a4d4fc87c83554423d80e5f929",
         "type": "github"
       },
       "original": {
@@ -350,11 +367,11 @@
         "nixsgx-flake": "nixsgx-flake_2"
       },
       "locked": {
-        "lastModified": 1719832445,
-        "narHash": "sha256-Dnueq3A1sf8zT+bY6CcuaxPvX4AK7B6Sveqb8YfoY8o=",
+        "lastModified": 1747897304,
+        "narHash": "sha256-8O9ry5FaD1fkRqvHV5hPtsg5G+Z0RX6MRkazn5bmK50=",
         "owner": "matter-labs",
         "repo": "vault-auth-tee",
-        "rev": "2b53a4387fc8ecfb7826acd93d4895e7e810677d",
+        "rev": "dc802364964d9fe01b2e164e3fb3005bcdf91272",
         "type": "github"
       },
       "original": {

@@ -3,7 +3,10 @@
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
-use pgp::{types::PublicKeyTrait, Deserializable, SignedPublicKey};
+use pgp::{
+    composed::{Deserializable, SignedPublicKey},
+    types::KeyDetails,
+};
 use serde_json::Value;
 use std::{
     default::Default,
