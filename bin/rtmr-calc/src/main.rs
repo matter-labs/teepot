@@ -7,7 +7,7 @@ use pesign::PE;
 use sha2::{Digest, Sha384};
 use std::{
     fmt::{Display, Formatter},
-    io::{Error, ErrorKind, Read, Seek, SeekFrom},
+    io::{Error, Read, Seek, SeekFrom},
     path::PathBuf,
 };
 use teepot::{
@@ -125,7 +125,7 @@ fn main() -> Result<()> {
     let pstart = header
         .part_start
         .checked_mul(lb_size.as_u64())
-        .ok_or_else(|| Error::new(ErrorKind::Other, "partition overflow - start offset"))?;
+        .ok_or_else(|| Error::other("partition overflow - start offset"))?;
     let _ = device.seek(SeekFrom::Start(pstart))?;
 
     assert_eq!(header.part_size, 128);
