@@ -1319,9 +1319,9 @@ dependencies = [
 
 [[package]]
 name = "dcap-qvl"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8bc5d87613fe4c0a7a980c3e9113d9f10b9f9404218e19333e0eff2eff4c9a"
+checksum = "7c8049b28b1fe35e94bd52f4c20edf7b80b6eeb378faccdd685d5cd82cbc192e"
 dependencies = [
  "anyhow",
  "asn1_der",
@@ -2932,7 +2932,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
