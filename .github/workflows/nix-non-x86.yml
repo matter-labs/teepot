@@ -34,5 +34,5 @@ jobs:
         # FIXME: this prevents it from running on macos
         # https://github.com/NixOS/nix/pull/12570
         # run: nix run github:nixos/nixpkgs/nixos-24.11#nixci -- build
-        run: nix build -L .#teepot
+        run: nix build -L .#teepot --no-sandbox
 

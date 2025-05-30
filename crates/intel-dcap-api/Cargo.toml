@@ -11,6 +11,7 @@ keywords = ["sgx", "tdx", "intel", "attestation", "confidential"]
 categories = ["api-bindings", "cryptography", "authentication"]
 
 [dependencies]
+base64.workspace = true
 percent-encoding = "2.3.1"
 reqwest = { workspace = true, features = ["json"] }
 serde.workspace = true
@@ -20,8 +21,14 @@ tokio.workspace = true
 url.workspace = true
 
 [dev-dependencies]
+base64.workspace = true
 hex.workspace = true
+mockito = "1.4"
 x509-cert.workspace = true
+
+[[example]]
+name = "integration_test"
+required-features = ["default"]
 
 [features]
 default = ["reqwest/default-tls"]

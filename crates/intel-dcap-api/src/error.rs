@@ -59,6 +59,40 @@ pub enum IntelApiError {
     /// Indicates an invalid parameter was provided.
     #[error("Invalid parameter value: {0}")]
     InvalidParameter(&'static str),
+
+    /// Indicates that the API rate limit has been exceeded (HTTP 429).
+    ///
+    /// This error is returned after the client has exhausted all automatic retry attempts
+    /// for a rate-limited request. The `retry_after` field contains the number of seconds
+    /// that was specified in the last Retry-After header. By default, the client automatically
+    /// retries rate-limited requests up to 3 times.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use intel_dcap_api::{ApiClient, IntelApiError};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut client = ApiClient::new()?;
+    /// client.set_max_retries(0); // Disable automatic retries
+    ///
+    /// match client.get_sgx_tcb_info("00606A000000", None, None).await {
+    ///     Ok(tcb_info) => println!("Success"),
+    ///     Err(IntelApiError::TooManyRequests { request_id, retry_after }) => {
+    ///         println!("Rate limited after all retries. Last retry-after was {} seconds.", retry_after);
+    ///     }
+    ///     Err(e) => eprintln!("Other error: {}", e),
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[error("Too many requests. Retry after {retry_after} seconds")]
+    TooManyRequests {
+        /// The unique request identifier for tracing.
+        request_id: String,
+        /// Number of seconds to wait before retrying, from Retry-After header.
+        retry_after: u64,
+    },
 }
 
 /// Extracts common API error details from response headers.
@@ -92,6 +126,27 @@ pub(crate) async fn check_status(
     let status = response.status();
     if expected_statuses.contains(&status) {
         Ok(response)
+    } else if status == StatusCode::TOO_MANY_REQUESTS {
+        // Handle 429 Too Many Requests with Retry-After header
+        let request_id = response
+            .headers()
+            .get("Request-ID")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("Unknown")
+            .to_string();
+
+        // Parse Retry-After header (can be in seconds or HTTP date format)
+        let retry_after = response
+            .headers()
+            .get("Retry-After")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(60); // Default to 60 seconds if header is missing or invalid
+
+        Err(IntelApiError::TooManyRequests {
+            request_id,
+            retry_after,
+        })
     } else {
         let (request_id, error_code, error_message) = extract_api_error_details(&response);
         Err(IntelApiError::ApiError {

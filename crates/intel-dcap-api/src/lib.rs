@@ -8,6 +8,14 @@
 //!
 //! Create an [`ApiClient`] to interface with the Intel API.
 //!
+//! # Rate Limiting
+//!
+//! The Intel API implements rate limiting and may return HTTP 429 (Too Many Requests) responses.
+//! This client automatically handles rate limiting by retrying requests up to 3 times by default,
+//! waiting for the duration specified in the `Retry-After` header. You can configure the retry
+//! behavior using [`ApiClient::set_max_retries`]. If all retries are exhausted, the client
+//! returns an [`IntelApiError::TooManyRequests`] error.
+//!
 //! Example
 //! ```rust,no_run
 //! use intel_dcap_api::{ApiClient, IntelApiError, TcbInfoResponse};
