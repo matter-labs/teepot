@@ -27,10 +27,9 @@ fn main_with_error() -> Result<()> {
     use anyhow::Context;
     use secp256k1::{rand, Secp256k1};
     use std::{os::unix::process::CommandExt, process::Command};
-    use teepot::tdx::rtmr::TdxRtmrEvent;
     use teepot::{
         ethereum::public_key_to_ethereum_address, prover::reportdata::ReportDataV1,
-        quote::get_quote,
+        quote::get_quote, tdx::rtmr::TdxRtmrEvent,
     };
     use tracing_log::LogTracer;
     use tracing_subscriber::{fmt, prelude::*, EnvFilter, Registry};
@@ -45,7 +44,7 @@ fn main_with_error() -> Result<()> {
     tracing::subscriber::set_global_default(subscriber).context("Failed to set logger")?;
 
     let args = Args::parse();
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let secp = Secp256k1::new();
     let (signing_key, verifying_key) = secp.generate_keypair(&mut rng);
     let ethereum_address = public_key_to_ethereum_address(&verifying_key);

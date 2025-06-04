@@ -17,7 +17,7 @@ pub fn recover_signer(sig: &[u8; 65], root_hash: &Message) -> Result<[u8; 20]> {
         &sig[0..64],
         RecoveryId::try_from(i32::from(sig[64]) - 27)?,
     )?;
-    let public = SECP256K1.recover_ecdsa(root_hash, &sig)?;
+    let public = SECP256K1.recover_ecdsa(*root_hash, &sig)?;
     Ok(public_key_to_ethereum_address(&public))
 }
 
@@ -42,7 +42,7 @@ mod tests {
 
     /// Signs the message in Ethereum-compatible format for on-chain verification.
     fn sign_message(sec: &SecretKey, message: Message) -> Result<[u8; 65]> {
-        let s = SECP256K1.sign_ecdsa_recoverable(&message, sec);
+        let s = SECP256K1.sign_ecdsa_recoverable(message, sec);
         let (rec_id, data) = s.serialize_compact();
 
         let mut signature = [0u8; 65];
