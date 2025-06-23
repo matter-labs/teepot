@@ -8,14 +8,14 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-actix-http = "3"
+actix-http.workspace = true
 actix-web.workspace = true
 anyhow.workspace = true
 awc.workspace = true
 bytes.workspace = true
 clap.workspace = true
 const-oid.workspace = true
-futures-core = { version = "0.3.30", features = ["alloc"], default-features = false }
+futures-core = { workspace = true, features = ["alloc"] }
 hex.workspace = true
 pgp.workspace = true
 rustls.workspace = true
@@ -26,7 +26,7 @@ sha2.workspace = true
 teepot.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
-webpki-roots = "1.0.0"
+webpki-roots.workspace = true
 x509-cert.workspace = true
 
 [dev-dependencies]
