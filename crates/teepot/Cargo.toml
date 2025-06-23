@@ -11,8 +11,8 @@ authors.workspace = true
 repository.workspace = true
 
 [target.'cfg(not(all(target_os = "linux", target_arch = "x86_64")))'.dependencies]
-dcap-qvl = "0.2.3"
-chrono = "0.4.40"
+dcap-qvl.workspace = true
+chrono.workspace = true
 bytes.workspace = true
 
 [features]
@@ -28,7 +28,7 @@ clap.workspace = true
 config.workspace = true
 const-oid.workspace = true
 enumset.workspace = true
-futures = "0.3.31"
+futures.workspace = true
 getrandom.workspace = true
 hex.workspace = true
 num-integer.workspace = true
@@ -49,7 +49,7 @@ serde_json.workspace = true
 sha2.workspace = true
 sha3.workspace = true
 signature.workspace = true
-teepot-tee-quote-verification-rs = { path = "../teepot-tee-quote-verification-rs", optional = true }
+teepot-tee-quote-verification-rs = { workspace = true, optional = true }
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
