@@ -112,3 +112,12 @@ Attributes:
 ```shell
 nixos-rebuild  -L --flake .#tdxtest build-vm && ./result/bin/run-tdxtest-vm
 ```
+
+## Release
+
+```shell
+$ cargo release 0.1.0 --manifest-path crates/teepot-tdx-attest-sys/Cargo.toml  --sign
+$ cargo release 0.1.2 --manifest-path crates/teepot-tdx-attest-rs/Cargo.toml  --sign
+$ cargo release 0.6.0 --manifest-path crates/teepot-tee-quote-verification-rs/Cargo.toml  --sign
+$ cargo release 0.6.0 --sign
+```
