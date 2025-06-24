@@ -1,0 +1,17 @@
+# Fork of the original crate: https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+[package]
+name = "teepot-tdx-attest-sys"
+version = "0.1.0"
+links = "tdx_attest"
+edition = "2021"
+license = "BSD-3-Clause"
+repository = "https://github.com/matter-labs/teepot"
+homepage = "https://github.com/matter-labs/teepot"
+description = "Fork of tdx-attest-sys"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.70.1"

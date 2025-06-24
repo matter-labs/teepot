@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright (c) 2024-2025 Matter Labs
-
 // SPDX-License-Identifier: BSD-3-Clause
 /*
  * Copyright (C) 2011-2021 Intel Corporation. All rights reserved.
@@ -39,7 +36,7 @@
 //! This is a safe wrapper for **sgx-dcap-quoteverify-sys**.
 
 pub mod tdx_attest_rs {
-    pub use tdx_attest_rs::*;
+    pub use teepot_tdx_attest_rs::*;
 }
 
 use serde::{Deserialize, Serialize};

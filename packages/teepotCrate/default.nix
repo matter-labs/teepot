@@ -50,6 +50,8 @@ let
         (maybeMissing (inputs.src + "/crates/teepot/tests/data"))
         (maybeMissing (inputs.src + "/crates/teepot-vault/tests/data"))
         (maybeMissing (inputs.src + "/crates/intel-dcap-api/tests/test_data"))
+        # special files
+        (maybeMissing (inputs.src + "/crates/teepot-tdx-attest-sys/bindings.h"))
       ];
     };
 
