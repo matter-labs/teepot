@@ -1224,9 +1224,9 @@ dependencies = [
 
 [[package]]
 name = "dcap-qvl"
-version = "0.2.4"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c8049b28b1fe35e94bd52f4c20edf7b80b6eeb378faccdd685d5cd82cbc192e"
+checksum = "32ef42eade99e79b9fb9d31532041a0a380a7e849d3486950a40b1afd5bf417c"
 dependencies = [
  "anyhow",
  "asn1_der",
@@ -1234,6 +1234,7 @@ dependencies = [
  "byteorder",
  "chrono",
  "const-oid",
+ "dcap-qvl-webpki",
  "der",
  "futures",
  "hex",
@@ -1249,7 +1250,19 @@ dependencies = [
  "serde_json",
  "tracing",
  "urlencoding",
+ "wasm-bindgen-futures",
  "x509-cert",
+]
+
+[[package]]
+name = "dcap-qvl-webpki"
+version = "0.103.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70ebdcd097c369fe3422cf3978540e0406148435ec0f4d8ecbbf201c746f19c9"
+dependencies = [
+ "ring",
+ "rustls-pki-types",
+ "untrusted",
 ]
 
 [[package]]
