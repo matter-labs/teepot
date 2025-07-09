@@ -36,7 +36,7 @@ chrono = "0.4.40"
 clap = { version = "4.5", features = ["std", "derive", "env", "error-context", "help", "usage", "wrap_help"], default-features = false }
 config = { version = "0.15.8", default-features = false, features = ["yaml", "json", "toml", "async"] }
 const-oid = { version = "0.9.6", default-features = false }
-dcap-qvl = "0.2.3"
+dcap-qvl = "0.3.0"
 enumset = { version = "1.1", features = ["serde"] }
 futures = "0.3.31"
 futures-core = { version = "0.3.30", default-features = false }
