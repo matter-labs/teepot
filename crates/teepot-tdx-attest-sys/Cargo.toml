@@ -14,4 +14,4 @@ description = "Fork of tdx-attest-sys"
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.70.1"
+bindgen = "0.72.0"
